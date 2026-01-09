@@ -5,18 +5,16 @@ namespace App\Http\Controllers\Auditor;
 use App\Enums\AssignmentDocType;
 use App\Http\Controllers\Controller;
 use App\Models\Assignment;
-use App\Services\AssignmentService; // Tambahkan ini
+use App\Services\AssignmentService;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Session, Gate};
 use Illuminate\Validation\Rule;
-use Inertia\Inertia;
 
 class AssignmentController extends Controller
 {
     protected $assignmentService;
 
-    // Tambahkan constructor untuk service
     public function __construct(AssignmentService $assignmentService)
     {
         $this->assignmentService = $assignmentService;
@@ -24,14 +22,14 @@ class AssignmentController extends Controller
 
     public function index(Request $request)
     {
-        // 1. Ambil filter, sort, dan per_page
         $filters = $request->only(['search', 'sort_field', 'direction', 'per_page']);
         $perPage = $request->input('per_page', 10);
 
-        $assignments = Assignment::with(['prodi', 'period'])
-            ->where('auditor_id', auth()->id()) // Proteksi: Hanya milik auditor login
-            ->search($request->search) // Gunakan scopeSearch yang sudah di-override di Model
-            ->sort($request->sort_field, $request->direction) // Trait Filterable
+        // Gunakan 'assignable' karena sistem sudah polimorfik
+        $assignments = Assignment::with(['assignable', 'period'])
+            ->where('auditor_id', auth()->id())
+            ->search($request->search)
+            ->sort($request->sort_field, $request->direction)
             ->paginate($perPage)
             ->withQueryString();
 
@@ -48,14 +46,11 @@ class AssignmentController extends Controller
         $filters = $request->only(['search', 'sort_field', 'direction', 'per_page']);
         $perPage = $request->input('per_page', 10);
 
-        $assignment->load(['period', 'standard', 'prodi', 'auditor', 'documents', 'histories.user']);
+        // Load 'assignable' untuk mendapatkan data Prodi/Fakultas secara dinamis
+        $assignment->load(['period', 'standard', 'assignable', 'auditor', 'documents', 'histories.user']);
 
         $indicators = $assignment->indicators()
-            ->when($request->search, function ($q, $search) {
-                $q->where('snapshot_code', 'like', "%{$search}%")
-                    ->orWhere('snapshot_requirement', 'like', "%{$search}%");
-            })
-            // Gunakan sort dari Trait
+            ->search($request->search, ['snapshot_code', 'snapshot_requirement']) // Gunakan trait Filterable
             ->sort($request->sort_field ?? 'snapshot_code', $request->direction ?? 'asc')
             ->paginate($perPage)
             ->withQueryString();
@@ -68,9 +63,6 @@ class AssignmentController extends Controller
         ]);
     }
 
-    /**
-     * FITUR BARU: Unggah BA dan Laporan Akhir oleh Auditor
-     */
     public function uploadDocument(Request $request, Assignment $assignment)
     {
         Gate::authorize('update', $assignment);
@@ -82,7 +74,7 @@ class AssignmentController extends Controller
 
         $stage = $assignment->current_stage;
 
-        // Validasi Tahap (Stage-Gate) agar auditor tidak salah unggah
+        // Stage-Gate Validation menggunakan metode pembantu di Enum AuditStage
         if ($request->type === AssignmentDocType::FIELD_REPORT->value && !$stage->fieldReport()) {
             return back()->withErrors(['message' => 'BA Lapangan hanya diunggah pada tahap Lapangan.']);
         }
@@ -104,7 +96,8 @@ class AssignmentController extends Controller
             );
         });
 
-        return back()->with('success', 'Dokumen resmi berhasil diunggah.');
+        Session::flash('toastr', ['type' => 'gradient-primary', 'content' => 'Dokumen resmi berhasil diunggah.']);
+        return back();
     }
 
     public function finalize(Request $request, Assignment $assignment)
@@ -115,8 +108,6 @@ class AssignmentController extends Controller
             'summary_note' => 'required|string|min:10',
             'overall_rating' => 'required|integer|min:1|max:4',
         ]);
-
-        // Panggil service
 
         DB::transaction(function () use ($assignment, $validated) {
             $this->assignmentService->finalizeAssignment($assignment, $validated, auth()->id());

@@ -25,6 +25,7 @@ class AssignmentIndicatorController extends Controller
     public function update(Request $request, AssignmentIndicator $indicator)
     {
         Gate::authorize('updateScore', $indicator->assignment);
+
         $validated = $request->validate([
             'score' => 'nullable|integer|min:1|max:4',
             'auditor_note' => 'nullable|string',
@@ -33,21 +34,19 @@ class AssignmentIndicatorController extends Controller
             'evidence_file' => 'nullable|file|mimes:pdf,jpg,png,zip|max:10240',
         ]);
 
-        if ($request->hasFile('evidence_file')) {
-            $path = $request->file('evidence_file')->store('evidence/' . $indicator->assignment_id);
-            $validated['evidence_path'] = $path;
-        }
-
-        // Service menangani pencatatan polimorfik secara otomatis
+        // JANGAN simpan file di sini.
+        // Biarkan Service yang menangani folder polimorfik dan penghapusan file lama.
         DB::transaction(function () use ($indicator, $validated) {
+            // Cukup kirim data hasil validasi.
+            // Service akan mendeteksi jika ada 'evidence_file' di dalam array.
             $this->service->updateIndicator($indicator, $validated, auth()->id());
         });
-
 
         Session::flash('toastr', [
             'type' => 'gradient-green-to-emerald',
             'content' => 'Data indikator diperbarui.'
         ]);
+
         return back();
     }
 

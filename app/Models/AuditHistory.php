@@ -22,6 +22,7 @@ class AuditHistory extends Model
     protected $casts = [
         'old_values' => 'json',
         'new_values' => 'json',
+        'created_at' => 'datetime:Y-m-d H:i:s',
     ];
 
     public function user()

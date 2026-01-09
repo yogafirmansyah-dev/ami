@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\TargetType;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditHistory, MasterStandard};
 use Illuminate\Http\Request;
@@ -34,6 +35,7 @@ class MasterStandardController extends Controller
             'code' => 'required|string|max:6|unique:master_standards,code',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'target_type' => ['required', Rule::enum(TargetType::class)],
         ]);
 
         DB::transaction(function () use ($validated) {
@@ -48,7 +50,8 @@ class MasterStandardController extends Controller
             ]);
         });
 
-        return back()->with('toastr', ['type' => 'gradient-primary', 'content' => 'Standar Mutu berhasil dibuat.']);
+        Session::flash('toastr', ['type' => 'gradient-primary', 'content' => 'Standar Mutu berhasil dibuat.']);
+        return back();
     }
 
     public function update(Request $request, MasterStandard $standard)
@@ -57,6 +60,7 @@ class MasterStandardController extends Controller
             'code' => ['required', 'string', 'max:6', Rule::unique('master_standards')->ignore($standard->id)],
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'target_type' => ['required', Rule::enum(TargetType::class)],
         ]);
 
         $oldValues = $standard->toArray();
@@ -74,7 +78,8 @@ class MasterStandardController extends Controller
             ]);
         });
 
-        return back()->with('toastr', ['type' => 'gradient-info', 'content' => 'Standar diperbarui.']);
+        Session::flash('toastr', ['type' => 'gradient-info', 'content' => 'Standar diperbarui.']);
+        return back();
     }
 
     public function destroy(MasterStandard $standard)
@@ -91,6 +96,7 @@ class MasterStandardController extends Controller
             $standard->delete();
         });
 
-        return back()->with('toastr', ['type' => 'gradient-red-to-pink', 'content' => 'Standar dihapus.']);
+        Session::flash('toastr', ['type' => 'gradient-red-to-pink', 'content' => 'Standar dihapus.']);
+        return back();
     }
 }

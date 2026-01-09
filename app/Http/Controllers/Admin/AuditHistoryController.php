@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Assignment;
 use App\Models\AuditHistory;
+use App\Models\Faculty;
+use App\Models\Prodi;
 use App\Models\User;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
@@ -17,18 +20,24 @@ class AuditHistoryController extends Controller
         $perPage = $request->input('per_page', 10);
 
         $histories = AuditHistory::with(['user:id,name,role', 'historable'])
-            // 1. Menggunakan scope search dari Filterable Trait
-            // Kita mencari pada kolom 'action' dan 'reason'
-            ->search($request->search, ['action', 'reason'])
+            ->where(function ($query) use ($request) {
+                $search = $request->search;
+                if (!$search)
+                    return;
 
-            // 2. Filter spesifik tetap menggunakan when()
+                $query->where('action', 'like', "%{$search}%")
+                    ->orWhere('reason', 'like', "%{$search}%")
+                    // Mencari berdasarkan nama User yang melakukan aksi
+                    ->orWhereHas('user', fn($u) => $u->where('name', 'like', "%{$search}%"))
+                    // Mencari jika historable-nya adalah Assignment (berdasarkan nama unit)
+                    ->orWhereHasMorph('historable', [Assignment::class], function ($q) use ($search) {
+                        $q->whereHasMorph('assignable', [Prodi::class, Faculty::class], function ($unitQ) use ($search) {
+                            $unitQ->where('name', 'like', "%{$search}%");
+                        });
+                    });
+            })
             ->when($request->user_id, fn($q, $id) => $q->where('user_id', $id))
-            ->when($request->action, fn($q, $act) => $q->where('action', $act))
-
-            // 3. Menggunakan scope sort dari Filterable Trait
-            // Ini menggantikan logika manual orderBy
             ->sort($request->sort_field, $request->direction)
-
             ->paginate($perPage)
             ->withQueryString();
 

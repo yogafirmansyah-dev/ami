@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\AssignmentDocType;
 use App\Http\Controllers\Controller;
-use App\Models\{Assignment, AuditHistory, Prodi, Period, MasterStandard, User};
+use App\Models\{Assignment, AuditHistory, Faculty, Prodi, Period, MasterStandard, User};
 use App\Services\AssignmentService;
 use Gate;
 use Illuminate\Http\Request;
@@ -30,7 +31,7 @@ class AssignmentController extends Controller
         $filters = $request->only(['search', 'sort_field', 'direction', 'per_page']);
         $perPage = $request->input('per_page', 10);
 
-        $assignments = Assignment::with(['prodi', 'period', 'standard', 'auditor'])
+        $assignments = Assignment::with(['assignable', 'period', 'standard', 'auditor'])
             ->search($request->search) // Memanggil scope kustom di model
             ->sort($request->sort_field, $request->direction) // Memanggil scope dari trait
             ->paginate($perPage)
@@ -40,6 +41,7 @@ class AssignmentController extends Controller
             'assignments' => $assignments,
             'filters' => $filters,
             'prodis' => Prodi::all(['id', 'name']),
+            'faculties' => Faculty::all(['id', 'name']),
             'periods' => Period::where('is_active', true)->get(['id', 'name']),
             'standards' => MasterStandard::all(['id', 'name']),
             'auditors' => User::where('role', 'auditor')->get(['id', 'name'])
@@ -54,19 +56,40 @@ class AssignmentController extends Controller
         $validated = $request->validate([
             'period_id' => 'required|exists:periods,id',
             'master_standard_id' => 'required|exists:master_standards,id',
-            'prodi_id' => [
+            'assignable_type' => 'required|in:prodi,faculty', // Alias untuk mempermudah UI
+            'assignable_id' => [
                 'required',
-                'exists:prodis,id',
-                // Pastikan prodi belum punya tugas di periode ini
-                Rule::unique('assignments')->where(
-                    fn($q) =>
-                    $q->where('period_id', $request->period_id)
-                )
+                'integer',
+                // Validasi apakah ID ada di tabel yang benar
+                function ($attribute, $value, $fail) use ($request) {
+                    $table = $request->assignable_type === 'prodi' ? 'prodis' : 'faculties';
+                    if (!\DB::table($table)->where('id', $value)->exists()) {
+                        $fail("Unit yang dipilih tidak valid.");
+                    }
+                },
+                // Validasi Unik
+                Rule::unique('assignments')->where(function ($q) use ($request) {
+                    return $q->where('period_id', $request->period_id)
+                        ->where('assignable_type', $request->assignable_type === 'prodi'
+                            ? \App\Models\Prodi::class
+                            : \App\Models\Faculty::class);
+                })
             ],
             'auditor_id' => 'required|exists:users,id',
-        ], [
-            'prodi_id.unique' => 'Program Studi ini sudah memiliki penugasan pada periode yang dipilih.'
         ]);
+
+        // Cek apakah Standar cocok dengan Target Unit
+        $standard = MasterStandard::findOrFail($validated['master_standard_id']);
+        if ($standard->target_type->value !== $validated['assignable_type']) {
+            return back()->withErrors(['master_standard_id' => 'Standar ini tidak cocok untuk tipe unit yang dipilih.']);
+        }
+
+        $assignableTypeMap = [
+            'prodi' => Prodi::class,
+            'faculty' => Faculty::class,
+        ];
+
+        $validated['assignable_type'] = $assignableTypeMap[$validated['assignable_type']];
 
 
         $assignment = DB::transaction(function () use ($validated) {
@@ -89,7 +112,7 @@ class AssignmentController extends Controller
         $filters = $request->only(['search', 'sort_field', 'direction', 'per_page']);
         $perPage = $request->input('per_page', 10);
 
-        $assignment->load(['period', 'standard', 'prodi', 'auditor', 'documents', 'histories.user']);
+        $assignment->load(['period', 'standard', 'assignable', 'auditor', 'documents', 'histories.user']);
 
         // Memuat indikator dengan filter search jika ada
         $indicators = $assignment->indicators()
@@ -111,26 +134,26 @@ class AssignmentController extends Controller
      */
     public function uploadDocument(Request $request, Assignment $assignment)
     {
+
         $request->validate([
-            'type' => 'required|in:ba_lapangan,ba_final,laporan_akhir',
+            'type' => ['required', Rule::enum(AssignmentDocType::class)],
             'file' => 'required|file|mimes:pdf|max:5120',
         ]);
 
         $stage = $assignment->current_stage;
 
-        // Stage-Gate Validation
-        if ($request->type === 'ba_lapangan' && !in_array($stage, ['field_audit', 'finding'])) {
-            return back()->withErrors(['message' => 'BA Lapangan hanya dapat diunggah pada tahap Audit Lapangan atau Temuan.']);
+        // Validasi Tahap (Stage-Gate) agar auditor tidak salah unggah
+        if ($request->type === AssignmentDocType::FIELD_REPORT->value && !$stage->fieldReport()) {
+            return back()->withErrors(['message' => 'BA Lapangan hanya diunggah pada tahap Lapangan.']);
         }
 
-        if ($request->type === 'ba_final' && $stage !== 'reporting') {
-            return back()->withErrors(['message' => 'BA Final hanya dapat diunggah pada tahap Pelaporan.']);
+        if ($request->type === AssignmentDocType::FINAL_REPORT->value && !$stage->finalReport()) {
+            return back()->withErrors(['message' => 'BA Final hanya diunggah pada tahap Pelaporan.']);
         }
 
-        if ($request->type === 'laporan_akhir' && !in_array($stage, ['reporting', 'rtm_rtl'])) {
-            return back()->withErrors(['message' => 'Laporan Akhir hanya dapat diunggah pada tahap Pelaporan atau RTM/RTL.']);
+        if ($request->type === AssignmentDocType::END_REPORT->value && !$stage->endReport()) {
+            return back()->withErrors(['message' => 'Laporan Akhir hanya diunggah pada tahap Selesai.']);
         }
-
 
         DB::transaction(function () use ($assignment, $request) {
             $this->assignmentService->uploadAssignmentDocument(
@@ -141,10 +164,7 @@ class AssignmentController extends Controller
             );
         });
 
-        Session::flash('toastr', [
-            'type' => 'gradient-green-to-emerald',
-            'content' => 'Dokumen resmi berhasil diunggah.'
-        ]);
+        Session::flash('toastr', ['type' => 'gradient-primary', 'content' => 'Dokumen resmi berhasil diunggah.']);
         return back();
     }
 

@@ -1,16 +1,16 @@
 <?php
 
 use App\Http\Controllers\Admin\AuditHistoryController;
+use App\Http\Controllers\Admin\FacultyController;
 use App\Http\Controllers\Admin\MasterIndicatorController;
 use App\Http\Controllers\Admin\MasterStandardController;
 use App\Http\Controllers\Admin\PeriodController;
 use App\Http\Controllers\Admin\ProdiController;
 use App\Http\Controllers\AssignmentDocumentController;
-use App\Http\Controllers\Auditor\AssignmentController;
-use App\Http\Controllers\Auditor\AssignmentIndicatorController;
-use App\Http\Controllers\Auditee\AssignmentController as AuditeeAssignmentController;
-use App\Http\Controllers\Auditee\AssignmentIndicatorController as AuditeeIndicatorController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\{DashboardController, FilePreviewController, ReportExportController};
+use App\Http\Controllers\Admin\AssignmentController as AdminAssignmentController;
+use App\Http\Controllers\Auditor\{AssignmentController as AuditorAssignmentController, AssignmentIndicatorController as AuditorIndicatorController};
+use App\Http\Controllers\Auditee\{AssignmentController as AuditeeAssignmentController, AssignmentIndicatorController as AuditeeIndicatorController};
 use App\Http\Controllers\Settings\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -239,74 +239,75 @@ Route::middleware([
 
 Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
 
-    // Dashboard utama (Diarahkan secara dinamis oleh Controller)
+    // Dashboard utama
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // ==========================================
-    // GROUP ADMIN (Manajemen Master & Sistem)
+    // GROUP ADMIN
     // ==========================================
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
-        // Master Prodi
+        // Master Wilayah & Unit
         Route::resource('prodis', ProdiController::class)->except(['show', 'edit', 'create']);
+        Route::resource('faculties', FacultyController::class)->except(['show', 'edit', 'create']); // Baru
 
-        // Master Periode AMI
+        // Master Periode & Standar
         Route::resource('periods', PeriodController::class)->except(['show', 'edit', 'create']);
-
-        // Master Standar & Indikator
         Route::resource('standards', MasterStandardController::class)->except(['show', 'edit', 'create']);
+
         Route::prefix('standards/{standard}')->name('standards.')->group(function () {
             Route::resource('indicators', MasterIndicatorController::class)->except(['show', 'edit', 'create']);
             Route::get('indicators/{indicator}/history', [MasterIndicatorController::class, 'history'])->name('indicators.history');
         });
 
-        // Manajemen User
+        // Penugasan Audit (Admin yang membuat tugas)
+        Route::resource('assignments', AdminAssignmentController::class)->except(['edit', 'create']); // Baru
+        Route::post('/assignments/{assignment}/upload-document', [AdminAssignmentController::class, 'uploadDocument'])->name('assignments.upload-document');
+        Route::post('/assignments/{assignment}/finalize', [AdminAssignmentController::class, 'finalize'])->name('assignments.finalize');
+
+        // Manajemen User & History
         Route::resource('users', UserController::class)->except(['show', 'edit', 'create']);
         Route::post('/users/{user}/reset-2fa', [UserController::class, 'resetTwoFactor'])->name('users.reset-2fa');
-
-        // Log Riwayat Audit Global
         Route::get('/audit-history', [AuditHistoryController::class, 'index'])->name('history.index');
     });
 
     // ==========================================
-    // GROUP AUDITOR (Penilaian & Validasi)
+    // GROUP AUDITOR
     // ==========================================
     Route::middleware(['role:auditor', 'sync.ami'])->prefix('auditor')->name('auditor.')->group(function () {
-        // Daftar Penugasan Auditor
-        Route::get('/assignments', [AssignmentController::class, 'index'])->name('assignments.index');
-        Route::get('/assignments/{assignment}', [AssignmentController::class, 'show'])->name('assignments.show');
+        Route::get('/assignments', [AuditorAssignmentController::class, 'index'])->name('assignments.index');
+        Route::get('/assignments/{assignment}', [AuditorAssignmentController::class, 'show'])->name('assignments.show');
 
-        // Penilaian Indikator
-        Route::patch('/indicators/{indicator}', [AssignmentIndicatorController::class, 'update'])->name('indicators.update');
+        Route::patch('/indicators/{indicator}', [AuditorIndicatorController::class, 'update'])->name('indicators.update');
+        Route::get('indicators/{indicator}/history', [AuditorIndicatorController::class, 'history'])->name('indicators.history');
 
-        // Rute untuk mengambil riwayat indikator bagi Auditor
-        Route::get('indicators/{indicator}/history', [AssignmentIndicatorController::class, 'history'])
-            ->name('indicators.history');
-
-        // Unggah Dokumen Resmi (BA/Laporan Akhir)
-        Route::post('/assignments/{assignment}/upload-document', [AssignmentController::class, 'uploadDocument'])->name('assignments.upload-document');
-
-        // Finalisasi Audit
-        Route::post('/assignments/{assignment}/finalize', [AssignmentController::class, 'finalize'])->name('assignments.finalize');
+        Route::post('/assignments/{assignment}/upload-document', [AuditorAssignmentController::class, 'uploadDocument'])->name('assignments.upload-document');
+        Route::post('/assignments/{assignment}/finalize', [AuditorAssignmentController::class, 'finalize'])->name('assignments.finalize');
     });
 
     // ==========================================
-    // GROUP AUDITEE (Pemenuhan Bukti Prodi)
+    // GROUP AUDITEE
     // ==========================================
     Route::middleware(['role:auditee', 'sync.ami'])->prefix('auditee')->name('auditee.')->group(function () {
-        // Daftar Audit Prodi
         Route::get('/assignments', [AuditeeAssignmentController::class, 'index'])->name('assignments.index');
         Route::get('/assignments/{assignment}', [AuditeeAssignmentController::class, 'show'])->name('assignments.show');
 
-        // Unggah Bukti Indikator
         Route::patch('/indicators/{indicator}', [AuditeeIndicatorController::class, 'update'])->name('indicators.update');
         Route::get('/indicators/{indicator}/history', [AuditeeIndicatorController::class, 'history'])->name('indicators.history');
     });
 
     // ==========================================
-    // SHARED ROUTES (Dokumen & File)
+    // SHARED ROUTES (Dokumen, Preview, & Export)
     // ==========================================
-    // Download dokumen aman (Internal storage)
-    Route::get('/documents/{document}/download', [AssignmentDocumentController::class, 'download'])->name('documents.download');
-    // Hapus dokumen (Dicek oleh Policy & Stage-Gate)
-    Route::delete('/documents/{document}', [AssignmentDocumentController::class, 'destroy'])->name('documents.destroy');
+    Route::prefix('shared')->name('shared.')->group(function () {
+        // Download & Delete Dokumen Resmi
+        Route::get('/documents/{document}/download', [AssignmentDocumentController::class, 'download'])->name('documents.download');
+        Route::delete('/documents/{document}', [AssignmentDocumentController::class, 'destroy'])->name('documents.destroy');
+
+        // File Preview (Keamanan Private Storage)
+        Route::get('/preview/evidence/{indicator}', [FilePreviewController::class, 'previewEvidence'])->name('preview.evidence');
+        Route::get('/preview/document/{document}', [FilePreviewController::class, 'previewDocument'])->name('preview.document');
+
+        // Export Laporan PDF
+        Route::get('/export/pdf/{assignment}', [ReportExportController::class, 'exportPdf'])->name('export.pdf');
+    });
 });

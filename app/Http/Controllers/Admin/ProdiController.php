@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Assignment, AuditHistory, Prodi};
+use App\Models\{Assignment, AuditHistory, Faculty, Prodi};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{DB, Session};
 use Illuminate\Validation\Rule;
@@ -16,13 +16,15 @@ class ProdiController extends Controller
         $filters = $request->only(['search', 'sort_field', 'direction', 'per_page']);
         $perPage = $request->input('per_page', 10);
 
-        $prodis = Prodi::search($request->search, ['name', 'code']) // Cari di kolom name & code
+        $prodis = Prodi::with('faculty')
+            ->search($request->search, ['name', 'code']) // Cari di kolom name & code
             ->sort($request->sort_field, $request->direction)    // Urutkan ASC/DESC
             ->paginate($perPage)
             ->withQueryString();
 
         return Inertia::render('Master/Prodi/Index', [
             'prodis' => $prodis,
+            'faculties' => Faculty::all(['id', 'name']), // Untuk dropdown
             'filters' => $filters,
         ]);
     }
@@ -32,6 +34,7 @@ class ProdiController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:10|unique:prodis,code',
+            'faculty_id' => 'required|exists:faculties,id'
         ]);
 
         DB::transaction(function () use ($validated) {
@@ -46,7 +49,8 @@ class ProdiController extends Controller
             ]);
         });
 
-        return back()->with('toastr', ['type' => 'gradient-primary', 'content' => 'Prodi berhasil ditambahkan.']);
+        Session::flash('toastr', ['type' => 'gradient-primary', 'content' => 'Prodi berhasil ditambahkan.']);
+        return back();
     }
 
     public function update(Request $request, Prodi $prodi)
@@ -54,6 +58,7 @@ class ProdiController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'code' => ['required', 'string', 'max:10', Rule::unique('prodis')->ignore($prodi->id)],
+            'faculty_id' => 'required|exists:faculties,id'
         ]);
 
         $oldValues = $prodi->toArray();
@@ -71,15 +76,24 @@ class ProdiController extends Controller
             ]);
         });
 
-        return back()->with('toastr', ['type' => 'gradient-info', 'content' => 'Data prodi diperbarui.']);
+        Session::flash('toastr', ['type' => 'gradient-info', 'content' => 'Data prodi diperbarui.']);
+        return back();
     }
 
     public function destroy(Prodi $prodi)
     {
-        if ($prodi->users()->exists() || Assignment::where('prodi_id', $prodi->id)->exists()) {
+        // 1. Cek User
+        $hasUsers = $prodi->users()->exists();
+
+        // 2. Cek Assignment (Polimorfik)
+        $hasAssignments = Assignment::where('assignable_type', Prodi::class)
+            ->where('assignable_id', $prodi->id)
+            ->exists();
+
+        if ($hasUsers || $hasAssignments) {
             return back()->with('toastr', [
                 'type' => 'gradient-red-to-pink',
-                'content' => 'Gagal: Prodi ini masih memiliki user atau penugasan audit.'
+                'content' => 'Gagal: Prodi masih memiliki User atau Penugasan aktif.'
             ]);
         }
 
@@ -95,6 +109,7 @@ class ProdiController extends Controller
             $prodi->delete();
         });
 
-        return back()->with('toastr', ['type' => 'gradient-red-to-pink', 'content' => 'Prodi dihapus.']);
+        Session::flash('toastr', ['type' => 'gradient-red-to-pink', 'content' => 'Prodi dihapus.']);
+        return back();
     }
 }

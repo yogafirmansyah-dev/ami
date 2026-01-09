@@ -32,6 +32,7 @@ class AssignmentService
                 // 4. Salin template dokumen jika ada
                 if ($master->template_path && Storage::exists($master->template_path)) {
                     $newPath = 'assignments/' . $assignment->id . '/templates/' . basename($master->template_path);
+                    Storage::makeDirectory(dirname($newPath));
                     Storage::copy($master->template_path, $newPath);
                     $indicator->update(['snapshot_template_path' => $newPath]);
                 }

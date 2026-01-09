@@ -128,7 +128,7 @@ class User extends Authenticatable
                 // Cek jika ada audit level Prodi
                 if ($this->prodi_id) {
                     $query->where(function ($q) {
-                        $q->where('assignable_type', \App\Models\Prodi::class)
+                        $q->where('assignable_type', Prodi::class)
                             ->where('assignable_id', $this->prodi_id);
                     });
                 }
@@ -136,7 +136,7 @@ class User extends Authenticatable
                 // Cek jika ada audit level Fakultas
                 if ($this->faculty_id) {
                     $query->orWhere(function ($q) {
-                        $q->where('assignable_type', \App\Models\Faculty::class)
+                        $q->where('assignable_type', Faculty::class)
                             ->where('assignable_id', $this->faculty_id);
                     });
                 }

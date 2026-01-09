@@ -94,11 +94,16 @@ class PeriodController extends Controller
             ]);
         });
 
-        return back()->with('toastr', ['type' => 'gradient-info', 'content' => 'Jadwal periode diperbarui.']);
+        Session::flash('toastr', ['type' => 'gradient-info', 'content' => 'Jadwal periode diperbarui.']);
+        return back();
     }
 
     public function destroy(Period $period)
     {
+        if ($period->assignments()->exists()) {
+            Session::flash('toastr', ['type' => 'gradient-red-to-pink', 'content' => 'Periode tidak bisa dihapus karena sudah memiliki data penugasan audit.']);
+            return back();
+        }
         DB::transaction(function () use ($period) {
             AuditHistory::create([
                 'user_id' => auth()->id(),
@@ -111,6 +116,7 @@ class PeriodController extends Controller
             $period->delete();
         });
 
-        return back()->with('toastr', ['type' => 'gradient-red-to-pink', 'content' => 'Periode dihapus.']);
+        Session::flash('toastr', ['type' => 'gradient-red-to-pink', 'content' => 'Periode dihapus.']);
+        return back();
     }
 }

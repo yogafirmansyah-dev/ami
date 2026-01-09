@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Settings;
 
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\HandleInertiaRequests;
+use App\Models\AuditHistory;
 use App\Models\User;
 use App\Models\Prodi;
+use App\Models\Faculty;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Gate, Hash, Session};
@@ -17,14 +20,17 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $filters = $request->only(['search', 'sort_field', 'direction']);
+        $perPage = $request->input('per_page', 10);
+        $user = User::with(['prodi', 'faculty'])
+            ->search($request->input('search'), ['name', 'email'])
+            ->sort($request->sort_field, $request->direction)
+            ->paginate($perPage)
+            ->withQueryString();
 
         return Inertia::render('Settings/User', [
-            'users' => User::with('prodi')
-                ->search($request->input('search'), ['name', 'email'])
-                ->sort($request->sort_field, $request->direction)
-                ->paginate(10)
-                ->withQueryString(),
+            'users' => $user,
             'prodis' => Prodi::all(['id', 'name']),
+            'faculties' => Faculty::all(['id', 'name']),
             'roles' => ['admin', 'auditor', 'auditee'],
             'filters' => $filters
         ]);
@@ -40,13 +46,32 @@ class UserController extends Controller
                 'required',
                 Rule::enum(UserRole::class),
             ],
-            'prodi_id' => 'nullable|exists:prodis,id',
+            'prodi_id' => [
+                'nullable',
+                'exists:prodis,id',
+                Rule::requiredIf($request->role === UserRole::AUDITEE->value && !$request->faculty_id)
+            ],
+            'faculty_id' => [
+                'nullable',
+                'exists:faculties,id',
+                Rule::requiredIf($request->role === UserRole::AUDITEE->value && !$request->prodi_id)
+            ],
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
 
         DB::transaction(function () use ($validated) {
-            User::create($validated);
+            $user = User::create($validated);
+
+            // Catat History Create
+            AuditHistory::create([
+                'user_id' => auth()->id(),
+                'historable_type' => User::class,
+                'historable_id' => $user->id,
+                'stage' => 'master_setup',
+                'action' => 'create_user',
+                'new_values' => $user->toArray(),
+            ]);
         });
 
         Session::flash('toastr', ['type' => 'gradient-primary', 'content' => 'User baru berhasil dibuat']);
@@ -64,7 +89,16 @@ class UserController extends Controller
                 'required',
                 Rule::enum(UserRole::class),
             ],
-            'prodi_id' => 'nullable|exists:prodis,id',
+            'prodi_id' => [
+                'nullable',
+                'exists:prodis,id',
+                Rule::requiredIf($request->role === UserRole::AUDITEE->value && !$request->faculty_id)
+            ],
+            'faculty_id' => [
+                'nullable',
+                'exists:faculties,id',
+                Rule::requiredIf($request->role === UserRole::AUDITEE->value && !$request->prodi_id)
+            ],
         ]);
 
         if ($request->filled('password')) {
@@ -73,8 +107,24 @@ class UserController extends Controller
             unset($validated['password']);
         }
 
-        DB::transaction(function () use ($user, $validated) {
+        $oldValues = $user->getRawOriginal();
+
+        DB::transaction(function () use ($user, $validated, $oldValues) {
             $user->update($validated);
+
+            // Catat History Update
+            AuditHistory::create([
+                'user_id' => auth()->id(),
+                'historable_type' => User::class,
+                'historable_id' => $user->id,
+                'stage' => 'master_setup',
+                'action' => 'update_user',
+                'old_values' => $oldValues,
+                'new_values' => $user->getAttributes(),
+            ]);
+
+            // PENTING: Hapus cache agar frontend mendapatkan data terbaru
+            HandleInertiaRequests::clearUserCache($user->id);
         });
         Session::flash('toastr', ['type' => 'gradient-info', 'content' => 'Data user diperbarui']);
         return redirect()->back();
@@ -90,6 +140,16 @@ class UserController extends Controller
         DB::transaction(function () use ($id) {
             $user = User::findOrFail($id);
             $user->delete(); // Soft Delete
+
+            // Catat History Delete
+            AuditHistory::create([
+                'user_id' => auth()->id(),
+                'historable_type' => User::class,
+                'historable_id' => $user->id,
+                'stage' => 'master_setup',
+                'action' => 'delete_user',
+                'old_values' => $user->getAttributes(),
+            ]);
         });
 
         Session::flash('toastr', ['type' => 'gradient-red-to-pink', 'content' => 'User telah dipindahkan ke sampah']);
@@ -110,7 +170,7 @@ class UserController extends Controller
             ])->save();
 
             // 2. Catat aktivitas ini ke Audit History untuk akuntabilitas
-            \App\Models\AuditHistory::create([
+            AuditHistory::create([
                 'user_id' => auth()->id(),
                 'historable_type' => User::class,
                 'historable_id' => $user->id,
@@ -119,6 +179,9 @@ class UserController extends Controller
                 'reason' => 'User kehilangan akses authenticator dan recovery codes.',
                 'new_values' => ['2fa_status' => 'disabled']
             ]);
+
+            // PENTING: Hapus cache agar frontend mendapatkan data terbaru
+            HandleInertiaRequests::clearUserCache($user->id);
         });
 
         Session::flash('toastr', [

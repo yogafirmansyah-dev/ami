@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
-use App\Models\{Assignment, Period, Prodi, AuditHistory, User};
+use App\Models\{Assignment, Period, Prodi, Faculty, User};
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -13,7 +13,6 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        // Mengembalikan data dan komponen Vue berdasarkan role
         return match ($user->role) {
             UserRole::ADMIN => $this->adminDashboard(),
             UserRole::AUDITOR => $this->auditorDashboard($user),
@@ -27,6 +26,7 @@ class DashboardController extends Controller
         return Inertia::render('Admin/Dashboard', [
             'stats' => [
                 'total_prodi' => Prodi::count(),
+                'total_faculty' => Faculty::count(), // Tambahkan ini
                 'active_periods' => Period::where('is_active', true)->count(),
                 'total_auditors' => User::where('role', UserRole::AUDITOR)->count(),
                 'total_assignments' => Assignment::count(),
@@ -43,8 +43,8 @@ class DashboardController extends Controller
                 'pending_reviews' => Assignment::where('auditor_id', $user->id)->whereNull('completed_at')->count(),
                 'completed_reviews' => Assignment::where('auditor_id', $user->id)->whereNotNull('completed_at')->count(),
             ],
-            // Daftar tugas terbaru milik auditor tersebut
-            'recent_tasks' => Assignment::with('prodi', 'period')
+            // Gunakan assignable bukan prodi agar mendukung Fakultas
+            'recent_tasks' => Assignment::with(['assignable', 'period'])
                 ->where('auditor_id', $user->id)
                 ->latest()
                 ->take(5)
@@ -54,16 +54,23 @@ class DashboardController extends Controller
 
     private function auditeeDashboard($user)
     {
+        // Tentukan identitas auditee (apakah mewakili prodi atau fakultas)
+        $type = $user->prodi_id ? Prodi::class : Faculty::class;
+        $id = $user->prodi_id ?? $user->faculty_id;
+
         return Inertia::render('Auditee/Dashboard', [
-            'prodi' => $user->prodi?->name,
+            'unit_name' => $user->prodi?->name ?? $user->faculty?->name ?? 'Unit Belum Diatur',
             'stats' => [
-                'total_audit' => Assignment::where('prodi_id', $user->prodi_id)->count(),
+                // Gunakan query polimorfik
+                'total_audit' => Assignment::where('assignable_type', $type)
+                    ->where('assignable_id', $id)
+                    ->count(),
                 'latest_assignment' => Assignment::with('period')
-                    ->where('prodi_id', $user->prodi_id)
+                    ->where('assignable_type', $type)
+                    ->where('assignable_id', $id)
                     ->latest()
-                    ->get()
+                    ->first() // Ambil yang paling baru saja
             ],
-            // Fokus pada pengisian bukti (evidence)
         ]);
     }
 }

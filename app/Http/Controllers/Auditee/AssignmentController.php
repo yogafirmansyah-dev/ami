@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auditee;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Assignment};
+use App\Models\{Assignment, Prodi, Faculty};
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Gate;
@@ -12,14 +12,20 @@ class AssignmentController extends Controller
 {
     public function index(Request $request)
     {
-        // 1. Ambil input filter, sort, & per_page
+        $user = auth()->user();
         $filters = $request->only(['search', 'sort_field', 'direction', 'per_page']);
         $perPage = $request->input('per_page', 10);
 
-        $assignments = Assignment::with(['prodi', 'period', 'standard'])
-            ->where('prodi_id', auth()->user()->prodi_id) // Filter prodi milik user
-            ->search($request->search) // Menggunakan scopeSearch kustom di Model
-            ->sort($request->sort_field, $request->direction) // Menggunakan scope dari Trait
+        // 1. Tentukan Identitas Unit User secara Dinamis
+        $assignableType = $user->prodi_id ? Prodi::class : Faculty::class;
+        $assignableId = $user->prodi_id ?? $user->faculty_id;
+
+        $assignments = Assignment::with(['assignable', 'period', 'standard'])
+            // 2. Query berdasarkan struktur polimorfik
+            ->where('assignable_type', $assignableType)
+            ->where('assignable_id', $assignableId)
+            ->search($request->search)
+            ->sort($request->sort_field, $request->direction)
             ->paginate($perPage)
             ->withQueryString();
 
@@ -31,20 +37,18 @@ class AssignmentController extends Controller
 
     public function show(Request $request, Assignment $assignment)
     {
-        // Otorisasi: Pastikan auditee hanya bisa melihat assignment milik prodinya
+        // 3. Otorisasi via Policy (Sudah mencakup pengecekan kepemilikan unit)
         Gate::authorize('view', $assignment);
 
         $filters = $request->only(['search', 'sort_field', 'direction', 'per_page']);
         $perPage = $request->input('per_page', 25);
 
-        $assignment->load(['period', 'standard', 'auditor', 'documents']);
+        // Load 'assignable' agar nama unit muncul di header UI
+        $assignment->load(['period', 'standard', 'auditor', 'assignable', 'documents']);
 
-        // Paginasi Indikator agar seragam dengan tampilan Auditor
         $indicators = $assignment->indicators()
-            ->when($request->search, function ($q, $search) {
-                $q->where('snapshot_code', 'like', "%{$search}%")
-                    ->orWhere('snapshot_requirement', 'like', "%{$search}%");
-            })
+            // Menggunakan scope search dari Trait Filterable agar konsisten
+            ->search($request->search, ['snapshot_code', 'snapshot_requirement'])
             ->sort($request->sort_field ?? 'snapshot_code', $request->direction ?? 'asc')
             ->paginate($perPage)
             ->withQueryString();
