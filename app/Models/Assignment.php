@@ -1,0 +1,102 @@
+<?php
+
+namespace App\Models;
+
+use App\Enums\AuditStage;
+use App\Traits\Filterable;
+use App\Traits\HasAuditHistory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Assignment extends Model
+{
+    use SoftDeletes, Filterable, HasAuditHistory;
+    protected $fillable = [
+        'period_id',
+        'master_standard_id',
+        'auditor_id',
+        'current_stage',
+        'summary_note',
+        'overall_rating',
+        'completed_at',
+        'assignable_id',
+        'assignable_type'
+    ];
+
+    protected $casts = [
+        'current_stage' => AuditStage::class,
+        'completed_at' => 'datetime',
+    ];
+
+    protected $appends = ['target_name'];
+
+    public function getTargetNameAttribute()
+    {
+        return $this->assignable->name ?? '-';
+    }
+
+    public function period()
+    {
+        return $this->belongsTo(Period::class);
+    }
+
+    public function standard()
+    {
+        return $this->belongsTo(MasterStandard::class, 'master_standard_id')->withTrashed();
+    }
+
+    public function assignable()
+    {
+        // Relasi ini bisa mengarah ke Prodi atau Fakultas secara dinamis
+        return $this->morphTo();
+    }
+
+    public function auditor()
+    {
+        return $this->belongsTo(User::class, 'auditor_id');
+    }
+
+    public function indicators()
+    {
+        return $this->hasMany(AssignmentIndicator::class);
+    }
+
+    public function documents()
+    {
+        return $this->hasMany(AssignmentDocument::class);
+    }
+
+    /**
+     * Override scopeSearch dari Filterable Trait khusus untuk relasi
+     */
+    public function scopeSearch($query, $search, $columns = [])
+    {
+        if (!$search)
+            return $query;
+
+        return $query->where(function ($q) use ($search) {
+            $q->whereHasMorph('assignable', [Prodi::class, Faculty::class], function ($morphQ) use ($search) {
+                $morphQ->where('name', 'like', "%{$search}%");
+            })
+                ->orWhereHas('auditor', fn($a) => $a->where('name', 'like', "%{$search}%"))
+                ->orWhereHas('period', fn($per) => $per->where('name', 'like', "%{$search}%"))
+                ->orWhere('current_stage', 'like', "%{$search}%");
+        });
+    }
+
+    public static function stageBreakdown()
+    {
+        $counts = self::query()
+            ->select('current_stage')
+            ->selectRaw('count(*) as total')
+            ->groupBy('current_stage')
+            ->pluck('total', 'current_stage');
+
+        return collect(AuditStage::cases())
+            ->map(fn(AuditStage $stage) => [
+                'stage' => $stage->value,
+                'label' => $stage->label(),
+                'total' => $counts[$stage->value] ?? 0,
+            ]);
+    }
+}
