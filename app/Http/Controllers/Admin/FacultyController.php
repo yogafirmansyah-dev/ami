@@ -16,7 +16,8 @@ class FacultyController extends Controller
         $filters = $request->only(['search', 'sort_field', 'direction', 'per_page']);
         $perPage = $request->input('per_page', 10);
 
-        $faculties = Faculty::search($request->search, ['name', 'code']) // Cari di kolom name & code
+        $faculties = Faculty::withCount('prodis')
+            ->search($request->search, ['name', 'code']) // Cari di kolom name & code
             ->sort($request->sort_field, $request->direction)    // Urutkan ASC/DESC
             ->paginate($perPage)
             ->withQueryString();
