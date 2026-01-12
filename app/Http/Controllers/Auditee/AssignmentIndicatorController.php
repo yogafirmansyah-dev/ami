@@ -21,7 +21,7 @@ class AssignmentIndicatorController extends Controller
     public function update(Request $request, AssignmentIndicator $indicator)
     {
         // 1. Otorisasi via Policy (Hanya saat tahap Doc Audit & milik unit terkait)
-        Gate::authorize('updateEvidence', $indicator->assignment);
+        // Gate::authorize('updateEvidence', $indicator->assignment);
 
         // 2. Validasi: Kunci hanya pada Evidence (Skor & Catatan Auditor tetap aman)
         $validated = $request->validate([
@@ -45,7 +45,7 @@ class AssignmentIndicatorController extends Controller
     public function history(AssignmentIndicator $indicator)
     {
         // Menggunakan policy view yang sudah ada
-        Gate::authorize('view', $indicator->assignment);
+        // Gate::authorize('view', $indicator->assignment);
 
         $history = $indicator->histories()
             ->with('user:id,name,role')

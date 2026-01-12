@@ -1,16 +1,17 @@
 <template>
     <!--Browser Title-->
+
     <Head :title="title" />
     <!--TODO: Convert to Announcement Bar Component(TA-23)-->
     <jet-banner />
     <!--Main Container-->
     <div class="main-container">
         <!--Main Menu -->
-        <main-menu/>
+        <main-menu />
         <!--Content Container-->
         <div class="content-wrapper">
             <!--Top Menu-->
-            <top-menu/>
+            <top-menu />
             <!--TODO: Sync with Popup Menu-->
             <!--Content-->
             <div class="content-container">
@@ -48,13 +49,9 @@
                 </main>
                 <!--Toastr Notifications-->
                 <div v-if="$page.props.flash.toastr">
-                    <t-toastr
-                        :key="$page.props.flash.toastr.content"
-                        :closeable="true"
-                        :color="$page.props.flash.toastr.type"
-                        :position="$page.props.flash.toastr.position"
-                        :timer="3000"
-                    >
+                    <t-toastr :key="$page.props.flash.toastr.content" :closeable="true"
+                        :color="$page.props.flash.toastr.type" :position="$page.props.flash.toastr.position"
+                        :timer="3000">
                         <span v-html="$page.props.flash.toastr.content"></span>
                     </t-toastr>
                 </div>
@@ -71,8 +68,8 @@
 <script>
 /*Main Functions*/
 import { defineComponent, provide, ref, useSlots } from "vue";
-import {Head} from "@inertiajs/vue3";
-import {breakpointsTailwind, useBreakpoints} from '@vueuse/core'
+import { Head } from "@inertiajs/vue3";
+import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 
 /*Components*/
 import JetBanner from "@/Jetstream/Banner.vue";
@@ -82,7 +79,7 @@ import TToastr from "@/Components/Toastr/TToastr.vue";
 import TopMenu from "@/Layouts/TopMenu/TopMenu.vue";
 
 /*Sources*/
-import {appConf, footerConf} from "@/config";
+import { appConf, footerConf } from "@/config";
 import windowSizeCalculator from "@/Functions/windowSizeCalculator";
 
 /*Multi Language*/
@@ -118,8 +115,8 @@ export default defineComponent({
         const { deviceType } = windowSizeCalculator();
 
         /*Dark Mode*/
-        const darkModeStore= useDarkModeStore();
-        const { changeThemeUser} = storeToRefs(darkModeStore);
+        const darkModeStore = useDarkModeStore();
+        const { changeThemeUser } = storeToRefs(darkModeStore);
 
         /*Multi Language*/
         const { t } = useI18n();

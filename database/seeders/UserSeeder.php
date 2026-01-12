@@ -2,6 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Faculty;
+use App\Models\Prodi;
+use Hash;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Actions\Fortify\CreateNewUser;
@@ -13,30 +16,44 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        /*Admin*/
-        $admin = User::factory()->withPersonalTeam()->create([
-            'name' => 'Super Admin',
-            'email' => 'admin@tailadmin.dev',
-            'password' => bcrypt('admin'),
+        // Admin Pusat
+        User::create([
+            'name' => 'Administrator AMI',
+            'email' => 'admin@ami.com',
+            'password' => Hash::make('password'),
+            'role' => 'admin',
+            'email_verified_at' => now(),
         ]);
 
-        /*Editor*/
-        $editor = User::factory()->withPersonalTeam()->create([
-            'name' => 'Editor',
-            'email' => 'editor@tailadmin.dev',
-            'password' => bcrypt('editor'),
+        // Auditor
+        User::create([
+            'name' => 'Auditor',
+            'email' => 'auditor1@ami.com',
+            'password' => Hash::make('password'),
+            'role' => 'auditor',
+            'email_verified_at' => now(),
         ]);
 
-        /*Simple User*/
-        $simpleUser = User::factory()->withPersonalTeam()->create([
-            'name' => 'Super User',
-            'email' => 'user@tailadmin.dev',
-            'password' => bcrypt('user'),
+        // Auditee Level Prodi
+        $prodiFarmasi = Prodi::where('name', 'S1 Farmasi')->first();
+        User::create([
+            'name' => 'Auditee Prodi Farmasi',
+            'email' => 'auditee.farmasi@ami.com',
+            'password' => Hash::make('password'),
+            'role' => 'auditee',
+            'prodi_id' => $prodiFarmasi->id,
+            'email_verified_at' => now(),
         ]);
 
-        /*Assign Role*/
-        $admin->assignRole('Super Admin');
-        $editor->assignRole('Editor');
-        $simpleUser->assignRole('Simple User');
+        // Auditee Level Fakultas
+        $fakFarmasi = Faculty::where('name', 'Fakultas Farmasi')->first();
+        User::create([
+            'name' => 'Auditee Fakultas Farmasi',
+            'email' => 'auditee.faculty.farmasi@ami.com',
+            'password' => Hash::make('password'),
+            'role' => 'auditee',
+            'faculty_id' => $fakFarmasi->id,
+            'email_verified_at' => now(),
+        ]);
     }
 }

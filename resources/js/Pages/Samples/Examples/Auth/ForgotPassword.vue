@@ -1,13 +1,11 @@
 <template>
-    <t-forgot
-        :status="status"
-    >
+    <t-forgot :status="status">
         <!--Logo-->
         <template #logo>
             <Link href="/">
                 <div class="flex flex-col justify-center items-center w-full">
-                    <t-logo class="w-12 h-12"/>
-                    <span class="text-3xl">TailAdmin</span>
+                    <t-logo class="w-12 h-12" />
+                    <span class="text-3xl">AMI</span>
                 </div>
             </Link>
         </template>
@@ -23,14 +21,14 @@
 </template>
 
 <script setup>
-import {Link} from "@inertiajs/vue3";
+import { Link } from "@inertiajs/vue3";
 import TForgot from "@/Components/Auth/TForgot.vue";
 import TLogo from "@/Components/Icon/TLogo.vue";
 
 /* Multi-language */
 import { useI18n } from "vue-i18n";
-import {authTranslates} from "@/Lang/languages";
-const {t, tm} = useI18n({
+import { authTranslates } from "@/Lang/languages";
+const { t, tm } = useI18n({
     inheritLocale: true,
     messages: authTranslates,
 });

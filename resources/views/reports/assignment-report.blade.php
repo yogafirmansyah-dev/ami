@@ -1,194 +1,81 @@
 <!DOCTYPE html>
-<html lang="id">
-
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Laporan Hasil AMI</title>
+    <title>Laporan AMI</title>
     <style>
-        body {
-            font-family: 'Helvetica', 'Arial', sans-serif;
-            font-size: 11pt;
-            color: #333;
-            line-height: 1.5;
-        }
-
-        .page-header {
-            text-align: center;
-            border-bottom: 3px double #000;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-
-        .title {
-            font-size: 16pt;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .info-table {
-            width: 100%;
-            margin-bottom: 20px;
-        }
-
-        .info-table td {
-            padding: 3px 0;
-            vertical-align: top;
-        }
-
-        .info-label {
-            width: 150px;
-            font-weight: bold;
-        }
-
-        .summary-box {
-            background: #f2f2f2;
-            border: 1px solid #ccc;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-
-        .summary-title {
-            font-weight: bold;
-            font-size: 12pt;
-            border-bottom: 1px solid #ccc;
-            margin-bottom: 10px;
-        }
-
-        table.main-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            table-layout: fixed;
-        }
-
-        table.main-table th,
-        table.main-table td {
-            border: 1px solid #000;
-            padding: 8px;
-            font-size: 9pt;
-            word-wrap: break-word;
-        }
-
-        table.main-table th {
-            background-color: #e6e6e6;
-            text-align: center;
-        }
-
-        .badge {
-            padding: 2px 5px;
-            border-radius: 3px;
-            font-weight: bold;
-            font-size: 8pt;
-        }
-
-        .text-center {
-            text-align: center;
-        }
-
-        .footer-sign {
-            margin-top: 50px;
-            width: 100%;
-        }
-
-        .footer-sign td {
-            width: 50%;
-            text-align: center;
-        }
-
-        .sign-space {
-            height: 70px;
-        }
+        body { font-family: sans-serif; font-size: 10px; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .info-table { width: 100%; margin-bottom: 20px; border-collapse: collapse; }
+        .info-table td { padding: 5px; }
+        .main-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .main-table th, .main-table td { border: 1px solid #000; padding: 6px; word-wrap: break-word; }
+        .main-table th { background-color: #f2f2f2; text-align: center; }
+        .text-center { text-align: center; }
+        .badge { padding: 2px 5px; border-radius: 3px; font-weight: bold; }
+        .bg-ks { background-color: #dcfce7; color: #15803d; }
+        .bg-kts { background-color: #fee2e2; color: #b91c1c; }
+        .bg-ob { background-color: #fef3c7; color: #92400e; }
     </style>
 </head>
-
 <body>
-
-    <div class="page-header">
-        <div class="title">LAPORAN HASIL AUDIT MUTU INTERNAL (AMI)</div>
-        <div>UNIVERSITAS TEKNOLOGI AMI</div>
+    <div class="header">
+        <h2>LAPORAN HASIL AUDIT MUTU INTERNAL</h2>
+        <h3>{{ $assignment->period->name }}</h3>
     </div>
 
     <table class="info-table">
         <tr>
-            <td class="info-label">Unit Kerja</td>
-            <td>: {{ $assignment->assignable->name }} ({{ class_basename($assignment->assignable_type) }})</td>
+            <td width="15%">Unit Kerja</td><td>: <strong>{{ $assignment->target_name }}</strong></td>
+            <td width="15%">Auditor</td><td>: <strong>{{ $assignment->auditor->name }}</strong></td>
         </tr>
         <tr>
-            <td class="info-label">Periode Audit</td>
-            <td>: {{ $assignment->period->name }}</td>
-        </tr>
-        <tr>
-            <td class="info-label">Standar Mutu</td>
-            <td>: {{ $assignment->standard->name }}</td>
-        </tr>
-        <tr>
-            <td class="info-label">Auditor</td>
-            <td>: {{ $assignment->auditor->name }}</td>
+            <td>Instrumen</td><td>: {{ $assignment->standard->name }}</td>
+            <td>Status</td><td>: {{ strtoupper($assignment->current_stage) }}</td>
         </tr>
     </table>
 
-    <div class="summary-box">
-        <div class="summary-title">RINGKASAN EKSEKUTIF</div>
-        <table style="width: 100%">
-            <tr>
-                <td>Rata-rata Skor: <strong>{{ $stats['average_score'] }} / 4.00</strong></td>
-                <td>Kategori: <strong>{{ strtoupper($stats['average_label']) }}</strong></td>
-            </tr>
-            <tr>
-                <td>Total Indikator: {{ $stats['total_indicators'] }}</td>
-                <td>Temuan (KTS/Cukup/Kurang): {{ $stats['kts_count'] }}</td>
-            </tr>
-        </table>
-        <p style="margin-top: 10px;"><strong>Catatan Umum:</strong><br>
-            {{ $assignment->summary_note ?? 'Belum ada ringkasan catatan dari auditor.' }}</p>
-    </div>
-
-    <h4 style="margin-bottom: 5px;">DETAIL PENILAIAN PER INDIKATOR</h4>
     <table class="main-table">
         <thead>
             <tr>
-                <th style="width: 10%">Kode</th>
-                <th style="width: 40%">Persyaratan / Indikator Mutu</th>
-                <th style="width: 10%">Skor</th>
-                <th style="width: 40%">Catatan & Rekomendasi Auditor</th>
+                <th width="5%">Kode</th>
+                <th width="20%">Pernyataan Standar</th>
+                <th width="10%">Target</th>
+                <th width="10%">Bukti Diperiksa</th>
+                <th width="10%">File Bukti</th>
+                <th width="10%">Temuan</th>
+                <th width="15%">Catatan Temuan</th>
+                <th width="5%">Skor</th>
+                <th width="15%">Rekomendasi</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($assignment->indicators as $indicator)
-                <tr>
-                    <td class="text-center">{{ $indicator->snapshot_code }}</td>
-                    <td>{{ $indicator->snapshot_requirement }}</td>
-                    <td class="text-center">
-                        <strong>{{ $indicator->score ?? '-' }}</strong><br>
-                        <small style="font-size: 7pt;">{{ $indicator->score_label }}</small>
-                    </td>
-                    <td>
-                        <strong>Catatan:</strong> {{ $indicator->auditor_note ?? '-' }} <br>
-                        <hr style="border: 0.1px solid #eee">
-                        <strong>Rekomendasi:</strong> {{ $indicator->recommendation ?? '-' }}
-                    </td>
-                </tr>
+            @foreach($indicators as $item)
+            <tr>
+                <td class="text-center">{{ $item->snapshot_code }}</td>
+                <td>{{ $item->snapshot_requirement }}</td>
+                <td class="text-center">{{ $item->snapshot_target }}</td>
+                <td>{{ $item->snapshot_evidence_needed }}</td>
+                <td class="text-center">
+                    {{ $item->evidence_path ? 'Ada' : 'Tidak Ada' }}
+                </td>
+                <td class="text-center">
+                    <span class="badge {{ strtolower($item->finding_type) == 'ks' ? 'bg-ks' : (strtolower($item->finding_type) == 'kts' ? 'bg-kts' : 'bg-ob') }}">
+                        {{ $item->finding_type ?? '-' }}
+                    </span>
+                </td>
+                <td>{{ $item->auditor_note ?? '-' }}</td>
+                <td class="text-center" style="font-weight: bold;">{{ $item->score ?? '-' }}</td>
+                <td>{{ $item->recommendation ?? '-' }}</td>
+            </tr>
             @endforeach
         </tbody>
     </table>
 
-    <table class="footer-sign">
-        <tr>
-            <td>
-                Auditee,<br>
-                Ketua Unit Kerja
-                <div class="sign-space"></div>
-                ( ........................................... )
-            </td>
-            <td>
-                Auditor,<br>
-                Ketua Tim Auditor
-                <div class="sign-space"></div>
-                <strong>{{ $assignment->auditor->name }}</strong>
-            </td>
-        </tr>
-    </table>
-
+    <div style="margin-top: 50px; float: right; width: 250px; text-align: center;">
+        <p>Dicetak pada: {{ $date }}</p>
+        <br><br><br>
+        <p><strong>( __________________________ )</strong></p>
+        <p>Tanda Tangan Auditor</p>
+    </div>
 </body>
-
 </html>

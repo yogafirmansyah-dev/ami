@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Assignment extends Model
 {
-    use SoftDeletes, Filterable, HasAuditHistory;
+    use Filterable, HasAuditHistory;
     protected $fillable = [
         'period_id',
         'master_standard_id',

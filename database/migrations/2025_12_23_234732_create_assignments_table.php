@@ -26,8 +26,10 @@ return new class extends Migration {
             $table->dateTime('completed_at')->nullable(); // Waktu selesai jika finished
 
             $table->timestamps();
-            $table->softDeletes();
-            $table->index(['period_id', 'assignable_type', 'assignable_id', 'master_standard_id']);
+            $table->index(
+                ['period_id', 'assignable_type', 'assignable_id', 'master_standard_id'],
+                'assignments_composite_index'
+            );
         });
     }
 

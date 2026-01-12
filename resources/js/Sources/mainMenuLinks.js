@@ -17,7 +17,7 @@ export default function ({ role, permissions }) {
         return [
             // 1. DASHBOARD (Semua Role)
             // Dashboard tetap muncul
-            { id: "dashboard", label: "Dashboard", icon: "chart-pie", link: "dashboard", type: "route", visibleFor: true },
+            // { id: "dashboard", label: "Dashboard", icon: "chart-pie", link: "/", type: "route", visibleFor: true },
 
             // 2. MASTER DATA (Hanya Admin)
             {
@@ -89,10 +89,10 @@ export default function ({ role, permissions }) {
                     // AUDITEE: Hanya muncul jika tahapannya adalah 'doc_audit' (Audit Dokumen)
                     {
                         id: "auditeeAssignments",
-                        label: "Input Bukti Audit",
+                        label: "Penilaian Audit",
                         link: "auditee.assignments.index",
                         type: "route",
-                        visibleFor: hasRole('auditee') && activeStage === 'doc_audit'
+                        visibleFor: hasRole('auditee')
                     },
                 ]
             },

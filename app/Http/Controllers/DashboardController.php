@@ -23,13 +23,23 @@ class DashboardController extends Controller
 
     private function adminDashboard()
     {
-        return Inertia::render('Admin/Dashboard', [
+        $totalProdi = Prodi::count();
+        $totalFaculty = Faculty::count();
+        $activePeriods = Period::where('is_active', true)->count();
+        $totalAuditors = User::where('role', UserRole::AUDITOR)->count();
+        $totalAssignments = Assignment::count();
+        $activeAssignments = Assignment::whereNull('completed_at')->count();
+        $completedAssignments = Assignment::whereNotNull('completed_at')->count();
+
+        return Inertia::render('Dashboard/Index', [
             'stats' => [
-                'total_prodi' => Prodi::count(),
-                'total_faculty' => Faculty::count(), // Tambahkan ini
-                'active_periods' => Period::where('is_active', true)->count(),
-                'total_auditors' => User::where('role', UserRole::AUDITOR)->count(),
-                'total_assignments' => Assignment::count(),
+                'total_prodi' => $totalProdi,
+                'total_faculty' => $totalFaculty, // Tambahkan ini
+                'active_periods' => $activePeriods,
+                'total_auditors' => $totalAuditors,
+                'total_assignments' => $totalAssignments,
+                'active_assignments' => $activeAssignments,
+                'completed_assignments' => $completedAssignments,
             ],
             'stage_breakdown' => Assignment::stageBreakdown(),
         ]);
@@ -37,40 +47,90 @@ class DashboardController extends Controller
 
     private function auditorDashboard($user)
     {
-        return Inertia::render('Auditor/Dashboard', [
+        $baseQuery = Assignment::where('auditor_id', $user->id);
+
+        return Inertia::render('Dashboard/Index', [
             'stats' => [
-                'my_assignments' => Assignment::where('auditor_id', $user->id)->count(),
-                'pending_reviews' => Assignment::where('auditor_id', $user->id)->whereNull('completed_at')->count(),
-                'completed_reviews' => Assignment::where('auditor_id', $user->id)->whereNotNull('completed_at')->count(),
+                'my_assignments' => (clone $baseQuery)->count(),
+                'pending_reviews' => (clone $baseQuery)->whereNull('completed_at')->count(),
+                'completed_reviews' => (clone $baseQuery)->whereNotNull('completed_at')->count(),
             ],
-            // Gunakan assignable bukan prodi agar mendukung Fakultas
-            'recent_tasks' => Assignment::with(['assignable', 'period'])
+            // Kita ambil data penugasan dengan hitungan indikator
+            'myAssignments' => Assignment::with(['assignable', 'period', 'standard'])
                 ->where('auditor_id', $user->id)
+                ->withCount([
+                    'indicators',
+                    'indicators as scored_indicators_count' => function ($query) {
+                        $query->whereNotNull('score');
+                    }
+                ])
                 ->latest()
-                ->take(5)
                 ->get()
+                ->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'target_name' => $item->assignable?->name ?? 'Unit Terhapus',
+                        'target_type' => str_contains($item->assignable_type, 'Prodi') ? 'Prodi' : 'Fakultas',
+                        'standard_name' => $item->standard->name,
+                        'period_name' => $item->period->name,
+                        'current_stage' => $item->current_stage,
+                        'indicators_count' => $item->indicators_count,
+                        'scored_indicators_count' => $item->scored_indicators_count,
+                        'progress' => $item->indicators_count > 0
+                            ? round(($item->scored_indicators_count / $item->indicators_count) * 100)
+                            : 0
+                    ];
+                })
         ]);
     }
 
     private function auditeeDashboard($user)
     {
-        // Tentukan identitas auditee (apakah mewakili prodi atau fakultas)
-        $type = $user->prodi_id ? Prodi::class : Faculty::class;
-        $id = $user->prodi_id ?? $user->faculty_id;
+        $myAssignments = Assignment::with(['assignable', 'period', 'standard', 'auditor'])
+            ->where(function ($query) use ($user) {
+                if ($user->prodi_id) {
+                    $query->where(function ($q) use ($user) {
+                        $q->where('assignable_id', $user->prodi_id)
+                            ->where('assignable_type', \App\Models\Prodi::class);
+                    });
+                }
+                if ($user->faculty_id) {
+                    $query->orWhere(function ($q) use ($user) {
+                        $q->where('assignable_id', $user->faculty_id)
+                            ->where('assignable_type', \App\Models\Faculty::class);
+                    });
+                }
+            })
+            ->withCount([
+                'indicators',
+                'indicators as uploaded_count' => fn($q) => $q->whereNotNull('evidence_path'),
+                'indicators as scored_count' => fn($q) => $q->whereNotNull('score')
+            ])
+            ->latest()
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'target_name' => $item->assignable?->name ?? 'Unit Terhapus',
+                    'target_type' => str_contains($item->assignable_type, 'Prodi') ? 'Prodi' : 'Fakultas',
+                    'standard_name' => $item->standard->name,
+                    'period_name' => $item->period->name,
+                    'current_stage' => $item->current_stage,
+                    'auditor_name' => $item->auditor?->name ?? 'Belum Ditentukan',
+                    'total_indicators' => $item->indicators_count,
+                    'uploaded_indicators' => $item->uploaded_count,
+                    // Progres di sisi Auditee fokus pada dua hal: Upload & Penilaian
+                    'upload_progress' => $item->indicators_count > 0 ? round(($item->uploaded_count / $item->indicators_count) * 100) : 0,
+                    'score_progress' => $item->indicators_count > 0 ? round(($item->scored_count / $item->indicators_count) * 100) : 0,
+                ];
+            });
 
-        return Inertia::render('Auditee/Dashboard', [
-            'unit_name' => $user->prodi?->name ?? $user->faculty?->name ?? 'Unit Belum Diatur',
+        return Inertia::render('Dashboard/Index', [
+            'myAssignments' => $myAssignments,
             'stats' => [
-                // Gunakan query polimorfik
-                'total_audit' => Assignment::where('assignable_type', $type)
-                    ->where('assignable_id', $id)
-                    ->count(),
-                'latest_assignment' => Assignment::with('period')
-                    ->where('assignable_type', $type)
-                    ->where('assignable_id', $id)
-                    ->latest()
-                    ->first() // Ambil yang paling baru saja
-            ],
+                'active_assignments' => $myAssignments->count(),
+                'total_indicators' => $myAssignments->sum('total_indicators'),
+            ]
         ]);
     }
 }

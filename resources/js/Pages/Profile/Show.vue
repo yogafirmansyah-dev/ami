@@ -24,6 +24,7 @@ defineProps({
         </template>
 
         <div>
+            {{ $page.props.auth.user }}
             <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
                 <div v-if="$page.props.jetstream.canUpdateProfileInformation">
                     <UpdateProfileInformationForm :user="$page.props.auth.user" />
@@ -38,22 +39,20 @@ defineProps({
                 </div>
 
                 <div>
-                    <PreferredLanguageForm class="mt-10 sm:mt-0"  :user="$page.props.auth.user"/>
+                    <PreferredLanguageForm class="mt-10 sm:mt-0" :user="$page.props.auth.user" />
 
                     <SectionBorder />
                 </div>
 
                 <div>
-                    <DarkModePreferenceForm class="mt-10 sm:mt-0"  :user="$page.props.auth.user"/>
+                    <DarkModePreferenceForm class="mt-10 sm:mt-0" :user="$page.props.auth.user" />
 
                     <SectionBorder />
                 </div>
 
                 <div v-if="$page.props.jetstream.canManageTwoFactorAuthentication">
-                    <TwoFactorAuthenticationForm
-                        :requires-confirmation="confirmsTwoFactorAuthentication"
-                        class="mt-10 sm:mt-0"
-                    />
+                    <TwoFactorAuthenticationForm :requires-confirmation="confirmsTwoFactorAuthentication"
+                        class="mt-10 sm:mt-0" />
 
                     <SectionBorder />
                 </div>

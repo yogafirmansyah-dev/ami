@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Enums\UserRole;
+use App\Models\Assignment;
+use App\Models\Prodi;
+use App\Models\Faculty;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -13,34 +17,21 @@ use Tighten\Ziggy\Ziggy;
 
 final class HandleInertiaRequests extends Middleware
 {
-    /**
-     * The root template that is loaded on the first page visit.
-     */
     protected $rootView = 'app';
 
-    /**
-     * Cache duration for user permissions and roles (in minutes).
-     */
+    // Durasi cache diturunkan karena data role kini sangat ringan (hanya string di kolom users)
     private const CACHE_DURATION = 60;
 
-    /**
-     * Determine the current asset version.
-     */
     public function version(Request $request): ?string
     {
         return parent::version($request);
     }
 
-    /**
-     * Define the props that are shared by default.
-     *
-     * @return array<string, mixed>
-     */
     public function share(Request $request): array
     {
-        $data = [
+        return [
             ...parent::share($request),
-            'user_extra' => $this->getAuthenticatedUserData(),
+            'user_extra' => $this->getAuthenticatedUserData($request),
             'ziggy' => $this->getZiggyData($request),
             'flash' => $this->getFlashMessages(),
             'constants' => [
@@ -52,15 +43,8 @@ final class HandleInertiaRequests extends Middleware
                 ]
             ],
         ];
-
-        return $data;
     }
 
-    /**
-     * Get Ziggy routing data with location.
-     *
-     * @return \Closure(): array<string, mixed>
-     */
     private function getZiggyData(Request $request)
     {
         return fn() => [
@@ -69,11 +53,6 @@ final class HandleInertiaRequests extends Middleware
         ];
     }
 
-    /**
-     * Get flash messages from session.
-     *
-     * @return array<string, \Closure>
-     */
     private function getFlashMessages(): array
     {
         return [
@@ -83,153 +62,66 @@ final class HandleInertiaRequests extends Middleware
     }
 
     /**
-     * Get current application locale.
-     *
-     * @return \Closure(): string|null
+     * Mengambil data user esensial tanpa Spatie & Teams.
+     * Menggunakan Match Expression untuk unit_name.
      */
-    private function getCurrentLocale()
+    private function getAuthenticatedUserData(Request $request)
     {
-        return fn() => Session::get('locale', app()->getLocale());
-    }
-
-    /**
-     * Get authenticated user's roles with caching.
-     *
-     * @return array<string, mixed>
-     */
-    private function getUserRoles()
-    {
-        if (!Auth::check()) {
+        $user = $request->user();
+        if (!$user)
             return [];
-        }
 
-        $userId = Auth::id();
-        $cacheKey = "user_roles_{$userId}";
+        $cacheKey = "user_extra_data_{$user->id}";
 
-        $data = Auth::user()?->getRoleNames()->toArray() ?? [];
-
-        Cache::put($cacheKey, $data, self::CACHE_DURATION);
-
-        return $data;
-    }
-
-    /**
-     * Get authenticated user's permissions with caching.
-     *
-     * @return array<string, mixed>
-     */
-    private function getUserPermissions()
-    {
-        if (!Auth::check()) {
-            return [];
-        }
-
-        $userId = Auth::id();
-        $cacheKey = "user_permissions_{$userId}";
-
-        $data = Auth::user()?->getAllPermissions()->pluck('name')->toArray() ?? [];
-
-        Cache::put($cacheKey, $data, self::CACHE_DURATION);
-
-        return $data;
-    }
-
-    /**
-     * Get authenticated user data with essential information and caching.
-     *
-     * @return array<string, mixed>
-     */
-    private function getAuthenticatedUserData()
-    {
-        if (!Auth::check()) {
-            return [];
-        }
-
-        $user = Auth::user();
-        $userId = $user->id;
-        $cacheKey = "user_data_{$userId}";
-
-        // Coba ambil dari Cache, jika tidak ada, ambil dari DB
         return Cache::remember($cacheKey, self::CACHE_DURATION, function () use ($user) {
+            // Eager load relasi unit kerja
+            $user->loadMissing(['faculty', 'prodi']);
+
             return [
                 'id' => $user->id,
                 'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role->value, // Mengambil value string dari Enum
+                'role' => $user->role,
+                'is_admin' => $user->is_admin,
+                'is_auditor' => $user->is_auditor,
+                'is_auditee' => $user->is_auditee,
 
-                // Data Unit Kerja Polimorfik
-                'prodi_id' => $user->prodi_id,
-                'faculty_id' => $user->faculty_id,
-                'unit_name' => $user->prodi?->name ?? $user->faculty?->name ?? 'Administrator',
+                // Gabungkan nama unit jika ada dua (misal: "Fakultas Teknik & Informatika")
+                'unit_name' => match (true) {
+                    $user->is_admin => 'Administrator',
+                    $user->is_auditor => 'Auditor Internal',
+                    default => collect([$user->faculty?->name, $user->prodi?->name])
+                        ->filter()
+                        ->implode(' & ') ?: 'Auditee',
+                },
 
-                // UI Preferences
-                'lang' => $user->language ?? app()->getLocale(),
-                'dark_mode' => $user->dark_mode ?? 'auto',
-                'cached_at' => now()->toISOString(),
-                'active_stage' => $user->role === \App\Enums\UserRole::AUDITEE->value
-                    ? \App\Models\Assignment::where('assignable_id', $user->prodi_id ?? $user->faculty_id)
-                        ->where('assignable_type', $user->prodi_id ? \App\Models\Prodi::class : \App\Models\Faculty::class)
+                // Mencari tahapan aktif dari penugasan terkait (Prodi ATAU Fakultas)
+                'active_stage' => $user->is_auditee
+                    ? Assignment::where(function ($q) use ($user) {
+                        if ($user->prodi_id) {
+                            $q->where('assignable_id', $user->prodi_id)
+                                ->where('assignable_type', Prodi::class);
+                        }
+                        if ($user->faculty_id) {
+                            $q->orWhere(function ($sq) use ($user) {
+                                $sq->where('assignable_id', $user->faculty_id)
+                                    ->where('assignable_type', Faculty::class);
+                            });
+                        }
+                    })
                         ->latest()
-                        ->first()?->current_stage?->value // Mengambil string value dari Enum
+                        ->first()?->current_stage
                     : null,
+
+                'cached_at' => now()->toISOString(),
             ];
         });
     }
-    // private function getAuthenticatedUserData()
-    // {
-    //     if (!Auth::check()) {
-    //         return [];
-    //     }
-
-    //     $userId = Auth::id();
-    //     $cacheKey = "user_data_{$userId}";
-
-    //     if (! $userId) {
-    //         return [];
-    //     }
-
-    //     $user = Auth::user();
-
-    //     $data = [
-    //         'lang' => $user->language ?? app()->getLocale(),
-    //         'dark_mode' => $user->dark_mode ?? 'auto',
-    //         'cached_at' => now()->toISOString(),
-    //         'roles' => $this->getUserRoles(),
-    //         'permissions' => $this->getUserPermissions(),
-    //     ];
-
-    //     Cache::put($cacheKey, $data, self::CACHE_DURATION);
-
-    //     return $data;
-    // }
-
 
     /**
-     * Clear all cached data for a specific user.
-     * Call this method when user data is updated.
+     * Bersihkan cache user (panggil saat update profile atau ganti role)
      */
     public static function clearUserCache(int $userId): void
     {
-        $cacheKeys = [
-            "user_data_{$userId}",
-            "user_roles_{$userId}",
-            "user_permissions_{$userId}",
-        ];
-
-        foreach ($cacheKeys as $key) {
-            Cache::forget($key);
-        }
+        Cache::forget("user_extra_data_{$userId}");
     }
-
-    /**
-     * Clear cache for the currently authenticated user.
-     */
-    public static function clearCurrentUserCache(): void
-    {
-        if (Auth::check()) {
-            self::clearUserCache(Auth::id());
-        }
-    }
-
-
 }

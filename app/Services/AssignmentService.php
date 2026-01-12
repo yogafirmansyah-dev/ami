@@ -27,6 +27,9 @@ class AssignmentService
                 $indicator = $assignment->indicators()->create([
                     'snapshot_code' => $master->code,
                     'snapshot_requirement' => $master->requirement,
+                    'snapshot_target' => $master->target,
+                    'snapshot_evidence_needed' => $master->evidence_needed,
+                    'is_evidence_required' => $master->is_evidence_required,
                 ]);
 
                 // 4. Salin template dokumen jika ada
@@ -45,46 +48,63 @@ class AssignmentService
         });
     }
 
-    /**
-     * Versi Sempurna: Satu metode untuk semua update (Data & File)
-     * Mengotomatisasi Smart File Versioning & History
-     */
+
     public function updateIndicator(AssignmentIndicator $indicator, array $newData, int $userId): bool
     {
         return DB::transaction(function () use ($indicator, $newData, $userId) {
             $assignment = $indicator->assignment;
+            $currentStage = $assignment->current_stage;
 
-            // 1. Ambil data lama untuk history
-            $oldData = $indicator->only(['score', 'auditor_note', 'evidence_path', 'evidence_url', 'recommendation']);
+            // 1. Ambil data saat ini (sebelum diupdate)
+            $oldData = $indicator->only([
+                'score',
+                'finding_type',
+                'auditor_note',
+                'evidence_path',
+                'evidence_url',
+                'recommendation'
+            ]);
 
-            // 2. Cek apakah sudah ada history untuk indikator ini di TAHAP yang sama
-            $hasHistoryAtThisStage = $indicator->histories()
-                ->where('stage', $assignment->current_stage)
-                ->exists();
-
-            // 3. Handle File Upload & Polymorphic Path
-            // Pastikan file disimpan di folder sesuai tipe: evidence/prodi/ID atau evidence/faculty/ID
+            // 2. Handle File Upload (Internal Storage)
             if (isset($newData['evidence_file']) && $newData['evidence_file'] instanceof \Illuminate\Http\UploadedFile) {
-                $folder = strtolower(class_basename($assignment->assignable_type)); // 'prodi' atau 'faculty'
-                $path = $newData['evidence_file']->store("evidence/{$folder}/{$assignment->assignable_id}");
+                $folderName = strtolower(class_basename($assignment->assignable_type));
+
+                $path = $newData['evidence_file']->store(
+                    "evidence/{$folderName}/{$assignment->assignable_id}",
+                    'local'
+                );
+
+                // Hapus file fisik LAMA jika ada (Smart File)
+                if ($indicator->evidence_path) {
+                    Storage::disk('local')->delete($indicator->evidence_path);
+                }
 
                 $newData['evidence_path'] = $path;
-                unset($newData['evidence_file']); // Hapus objek file agar tidak error saat update()
+                unset($newData['evidence_file']);
             }
 
-            // 4. Logika Smart File: Hapus file fisik jika update dilakukan berkali-kali di TAHAP yang sama
-            // Kita hanya menghapus jika: Ada file baru, ada file lama, dan ini BUKAN perubahan pertama di tahap ini
-            if (isset($newData['evidence_path']) && $indicator->evidence_path && $hasHistoryAtThisStage) {
-                Storage::delete($indicator->evidence_path);
+            /**
+             * 3. Logika History Baru:
+             * Bandingkan data lama dengan data baru yang akan dimasukkan.
+             * Kita gunakan array_diff_assoc atau perbandingan manual sederhana.
+             */
+
+            // Buat temporary array untuk perbandingan (karena newData mungkin tidak berisi semua field)
+            $comparisonData = array_merge($oldData, $newData);
+
+            // Jika data yang akan disimpan berbeda dengan data lama, maka catat history
+            if ($oldData != $comparisonData) {
+                $this->recordHistory(
+                    $indicator,
+                    $oldData,
+                    $newData, // Hanya simpan perubahan di new_values agar log bersih
+                    $currentStage,
+                    $userId,
+                    'stage_snapshot' // Gunakan action yang lebih umum
+                );
             }
 
-            // 5. Logika History: Hanya catat snapshot awal saat pertama kali data diubah di tahap baru
-            // Ini akan menyimpan data "sebelum diapa-apakan" di tahap tersebut sebagai arsip
-            if (!$hasHistoryAtThisStage) {
-                // Pastikan newData memiliki perbedaan dengan oldData agar tidak mencatat histori kosong
-                $this->recordHistory($indicator, $oldData, $newData, $assignment->current_stage, $userId);
-            }
-
+            // 4. Lakukan update ke database
             return $indicator->update($newData);
         });
     }
@@ -106,7 +126,15 @@ class AssignmentService
                     'completed_at' => ($newStage === 'finished') ? now() : $assignment->completed_at
                 ]);
 
-                $this->recordHistory($assignment, ['stage' => $oldStage], ['stage' => $newStage], $newStage, 0);
+                // Kirim null (BUKAN 0) untuk aksi sistem otomatis
+                $this->recordHistory(
+                    $assignment,
+                    ['stage' => $oldStage],
+                    ['stage' => $newStage],
+                    $newStage,
+                    null, // Diubah dari 0 ke null
+                    'system_auto_sync' // Gunakan label aksi yang jelas
+                );
             });
         }
     }
@@ -128,8 +156,9 @@ class AssignmentService
 
     private function recordHistory($model, $old, $new, $stage, $userId, $action = 'update_audit_trail'): AuditHistory
     {
+        $finalUserId = ($userId && $userId != 0) ? $userId : auth()->id();
         return AuditHistory::create([
-            'user_id' => $userId,
+            'user_id' => $finalUserId,
             'historable_type' => get_class($model),
             'historable_id' => $model->id,
             'stage' => $stage,
@@ -142,29 +171,48 @@ class AssignmentService
     public function uploadAssignmentDocument(Assignment $assignment, array $data, $file, $userId): AssignmentDocument
     {
         return DB::transaction(function () use ($assignment, $data, $file, $userId) {
-            // 1. Simpan File Fisik
-            $path = $file->store("documents/{$assignment->id}");
+            $type = $data['type'];
 
-            // 2. Buat Record Dokumen
-            $document = AssignmentDocument::create([
-                'assignment_id' => $assignment->id,
-                'type' => $data['type'],
-                'file_path' => $path,
-                'uploaded_by' => $userId,
-            ]);
+            // 1. Logika Smart Cleanup: Cari record lama untuk tipe dokumen yang sama
+            $existingDoc = $assignment->documents()->where('type', $type)->first();
 
-            // 3. Catat ke AuditHistory sebagai Milestone Legal
+            if ($existingDoc) {
+                // Hapus file fisik lama dari storage local agar tidak menumpuk
+                if (Storage::disk('local')->exists($existingDoc->path)) {
+                    Storage::disk('local')->delete($existingDoc->path);
+                }
+            }
+
+            // 2. Simpan File Fisik ke folder Internal (Private)
+            // Path: storage/app/assignments/{id}/official_docs/
+            $path = $file->store("assignments/{$assignment->id}/official_docs", 'local');
+
+            // 3. Simpan atau Update Record Dokumen
+            // Menggunakan updateOrCreate agar satu tipe dokumen (misal: BA Lapangan) hanya punya satu baris data
+            $document = $assignment->documents()->updateOrCreate(
+                ['type' => $type],
+                [
+                    'path' => $path,
+                    'original_name' => $file->getClientOriginalName(),
+                    'user_id' => $userId, // Menyimpan siapa yang terakhir mengunggah
+                ]
+            );
+
+            // 4. Catat ke AuditHistory sebagai Milestone Legal
+            // Kita mencatat ke historable Assignment karena ini adalah dokumen level penugasan
             AuditHistory::create([
                 'user_id' => $userId,
                 'historable_type' => Assignment::class,
                 'historable_id' => $assignment->id,
                 'stage' => $assignment->current_stage,
-                'action' => 'upload_document',
+                'action' => 'upload_official_document',
+                'old_values' => $existingDoc ? ['file_path' => $existingDoc->path] : [],
                 'new_values' => [
-                    'document_type' => $data['type'],
-                    'file_path' => $path
+                    'document_type' => $type,
+                    'file_path' => $path,
+                    'file_name' => $file->getClientOriginalName()
                 ],
-                'reason' => "Unggah dokumen resmi: " . strtoupper(str_replace('_', ' ', $data['type']))
+                // formatted_changes akan mendeteksi ini sebagai bukti legalitas
             ]);
 
             return $document;

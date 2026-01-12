@@ -17,12 +17,12 @@ class ProdiController extends Controller
         $perPage = $request->input('per_page', 10);
 
         $prodis = Prodi::with('faculty')
-            ->search($request->search, ['name', 'code']) // Cari di kolom name & code
+            ->search($request->search, ['name']) // Cari di kolom name
             ->sort($request->sort_field, $request->direction)    // Urutkan ASC/DESC
             ->paginate($perPage)
             ->withQueryString();
 
-        return Inertia::render('Master/Prodi/Index', [
+        return Inertia::render('Admin/Prodi/Index', [
             'prodis' => $prodis,
             'faculties' => Faculty::all(['id', 'name']), // Untuk dropdown
             'filters' => $filters,
@@ -33,7 +33,6 @@ class ProdiController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:10|unique:prodis,code',
             'faculty_id' => 'required|exists:faculties,id'
         ]);
 
@@ -57,7 +56,6 @@ class ProdiController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => ['required', 'string', 'max:10', Rule::unique('prodis')->ignore($prodi->id)],
             'faculty_id' => 'required|exists:faculties,id'
         ]);
 

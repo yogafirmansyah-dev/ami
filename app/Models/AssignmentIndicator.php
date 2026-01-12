@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\FindingType;
 use App\Traits\Filterable;
 use App\Traits\HasAuditHistory;
 use Attribute;
@@ -16,11 +17,15 @@ class AssignmentIndicator extends Model
         'snapshot_code',
         'snapshot_requirement',
         'snapshot_template_path',
+        'snapshot_target',
+        'snapshot_evidence_needed',
+        'is_evidence_required',
         'score',
         'auditor_note',
         'evidence_path',
         'evidence_url',
-        'recommendation'
+        'recommendation',
+        'finding_type',
     ];
 
     public function assignment()
@@ -28,20 +33,9 @@ class AssignmentIndicator extends Model
         return $this->belongsTo(Assignment::class);
     }
 
-    protected function scoreLabel(): Attribute
-    {
-        return Attribute::get(function () {
-            return match ($this->score) {
-                4 => 'Sangat Baik',
-                3 => 'Baik',
-                2 => 'Cukup',
-                1 => 'Kurang',
-                default => 'Belum Dinilai',
-            };
-        });
-    }
-
-    // Tambahkan ke $appends agar otomatis muncul di JSON/Inertia
-    protected $appends = ['score_label'];
+    protected $casts = [
+        // 2. Pastikan penulisan :class benar
+        'finding_type' => FindingType::class,
+    ];
 
 }

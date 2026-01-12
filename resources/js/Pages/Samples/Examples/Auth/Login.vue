@@ -1,14 +1,11 @@
 <template>
-    <t-login
-        :canResetPassword="canResetPassword"
-        :status="status"
-    >
+    <t-login :canResetPassword="canResetPassword" :status="status">
         <!--Logo-->
         <template #logo>
             <Link href="/">
                 <div class="flex flex-col justify-center items-center w-full">
-                    <t-logo class="w-12 h-12"/>
-                    <span class="text-3xl">TailAdmin</span>
+                    <t-logo class="w-12 h-12" />
+                    <span class="text-3xl">AMI</span>
                 </div>
             </Link>
         </template>
@@ -20,7 +17,7 @@
 </template>
 
 <script setup>
-import {Link} from "@inertiajs/vue3";
+import { Link } from "@inertiajs/vue3";
 import TLogin from "@/Components/Auth/TLogin.vue";
 import TLogo from "@/Components/Icon/TLogo.vue";
 
@@ -31,7 +28,7 @@ defineProps({
 
 /* Multi-language */
 import { useI18n } from "vue-i18n";
-import {authTranslates} from "@/Lang/languages";
+import { authTranslates } from "@/Lang/languages";
 const { t } = useI18n({
     inheritLocale: true,
     messages: authTranslates,

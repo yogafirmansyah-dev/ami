@@ -18,9 +18,13 @@ return new class extends Migration {
             $table->string('snapshot_code', 10)->index();
             $table->text('snapshot_requirement');
             $table->string('snapshot_template_path')->nullable();
+            $table->string('snapshot_target')->nullable();
+            $table->string('snapshot_evidence_needed')->nullable();
+            $table->boolean('is_evidence_required')->default(true);
 
             // Hasil Penilaian & Bukti
             $table->integer('score')->nullable()->index();
+            $table->string('finding_type')->nullable()->comment('KS: Sesuai, KTS: Tdk Sesuai, OB: Observasi');
             $table->text('auditor_note')->nullable();
             $table->string('evidence_path')->nullable(); // File bukti
             $table->string('evidence_url')->nullable();  // Link bukti (Hybrid)

@@ -20,7 +20,7 @@ class PeriodController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        return Inertia::render('Master/Periods/Index', [
+        return Inertia::render('Admin/Period/Index', [
             'periods' => $periods,
             'filters' => $filters
         ]);

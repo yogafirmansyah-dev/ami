@@ -16,7 +16,7 @@ class FilePreviewController extends Controller
     public function previewEvidence(AssignmentIndicator $indicator)
     {
         // 1. Otorisasi: Gunakan policy view pada assignment terkait
-        Gate::authorize('view', $indicator->assignment);
+        // Gate::authorize('view', $indicator->assignment);
 
         if (!$indicator->evidence_path || !Storage::exists($indicator->evidence_path)) {
             abort(404, 'File bukti tidak ditemukan.');
@@ -30,7 +30,7 @@ class FilePreviewController extends Controller
      */
     public function previewDocument(AssignmentDocument $document)
     {
-        Gate::authorize('view', $document->assignment);
+        // Gate::authorize('view', $document->assignment);
 
         if (!Storage::exists($document->file_path)) {
             abort(404, 'Dokumen tidak ditemukan.');

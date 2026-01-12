@@ -5,15 +5,13 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\UserRole;
 use App\Traits\Filterable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
-use Laravel\Jetstream\HasTeams;
 use Laravel\Sanctum\HasApiTokens;
-/*Spatie Permissions Package*/
-use Spatie\Permission\Traits\HasRoles;
 
 
 class User extends Authenticatable
@@ -23,11 +21,8 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory;
     use HasProfilePhoto;
-    use HasTeams;
     use Notifiable;
     use TwoFactorAuthenticatable;
-    /*Spatie Permissions Package*/
-    use HasRoles;
     use Filterable;
 
     /**
@@ -66,6 +61,10 @@ class User extends Authenticatable
      */
     protected $appends = [
         'profile_photo_url',
+        'is_admin',   // Gunakan snake_case di sini
+        'is_auditor', // Gunakan snake_case di sini
+        'is_auditee', // Gunakan snake_case di sini
+        'unit_name',
     ];
 
     /**
@@ -97,17 +96,25 @@ class User extends Authenticatable
         return $this->hasMany(AuditHistory::class, 'user_id');
     }
 
-    public function isAdmin(): bool
+    protected function isAdmin(): Attribute
     {
-        return $this->role === UserRole::ADMIN;
+        return Attribute::make(
+            get: fn() => $this->role === UserRole::ADMIN,
+        );
     }
-    public function isAuditor(): bool
+
+    protected function isAuditor(): Attribute
     {
-        return $this->role === UserRole::AUDITOR;
+        return Attribute::make(
+            get: fn() => $this->role === UserRole::AUDITOR,
+        );
     }
-    public function isAuditee(): bool
+
+    protected function isAuditee(): Attribute
     {
-        return $this->role === UserRole::AUDITEE;
+        return Attribute::make(
+            get: fn() => $this->role === UserRole::AUDITEE,
+        );
     }
 
     /**
@@ -117,13 +124,12 @@ class User extends Authenticatable
      */
     public function relatedAssignments()
     {
-        // 1. Jika Auditor: Lihat audit yang ditugaskan kepadanya
-        if ($this->isAuditor()) {
+        // Gunakan properti (snake_case sesuai $appends), bukan method ()
+        if ($this->is_auditor) {
             return Assignment::where('auditor_id', $this->id);
         }
 
-        // 2. Jika Auditee: Lihat audit milik Prodi ATAU Fakultasnya
-        if ($this->isAuditee()) {
+        if ($this->is_auditee) {
             return Assignment::where(function ($query) {
                 // Cek jika ada audit level Prodi
                 if ($this->prodi_id) {
@@ -143,13 +149,26 @@ class User extends Authenticatable
             });
         }
 
-        // 3. Admin: Bisa melihat semua data
+        // Admin: Bisa melihat semua data
         return Assignment::query();
     }
-
     public function faculty()
     {
         return $this->belongsTo(Faculty::class);
+    }
+
+    protected function unitName(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => match (true) {
+                $this->is_admin => 'Administrator',
+                $this->is_auditor => 'Auditor Internal',
+                default => collect([
+                    $this->prodi?->name,
+                    $this->faculty?->name
+                ])->filter()->implode(' & ') ?: 'Auditee',
+            },
+        );
     }
 
 }

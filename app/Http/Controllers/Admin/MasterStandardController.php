@@ -18,21 +18,27 @@ class MasterStandardController extends Controller
         $perPage = $request->input('per_page', 10);
 
         $standards = MasterStandard::withCount('indicators')
+            ->latest()
             ->search($request->search, ['name', 'code'])
             ->sort($request->sort_field ?? 'code', $request->direction ?? 'asc')
             ->paginate($perPage)
             ->withQueryString();
 
-        return Inertia::render('Master/Standards/Index', [
+        $targetTypes = collect(TargetType::cases())->map(fn($type) => [
+            'value' => $type->value,
+            'label' => $type->label(),
+        ]);
+
+        return Inertia::render('Admin/Standard/Index', [
             'standards' => $standards,
-            'filters' => $filters
+            'filters' => $filters,
+            'targetTypes' => $targetTypes
         ]);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'code' => 'required|string|max:6|unique:master_standards,code',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'target_type' => ['required', Rule::enum(TargetType::class)],
@@ -57,7 +63,6 @@ class MasterStandardController extends Controller
     public function update(Request $request, MasterStandard $standard)
     {
         $validated = $request->validate([
-            'code' => ['required', 'string', 'max:6', Rule::unique('master_standards')->ignore($standard->id)],
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'target_type' => ['required', Rule::enum(TargetType::class)],

@@ -41,7 +41,7 @@ class AuditHistoryController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        return Inertia::render('History/Index', [
+        return Inertia::render('Admin/History/Index', [
             'histories' => $histories,
             'users' => User::all(['id', 'name']),
             'filters' => $filters

@@ -15,12 +15,10 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            PermissionSeeder::class,
-            RoleSeeder::class,
-            UserSeeder::class
+            FacultyAndProdiSeeder::class,
+            UserSeeder::class,
+            StandardAndIndicatorSeeder::class,
+            PeriodSeeder::class,
         ]);
-        \App\Models\User::factory(50)->create();
-        \App\Models\DemoContent::factory(100)->create();
-
     }
 }

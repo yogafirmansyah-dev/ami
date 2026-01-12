@@ -7,7 +7,7 @@ use App\Http\Controllers\Admin\MasterStandardController;
 use App\Http\Controllers\Admin\PeriodController;
 use App\Http\Controllers\Admin\ProdiController;
 use App\Http\Controllers\AssignmentDocumentController;
-use App\Http\Controllers\{DashboardController, FilePreviewController, ReportExportController};
+use App\Http\Controllers\{DashboardController, FileController, FilePreviewController, ReportExportController};
 use App\Http\Controllers\Admin\AssignmentController as AdminAssignmentController;
 use App\Http\Controllers\Auditor\{AssignmentController as AuditorAssignmentController, AssignmentIndicatorController as AuditorIndicatorController};
 use App\Http\Controllers\Auditee\{AssignmentController as AuditeeAssignmentController, AssignmentIndicatorController as AuditeeIndicatorController};
@@ -48,27 +48,27 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    Route::get('/', function () {
-        return Inertia::render('Dashboard', [
-            'canLogin' => Route::has('login'),
-            'canRegister' => Route::has('register'),
-            'laravelVersion' => Application::VERSION,
-            'phpVersion' => PHP_VERSION,
-        ]);
-    })->name('/');
+    // Route::get('/', function () {
+    //     return Inertia::render('Dashboard', [
+    //         'canLogin' => Route::has('login'),
+    //         'canRegister' => Route::has('register'),
+    //         'laravelVersion' => Application::VERSION,
+    //         'phpVersion' => PHP_VERSION,
+    //     ]);
+    // })->name('/');
 
 
     /*They are the required pages for the system, don't delete it*/
     Route::prefix('settings')->group(function () {
 
         /*Settings Summary*/
-        Route::get('/', function () {
-            return Inertia::render('Settings/Index', [
-                'users_count' => count(\App\Models\User::all('id')),
-                'roles_count' => count(Role::all()),
-                'permissions_count' => count(Permission::all())
-            ]);
-        })->name('settings');
+        // Route::get('/', function () {
+        //     return Inertia::render('Settings/Index', [
+        //         'users_count' => count(\App\Models\User::all('id')),
+        //         'roles_count' => count(Role::all()),
+        //         'permissions_count' => count(Permission::all())
+        //     ]);
+        // })->name('settings');
 
         /*Get Routes*/
         Route::get('system', function () {
@@ -240,7 +240,16 @@ Route::middleware([
 Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
 
     // Dashboard utama
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->name('/');
+
+    Route::get('/admin/indicators/{indicator}/template', [MasterIndicatorController::class, 'showTemplate'])
+        ->name('admin.indicators.show-template');
+    Route::get('/files/evidence/{indicator}', [FileController::class, 'showEvidence'])
+        ->name('files.evidence.show');
+    Route::get('/files/official/{document}', [FileController::class, 'showOfficialDocument'])->name('files.official.show');
+
+    Route::get('/admin/indicators/{indicator}/assignment-template', [MasterIndicatorController::class, 'showAssignmentTemplate'])
+        ->name('admin.indicators.show-assignment-template');
 
     // ==========================================
     // GROUP ADMIN

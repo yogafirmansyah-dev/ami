@@ -17,7 +17,7 @@ class AssignmentPolicy
      */
     public function before(User $user, string $ability): ?bool
     {
-        if ($user->isAdmin()) {
+        if ($user->isAdmin) {
             return true;
         }
 
@@ -50,12 +50,12 @@ class AssignmentPolicy
     public function view(User $user, Assignment $assignment): bool
     {
         // Auditor yang ditugaskan boleh melihat
-        if ($user->isAuditor() && $assignment->auditor_id === $user->id) {
+        if ($user->isAuditor && $assignment->auditor_id === $user->id) {
             return true;
         }
 
         // Auditee yang memiliki akses ke unit terkait boleh melihat
-        return $user->isAuditee() && $this->isUnitOwner($user, $assignment);
+        return $user->isAuditee && $this->isUnitOwner($user, $assignment);
     }
 
     /**
@@ -65,7 +65,7 @@ class AssignmentPolicy
     public function updateEvidence(User $user, Assignment $assignment): bool
     {
         // Wajib: Role Auditee, Unit sesuai, dan Periode aktif
-        return $user->isAuditee() &&
+        return $user->isAuditee &&
             $this->isUnitOwner($user, $assignment) &&
             $assignment->period->is_active;
     }
@@ -77,7 +77,7 @@ class AssignmentPolicy
     public function auditeeAssignment(User $user, Assignment $assignment): bool
     {
         // 1. User harus Auditee
-        return $user->isAuditee() && $this->isUnitOwner($user, $assignment);
+        return $user->isAuditee && $this->isUnitOwner($user, $assignment);
     }
 
     /**
@@ -87,7 +87,7 @@ class AssignmentPolicy
     public function updateScore(User $user, Assignment $assignment): bool
     {
         // Wajib: Auditor yang ditugaskan dan tahap belum Selesai
-        return $user->isAuditor() &&
+        return $user->isAuditor &&
             $assignment->auditor_id === $user->id &&
             $assignment->current_stage !== AuditStage::FINISHED;
     }
@@ -99,7 +99,7 @@ class AssignmentPolicy
     public function finalize(User $user, Assignment $assignment): bool
     {
         // Wajib: Auditor yang ditugaskan dan sudah di tahap pelaporan/RTM
-        return $user->isAuditor() &&
+        return $user->isAuditor &&
             $assignment->auditor_id === $user->id &&
             in_array($assignment->current_stage, [
                 AuditStage::REPORTING,
@@ -114,19 +114,19 @@ class AssignmentPolicy
     public function deleteDocument(User $user, Assignment $assignment): bool
     {
         // Hanya Auditor yang ditugaskan atau perwakilan Unit Auditee
-        $isAuditor = $user->isAuditor() && $assignment->auditor_id === $user->id;
-        $isAuditeeOwner = $user->isAuditee() && $this->isUnitOwner($user, $assignment);
+        $isAuditor = $user->isAuditor && $assignment->auditor_id === $user->id;
+        $isAuditeeOwner = $user->isAuditee && $this->isUnitOwner($user, $assignment);
 
         return $isAuditor || $isAuditeeOwner;
     }
     /**
      * Menentukan apakah user boleh mengupdate/mengunggah dokumen penugasan.
-     * Dipanggil oleh Gate::authorize('update', $assignment)
+     * Dipanggil oleh  // Gate::authorize('update', $assignment)
      */
     public function update(User $user, Assignment $assignment): bool
     {
         // Cukup cek identitas: Apakah dia Auditor yang ditugaskan?
-        return $user->isAuditor() &&
+        return $user->isAuditor &&
             $assignment->auditor_id === $user->id;
     }
 }

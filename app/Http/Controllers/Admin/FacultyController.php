@@ -17,12 +17,12 @@ class FacultyController extends Controller
         $perPage = $request->input('per_page', 10);
 
         $faculties = Faculty::withCount('prodis')
-            ->search($request->search, ['name', 'code']) // Cari di kolom name & code
+            ->search($request->search, ['name']) // Cari di kolom name
             ->sort($request->sort_field, $request->direction)    // Urutkan ASC/DESC
             ->paginate($perPage)
             ->withQueryString();
 
-        return Inertia::render('Master/Faculty/Index', [
+        return Inertia::render('Admin/Faculty/Index', [
             'faculties' => $faculties,
             'filters' => $filters,
         ]);
@@ -32,7 +32,6 @@ class FacultyController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:10|unique:faculties,code',
         ]);
 
         DB::transaction(function () use ($validated) {
@@ -55,7 +54,6 @@ class FacultyController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => ['required', 'string', 'max:10', Rule::unique('faculties')->ignore($faculty->id)],
         ]);
 
         $oldValues = $faculty->toArray();

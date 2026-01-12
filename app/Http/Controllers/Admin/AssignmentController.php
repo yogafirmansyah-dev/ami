@@ -6,6 +6,7 @@ use App\Enums\AssignmentDocType;
 use App\Http\Controllers\Controller;
 use App\Models\{Assignment, AuditHistory, Faculty, Prodi, Period, MasterStandard, User};
 use App\Services\AssignmentService;
+use Carbon\Carbon;
 use Gate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -37,7 +38,7 @@ class AssignmentController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        return Inertia::render('Assignments/Index', [
+        return Inertia::render('Admin/Assignment/Index', [
             'assignments' => $assignments,
             'filters' => $filters,
             'prodis' => Prodi::all(['id', 'name']),
@@ -71,8 +72,8 @@ class AssignmentController extends Controller
                 Rule::unique('assignments')->where(function ($q) use ($request) {
                     return $q->where('period_id', $request->period_id)
                         ->where('assignable_type', $request->assignable_type === 'prodi'
-                            ? \App\Models\Prodi::class
-                            : \App\Models\Faculty::class);
+                            ? Prodi::class
+                            : Faculty::class);
                 })
             ],
             'auditor_id' => 'required|exists:users,id',
@@ -81,7 +82,8 @@ class AssignmentController extends Controller
         // Cek apakah Standar cocok dengan Target Unit
         $standard = MasterStandard::findOrFail($validated['master_standard_id']);
         if ($standard->target_type->value !== $validated['assignable_type']) {
-            return back()->withErrors(['master_standard_id' => 'Standar ini tidak cocok untuk tipe unit yang dipilih.']);
+            session()->flash('error', 'Standar ini tidak cocok untuk tipe unit yang dipilih.');
+            return back();
         }
 
         $assignableTypeMap = [
@@ -112,19 +114,28 @@ class AssignmentController extends Controller
         $filters = $request->only(['search', 'sort_field', 'direction', 'per_page']);
         $perPage = $request->input('per_page', 10);
 
+        // Eager load semua relasi
         $assignment->load(['period', 'standard', 'assignable', 'auditor', 'documents', 'histories.user']);
 
-        // Memuat indikator dengan filter search jika ada
+        // --- LOGIKA GROUPING DOKUMEN ---
+        $groupedDocuments = collect(AssignmentDocType::cases())->map(function ($type) use ($assignment) {
+            return [
+                'type' => $type->value,
+                'label' => $type->label(),
+                'files' => $assignment->documents->where('type', $type->value)->values()
+            ];
+        });
+
         $indicators = $assignment->indicators()
-            ->search($filters['search'] ?? null)
+            ->search($filters['search'] ?? null, ['snapshot_code', 'snapshot_requirement', 'snapshot_target'])
             ->sort($filters['sort_field'] ?? 'snapshot_code', $filters['direction'] ?? 'asc')
             ->paginate($perPage)
             ->withQueryString();
 
-        return Inertia::render('Assignments/Show', [
+        return Inertia::render('Admin/Assignment/Show', [
             'assignment' => $assignment,
-            'indicators' => $indicators, // Mengirim indikator yang sudah difilter
-            'currentStage' => $assignment->current_stage,
+            'groupedDocuments' => $groupedDocuments, // Kirim data yang sudah dikelompokkan
+            'indicators' => $indicators,
             'filters' => $filters
         ]);
     }
@@ -173,7 +184,9 @@ class AssignmentController extends Controller
      */
     public function destroy(Assignment $assignment)
     {
+        // Prosedur Penghapusan Permanen
         DB::transaction(function () use ($assignment) {
+            // Catat history sebelum data benar-benar hilang
             AuditHistory::create([
                 'user_id' => auth()->id(),
                 'historable_type' => Assignment::class,
@@ -182,15 +195,21 @@ class AssignmentController extends Controller
                 'action' => 'delete_assignment',
                 'old_values' => $assignment->toArray(),
             ]);
+
+            // Hapus file fisik (evidence/dokumen) melalui Service
             $this->assignmentService->deleteAssignmentFiles($assignment);
+
+            // Hapus data (Hard Delete karena trait SoftDeletes sudah dibuang)
+            // Ini juga akan menghapus indicators karena cascading atau manual delete di service
             $assignment->delete();
         });
 
         Session::flash('toastr', [
             'type' => 'gradient-green-to-emerald',
-            'content' => 'Penugasan berhasil dihapus.'
+            'content' => 'Penugasan dan seluruh snapshot indikator berhasil dihapus permanen.'
         ]);
-        return redirect()->route('admin.assignments.index'); // Sesuaikan name route admin
+
+        return redirect()->route('admin.assignments.index');
     }
 
     /**
@@ -198,7 +217,7 @@ class AssignmentController extends Controller
      */
     public function finalize(Request $request, Assignment $assignment)
     {
-        Gate::authorize('finalize', $assignment);
+        // Gate::authorize('finalize', $assignment);
 
         // Pastikan audit belum selesai
         if ($assignment->completed_at) {

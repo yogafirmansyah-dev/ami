@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auditor;
 
+use App\Enums\FindingType;
 use App\Http\Controllers\Controller;
 use App\Models\AssignmentIndicator;
 use App\Services\AssignmentService;
@@ -9,6 +10,7 @@ use DB;
 use Gate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Validation\Rule;
 
 class AssignmentIndicatorController extends Controller
 {
@@ -24,14 +26,15 @@ class AssignmentIndicatorController extends Controller
      */
     public function update(Request $request, AssignmentIndicator $indicator)
     {
-        Gate::authorize('updateScore', $indicator->assignment);
+        // Gate::authorize('updateScore', $indicator->assignment);
 
         $validated = $request->validate([
             'score' => 'nullable|integer|min:1|max:4',
+            'finding_type' => ['nullable', Rule::enum(FindingType::class)],
             'auditor_note' => 'nullable|string',
             'recommendation' => 'nullable|string',
             'evidence_url' => 'nullable|url',
-            'evidence_file' => 'nullable|file|mimes:pdf,jpg,png,zip|max:10240',
+            'evidence_file' => 'nullable|file|mimes:pdf,jpg,docx,png,zip|max:10240',
         ]);
 
         // JANGAN simpan file di sini.

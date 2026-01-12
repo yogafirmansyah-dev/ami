@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
@@ -22,21 +23,24 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::define('is-admin', fn(User $user) => $user->is_admin);
+        Gate::define('is-auditor', fn(User $user) => $user->is_auditor);
+        Gate::define('is-auditee', fn(User $user) => $user->is_auditee);
         //Max key length error fix
         Schema::defaultStringLength(191);
 
         /*Super Admin*/
         Gate::before(function ($user, $ability) {
-            return $user->hasRole('Super Admin') ? true : null;
+            return $user->is_admin ? true : null;
         });
 
         Builder::macro('tableSearch', function ($request) {
-            $request = (object)$request;
+            $request = (object) $request;
             $perPage = (isset($request->perPage)) ? $request->perPage : 5;
 
             if (key($request)) {
 
-                $searchValue = (object)$request->searchValue;
+                $searchValue = (object) $request->searchValue;
 
                 if ($request->searchType === "simple") {
 
@@ -58,48 +62,48 @@ class AppServiceProvider extends ServiceProvider
 
                         switch ($condition) {
 
-                            case 'contains' :
+                            case 'contains':
                                 $searchQuery['condition'] = 'like';
                                 $searchQuery['value'] = "%" . $searchValue . "%";
                                 break;
 
-                            case 'notContains' :
+                            case 'notContains':
                                 $searchQuery['condition'] = 'not like';
                                 $searchQuery['value'] = "%" . $searchValue . "%";
                                 break;
 
-                            case 'starts' :
+                            case 'starts':
                                 $searchQuery['condition'] = 'like';
                                 $searchQuery['value'] = $searchValue . "%";
                                 break;
 
-                            case 'ends' :
+                            case 'ends':
                                 $searchQuery['condition'] = 'like';
                                 $searchQuery['value'] = "%" . $searchValue;
                                 break;
 
-                            case '>' :
+                            case '>':
                                 $searchQuery['condition'] = '>';
                                 $searchQuery['value'] = $searchValue;
                                 break;
 
-                            case '>=' :
+                            case '>=':
                                 $searchQuery['condition'] = '>=';
                                 $searchQuery['value'] = $searchValue;
                                 break;
 
-                            case '<' :
+                            case '<':
                                 $searchQuery['condition'] = '<';
                                 $searchQuery['value'] = $searchValue;
                                 break;
 
-                            case '<=' :
+                            case '<=':
 
                                 $searchQuery['condition'] = '<=';
                                 $searchQuery['value'] = $searchValue;
                                 break;
 
-                            case 'between' :
+                            case 'between':
 
                                 $searchQuery['condition'] = 'between';
                                 $searchQuery['value'] = [$searchValue['from'], $searchValue['to']];
@@ -157,13 +161,15 @@ class AppServiceProvider extends ServiceProvider
         });
 
         /*Get Related Data*/
-        Builder::macro('getRelatedData', function ($key, $table) {
-            return $this->whereIn('id', function ($query) use ($key, $table) {
-                $query->select($key)
-                    ->from($table)
-                    ->distinct();
-            });
-        }
+        Builder::macro(
+            'getRelatedData',
+            function ($key, $table) {
+                return $this->whereIn('id', function ($query) use ($key, $table) {
+                    $query->select($key)
+                        ->from($table)
+                        ->distinct();
+                });
+            }
         );
     }
 }
