@@ -173,49 +173,42 @@ class AssignmentService
         return DB::transaction(function () use ($assignment, $data, $file, $userId) {
             $type = $data['type'];
 
-            // 1. Logika Smart Cleanup: Cari record lama untuk tipe dokumen yang sama
+            // 1. Logika Smart Cleanup
             $existingDoc = $assignment->documents()->where('type', $type)->first();
-
             if ($existingDoc) {
-                // Hapus file fisik lama dari storage local agar tidak menumpuk
-                if (Storage::disk('local')->exists($existingDoc->path)) {
-                    Storage::disk('local')->delete($existingDoc->path);
+                // Gunakan 'file_path' sesuai property model Anda
+                if ($existingDoc->file_path && Storage::disk('local')->exists($existingDoc->file_path)) {
+                    Storage::disk('local')->delete($existingDoc->file_path);
                 }
             }
 
-            // 2. Simpan File Fisik ke folder Internal (Private)
-            // Path: storage/app/assignments/{id}/official_docs/
+            // 2. Simpan File Fisik
             $path = $file->store("assignments/{$assignment->id}/official_docs", 'local');
 
-            // 3. Simpan atau Update Record Dokumen
-            // Menggunakan updateOrCreate agar satu tipe dokumen (misal: BA Lapangan) hanya punya satu baris data
-            $document = $assignment->documents()->updateOrCreate(
-                ['type' => $type],
-                [
-                    'path' => $path,
-                    'original_name' => $file->getClientOriginalName(),
-                    'user_id' => $userId, // Menyimpan siapa yang terakhir mengunggah
-                ]
-            );
-
-            // 4. Catat ke AuditHistory sebagai Milestone Legal
-            // Kita mencatat ke historable Assignment karena ini adalah dokumen level penugasan
             AuditHistory::create([
                 'user_id' => $userId,
                 'historable_type' => Assignment::class,
                 'historable_id' => $assignment->id,
                 'stage' => $assignment->current_stage,
                 'action' => 'upload_official_document',
-                'old_values' => $existingDoc ? ['file_path' => $existingDoc->path] : [],
+                'old_values' => $existingDoc ? ['file_path' => $existingDoc->file_path] : [],
                 'new_values' => [
                     'document_type' => $type,
-                    'file_path' => $path,
-                    'file_name' => $file->getClientOriginalName()
+                    'file_path' => $path
                 ],
-                // formatted_changes akan mendeteksi ini sebagai bukti legalitas
             ]);
 
-            return $document;
+            // 3. Simpan atau Update Record Dokumen
+            // SESUAIKAN DENGAN $fillable: ['assignment_id', 'type', 'file_path', 'uploaded_by']
+            return $assignment->documents()->updateOrCreate(
+                ['type' => $type],
+                [
+                    'file_path' => $path,       // GUNAKAN file_path, BUKAN path
+                    'uploaded_by' => $userId,     // GUNAKAN uploaded_by, BUKAN user_id
+                    // Note: 'original_name' tidak ada di $fillable model Anda,
+                    // jadi saya hapus agar tidak menyebabkan error baru.
+                ]
+            );
         });
     }
 

@@ -92,8 +92,6 @@ class AssignmentController extends Controller
 
     public function uploadDocument(Request $request, Assignment $assignment)
     {
-        // Gate::authorize('update', $assignment);
-
         $request->validate([
             'type' => ['required', Rule::enum(AssignmentDocType::class)],
             'file' => 'required|file|mimes:pdf|max:5120',
@@ -101,17 +99,24 @@ class AssignmentController extends Controller
 
         $stage = $assignment->current_stage;
 
-        // Stage-Gate Validation menggunakan metode pembantu di Enum AuditStage
+        // Logika Validasi Stage-Gate
+        $isValidStage = true;
+        $errorMessage = "";
+
         if ($request->type === AssignmentDocType::FIELD_REPORT->value && !$stage->fieldReport()) {
-            return back()->withErrors(['message' => 'BA Lapangan hanya diunggah pada tahap Lapangan.']);
+            $isValidStage = false;
+            $errorMessage = 'BA Lapangan hanya dapat diunggah pada tahap Audit Lapangan.';
+        } elseif ($request->type === AssignmentDocType::FINAL_REPORT->value && !$stage->finalReport()) {
+            $isValidStage = false;
+            $errorMessage = 'BA Final hanya dapat diunggah pada tahap Pelaporan.';
+        } elseif ($request->type === AssignmentDocType::END_REPORT->value && !$stage->endReport()) {
+            $isValidStage = false;
+            $errorMessage = 'Laporan Akhir hanya dapat diunggah pada tahap Selesai.';
         }
 
-        if ($request->type === AssignmentDocType::FINAL_REPORT->value && !$stage->finalReport()) {
-            return back()->withErrors(['message' => 'BA Final hanya diunggah pada tahap Pelaporan.']);
-        }
-
-        if ($request->type === AssignmentDocType::END_REPORT->value && !$stage->endReport()) {
-            return back()->withErrors(['message' => 'Laporan Akhir hanya diunggah pada tahap Selesai.']);
+        if (!$isValidStage) {
+            // Mengirim error kembali ke Inertia form.errors.message
+            return back()->withErrors(['message' => $errorMessage]);
         }
 
         DB::transaction(function () use ($assignment, $request) {
@@ -123,7 +128,6 @@ class AssignmentController extends Controller
             );
         });
 
-        Session::flash('toastr', ['type' => 'gradient-primary', 'content' => 'Dokumen resmi berhasil diunggah.']);
         return back();
     }
 

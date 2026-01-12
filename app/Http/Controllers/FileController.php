@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AssignmentDocument;
 use App\Models\AssignmentIndicator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -45,26 +46,33 @@ class FileController extends Controller
 
     public function showOfficialDocument(AssignmentDocument $document)
     {
-        // Otorisasi: Pastikan user berhak melihat assignment terkait
+        // 1. Otorisasi (Sangat disarankan untuk dokumen internal)
         // $this->authorize('view', $document->assignment);
 
-        if (!Storage::disk('local')->exists($document->path)) {
-            abort(404, 'File dokumen tidak ditemukan.');
+        // 2. Gunakan file_path (sesuai Model) dan tambahkan pengecekan null
+        if (!$document->file_path || !Storage::disk('local')->exists($document->file_path)) {
+            abort(404, 'Berkas fisik tidak ditemukan di server.');
         }
 
-        $path = Storage::disk('local')->path($document->path);
-        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        // 3. Dapatkan path lengkap secara aman
+        $fullPath = Storage::disk('local')->path($document->file_path);
+        $extension = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
 
-        // Nama file saat didownload: misal BA_Lapangan_Unit_Teknik.pdf
-        $displayFileName = strtoupper($document->type) . "_" . str_replace(' ', '_', $document->assignment->target_name) . "." . $extension;
+        // 4. Generate Nama File yang Profesional
+        // Contoh: BA_LAPANGAN_PRODI_TEKNIK_INFORMATIKA.pdf
+        $cleanUnitName = str_replace([' ', '/', '\\'], '_', strtoupper($document->assignment->target_name));
+        $cleanTypeName = str_replace(' ', '_', strtoupper($document->type->value));
+        $displayFileName = "{$cleanTypeName}_{$cleanUnitName}.{$extension}";
 
+        // 5. Response berdasarkan tipe file
         if ($extension === 'pdf') {
-            return response()->file($path, [
+            return response()->file($fullPath, [
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => 'inline; filename="' . $displayFileName . '"'
             ]);
         }
 
-        return response()->download($path, $displayFileName);
+        // Untuk file selain PDF (zip, docx, dll) otomatis download
+        return response()->download($fullPath, $displayFileName);
     }
 }

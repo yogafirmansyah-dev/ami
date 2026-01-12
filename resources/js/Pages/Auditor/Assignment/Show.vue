@@ -24,13 +24,24 @@ watch(search, debounce((value) => {
 const showDocModal = ref(false);
 const docForm = useForm({ type: '', label: '', file: null });
 const openDocUpload = (doc) => {
+    docForm.clearErrors(); // Bersihkan error sebelumnya
     docForm.type = doc.type;
     docForm.label = doc.label;
     showDocModal.value = true;
 };
+
 const submitDoc = () => {
-    docForm.post(route('auditor.assignments.upload-doc', props.assignment.id), {
-        onSuccess: () => { showDocModal.value = false; docForm.reset(); }
+    docForm.post(route('auditor.assignments.upload-document', props.assignment.id), {
+        forceFormData: true, // Memastikan data dikirim sebagai Multipart/Form-Data
+        preserveScroll: true,
+        onSuccess: () => {
+            showDocModal.value = false;
+            docForm.reset();
+        },
+        onError: (errors) => {
+            // Log error ke konsol untuk memudahkan debugging
+            console.error("Upload Gagal:", errors);
+        }
     });
 };
 
@@ -481,11 +492,18 @@ const canUploadBA = (type) => {
                     <div
                         class="p-2 bg-rose-50 dark:bg-rose-900/10 text-rose-600 rounded-[2rem] text-[10px] font-black uppercase border border-rose-100 dark:border-rose-900 shadow-inner">
                         Jenis Dokumen: <span class="block text-sm mt-1 tracking-tighter italic">{{ docForm.label
-                        }}</span>
+                            }}</span>
+                    </div>
+                    <div v-if="docForm.errors.message"
+                        class="p-3 mb-4 bg-rose-50 text-rose-600 text-[10px] font-bold rounded-xl border border-rose-100 italic">
+                        {{ docForm.errors.message }}
                     </div>
                     <div class="relative group">
                         <input type="file" @input="docForm.file = $event.target.files[0]" required
                             class="w-full text-[10px] text-slate-400 file:mr-4 file:py-3 file:px-8 file:rounded-2xl file:border-0 file:bg-slate-900 file:text-white file:font-black hover:file:bg-rose-600 transition-all cursor-pointer" />
+                    </div>
+                    <div v-if="docForm.errors.file" class="text-[9px] text-rose-500 font-bold mt-1 uppercase italic">
+                        {{ docForm.errors.file }}
                     </div>
                     <button type="submit" :disabled="docForm.processing"
                         class="w-full py-5 bg-rose-600 text-white rounded-[2rem] font-black uppercase text-[10px] tracking-[0.3em] shadow-2xl hover:bg-rose-700 transition-all active:scale-95 disabled:opacity-50">
