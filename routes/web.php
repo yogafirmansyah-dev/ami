@@ -2,12 +2,13 @@
 
 use App\Http\Controllers\Admin\AuditHistoryController;
 use App\Http\Controllers\Admin\FacultyController;
+use App\Http\Controllers\Admin\LibraryDocumentController;
 use App\Http\Controllers\Admin\MasterIndicatorController;
 use App\Http\Controllers\Admin\MasterStandardController;
 use App\Http\Controllers\Admin\PeriodController;
 use App\Http\Controllers\Admin\ProdiController;
 use App\Http\Controllers\AssignmentDocumentController;
-use App\Http\Controllers\{DashboardController, FileController, FilePreviewController, ReportExportController};
+use App\Http\Controllers\{DashboardController, FileController, FilePreviewController, LibraryController, ReportExportController};
 use App\Http\Controllers\Admin\AssignmentController as AdminAssignmentController;
 use App\Http\Controllers\Auditor\{AssignmentController as AuditorAssignmentController, AssignmentIndicatorController as AuditorIndicatorController};
 use App\Http\Controllers\Auditee\{AssignmentController as AuditeeAssignmentController, AssignmentIndicatorController as AuditeeIndicatorController};
@@ -250,6 +251,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
     Route::get('/admin/indicators/{indicator}/assignment-template', [MasterIndicatorController::class, 'showAssignmentTemplate'])
         ->name('admin.indicators.show-assignment-template');
+    Route::get('/library', [LibraryController::class, 'index'])->name('library.index');
+    Route::get('/library/download/{libraryDocument}', [LibraryController::class, 'download'])->name('library.download');
 
     // ==========================================
     // GROUP ADMIN
@@ -277,6 +280,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::resource('users', UserController::class)->except(['show', 'edit', 'create']);
         Route::post('/users/{user}/reset-2fa', [UserController::class, 'resetTwoFactor'])->name('users.reset-2fa');
         Route::get('/audit-history', [AuditHistoryController::class, 'index'])->name('history.index');
+
+        // Manajemen Dokumen
+        Route::resource('library', LibraryDocumentController::class)->except(['create', 'show', 'edit']);
     });
 
     // ==========================================

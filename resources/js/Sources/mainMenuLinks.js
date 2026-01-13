@@ -109,6 +109,21 @@ export default function ({ role, permissions }) {
                     { id: "auditHistory", label: "Audit Trail", link: "admin.history.index", type: "route" },
                 ]
             },
+
+            {
+                id: "library",
+                label: "Dokumen Library",
+                icon: "scroll",
+                type: "route",
+                link: hasRole('admin')
+                    ? 'admin.library.index'
+                    : 'library.index',
+                visibleFor:
+                    hasRole('admin') ||
+                    hasRole('auditor') ||
+                    hasRole('auditee'),
+            },
+
         ];
     });
 
