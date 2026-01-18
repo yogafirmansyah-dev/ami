@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue';
-import { router, useForm, Head } from '@inertiajs/vue3';
+import { router, useForm, Head, usePage, Link } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import debounce from 'lodash/debounce';
 
@@ -10,14 +10,23 @@ const props = defineProps({
     filters: Object,
 });
 
-/* --- LOGIKA PENCARIAN --- */
+/* --- LOGIKA PENCARIAN & PAGINATION --- */
 const search = ref(props.filters.search);
+const perPage = ref(props.filters.per_page || 10);
+
 watch(search, debounce((value) => {
-    router.get(route('admin.prodis.index'), { search: value }, {
+    router.get(route('admin.prodis.index'), { search: value, per_page: perPage.value }, {
         preserveState: true,
         replace: true
     });
 }, 500));
+
+watch(perPage, (value) => {
+    router.get(route('admin.prodis.index'), { search: search.value, per_page: value }, {
+        preserveState: true,
+        replace: true
+    });
+});
 
 /* --- LOGIKA MODAL & FORM --- */
 const showModal = ref(false);
@@ -52,10 +61,24 @@ const submit = () => {
     if (editMode.value) {
         form.put(route('admin.prodis.update', form.id), {
             onSuccess: () => closeModal(),
+            onError: () => {
+                usePage().props.flash.toastr = {
+                    type: 'error',
+                    content: 'Terdapat kesalahan validasi, mohon cek kembali form anda.',
+                    position: 'top-right'
+                };
+            }
         });
     } else {
         form.post(route('admin.prodis.store'), {
             onSuccess: () => closeModal(),
+            onError: () => {
+                usePage().props.flash.toastr = {
+                    type: 'error',
+                    content: 'Terdapat kesalahan validasi, mohon cek kembali form anda.',
+                    position: 'top-right'
+                };
+            }
         });
     }
 };
@@ -74,125 +97,178 @@ const deleteData = (id) => {
 
         <template #action-buttons>
             <button @click="openCreateModal"
-                class="inline-flex items-center px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors">
-                <span class="mr-2">+</span> Tambah Prodi
+                class="group inline-flex items-center px-6 py-2.5 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 dark:from-rose-600 dark:via-rose-500 dark:to-rose-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-lg shadow-slate-900/20 dark:shadow-rose-600/30 transition-all hover:shadow-xl hover:shadow-slate-900/30 dark:hover:shadow-rose-600/40 hover:-translate-y-0.5 active:scale-95 border-t border-white/10">
+                <span
+                    class="mr-2 text-rose-400 dark:text-white group-hover:rotate-90 transition-transform duration-300 text-sm leading-none">+</span>
+                Tambah Prodi
             </button>
         </template>
 
-        <div class="space-y-4">
-            <div class="flex justify-end">
-                <div class="relative w-full max-w-sm">
-                    <input v-model="search" type="text" placeholder="Cari nama prodi..."
-                        class="w-full pl-4 pr-10 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-all" />
+        <div class="space-y-6">
+            <div class="flex flex-col lg:flex-row justify-between items-center gap-6">
+                <div class="flex items-stretch gap-3 w-full max-w-2xl">
+                    <div class="relative flex-1 group">
+                        <span class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                            <icon icon="fa-solid fa-magnifying-glass"
+                                class="text-slate-400 text-xs group-focus-within:text-rose-500 transition-colors" />
+                        </span>
+                        <input v-model="search" type="text" placeholder="Cari nama prodi..."
+                            class="w-full pl-11 pr-4 py-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400/50 font-bold text-xs rounded-2xl border-none outline-none focus:outline-none ring-1 ring-slate-200 dark:ring-slate-800 dark:focus:ring-rose-500/50 focus:ring-4 focus:ring-rose-500/50 shadow-sm focus:shadow-md transition-[ring,background-color,box-shadow] duration-300 ease-out focus:bg-slate-50 dark:focus:bg-slate-800/80" />
+                    </div>
+
+                    <div
+                        class="flex items-center bg-white dark:bg-slate-900 rounded-2xl px-4 ring-1 ring-slate-200 dark:ring-slate-800 shadow-sm hover:ring-rose-500/50 dark:hover:ring-rose-500/50 transition-all duration-300">
+                        <span
+                            class="hidden sm:inline text-[9px] font-black uppercase text-slate-400 px-2 border-r border-slate-200 dark:border-slate-800 mr-2">Tampilkan</span>
+                        <select v-model="perPage"
+                            class="bg-transparent dark:bg-slate-900 border-none focus:ring-0 text-xs font-black text-slate-900 dark:text-white py-4 pr-8 cursor-pointer hover:text-rose-500 dark:hover:text-rose-500 transition-colors duration-300 outline-none">
+                            <option :value="10">10</option>
+                            <option :value="25">25</option>
+                            <option :value="50">50</option>
+                            <option :value="100">100</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <!-- Slot action -->
                 </div>
             </div>
 
             <div
-                class="overflow-x-auto bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
-                <table class="w-full text-sm text-left">
-                    <thead
-                        class="bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 uppercase text-xs font-bold">
-                        <tr>
-                            <th class="p-4">Nama Program Studi</th>
-                            <th class="p-4">Fakultas</th>
-                            <th class="p-4 text-center">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
-                        <tr v-for="item in prodis.data" :key="item.id"
-                            class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                            <td class="p-4 font-medium text-slate-700 dark:text-slate-200">{{ item.name }}</td>
-                            <td class="p-4">
-                                <span
-                                    class="px-2.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-md text-xs font-semibold">
-                                    {{ item.faculty?.name || 'N/A' }}
-                                </span>
-                            </td>
-                            <td class="p-4">
-                                <div class="flex justify-center gap-2">
-                                    <button @click="openEditModal(item)"
-                                        class="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
-                                            viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                    </button>
-                                    <button @click="deleteData(item.id)"
-                                        class="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
-                                            viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr v-if="prodis.data.length === 0">
-                            <td colspan="3" class="p-8 text-center text-slate-500 italic">Data tidak ditemukan.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="flex items-center justify-between py-2">
-                <div class="text-xs text-slate-500">
-                    Menampilkan {{ prodis.from }} sampai {{ prodis.to }} dari {{ prodis.total }} data
+                class="bg-white/60 dark:bg-slate-900 backdrop-blur-3xl rounded-[2.5rem] border border-white/40 dark:border-white/5 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left border-collapse min-w-[1000px] lg:min-w-full">
+                        <thead>
+                            <tr
+                                class="bg-slate-50/80 dark:bg-slate-800/20 text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] sticky top-0 z-20 border-b border-slate-100 dark:border-slate-800/50">
+                                <th class="p-6 md:p-8 pl-8 w-24">No</th>
+                                <th class="p-6 md:p-8">Nama Program Studi</th>
+                                <th class="p-6 md:p-8">Fakultas</th>
+                                <th class="p-6 md:p-8 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-50 dark:divide-slate-800/20">
+                            <tr v-for="item in prodis.data" :key="item.id"
+                                class="group hover:bg-white/50 dark:hover:bg-white/[0.02] transition-colors duration-300">
+                                <td class="p-6 md:p-8 pl-8">
+                                    <span
+                                        class="font-mono text-sm font-black text-rose-500 bg-rose-50 dark:bg-rose-500/10 px-2 py-1 rounded-md border border-rose-100 dark:border-rose-500/20">
+                                        {{ prodis.from + prodis.data.indexOf(item) }}
+                                    </span>
+                                </td>
+                                <td class="p-6 md:p-8">
+                                    <div class="font-bold text-slate-700 dark:text-slate-200 text-sm">
+                                        {{ item.name }}
+                                    </div>
+                                    <div
+                                        class="text-[10px] font-bold text-rose-500/80 uppercase italic tracking-tighter flex items-center gap-1 mt-1">
+                                        ID: #{{ item.id }}
+                                    </div>
+                                </td>
+                                <td class="p-6 md:p-8">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wide bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border border-emerald-100 dark:border-emerald-500/20 shadow-sm">
+                                        <icon icon="fa-solid fa-building-columns" class="mr-1.5 opacity-70" />
+                                        {{ item.faculty?.name || 'N/A' }}
+                                    </span>
+                                </td>
+                                <td class="p-6 md:p-8">
+                                    <div class="flex justify-center gap-2">
+                                        <button @click="openEditModal(item)"
+                                            class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-blue-600 rounded-xl transition-all shadow-sm hover:shadow-md hover:border-blue-200 active:scale-95">
+                                            <icon icon="fa-solid fa-pencil" class="text-[10px]" />
+                                        </button>
+                                        <button @click="deleteData(item.id)"
+                                            class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-600 rounded-xl transition-all shadow-sm hover:shadow-md hover:border-rose-200 active:scale-95">
+                                            <icon icon="fa-solid fa-trash" class="text-[10px]" />
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr v-if="prodis.data.length === 0">
+                                <td colspan="4" class="p-12 text-center">
+                                    <div class="flex flex-col items-center justify-center opacity-50">
+                                        <icon icon="fa-solid fa-folder-open"
+                                            class="text-4xl text-slate-300 dark:text-slate-600 mb-4" />
+                                        <p class="text-xs font-black text-slate-400 uppercase tracking-widest italic">
+                                            Belum ada data program studi</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <div class="flex gap-1">
-                    <button v-for="link in prodis.links" :key="link.label" v-html="link.label"
-                        @click="link.url ? $inertia.visit(link.url) : null" :disabled="!link.url"
-                        class="px-3 py-1 text-xs rounded-md border transition-all" :class="[
-                            link.active ? 'bg-rose-600 text-white border-rose-600' : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50',
-                            !link.url ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-                        ]" />
+
+                <!-- PAGINATION -->
+                <div
+                    class="flex flex-col md:flex-row items-center justify-between gap-4 px-6 md:px-8 py-6 border-t border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-800/20 backdrop-blur-sm">
+                    <div
+                        class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest italic text-center md:text-left">
+                        Data {{ prodis.from }} - {{ prodis.to }} dari total {{ prodis.total }}
+                    </div>
+                    <div class="flex flex-wrap justify-center gap-1.5">
+                        <Link v-for="(link, k) in prodis.links" :key="k" :href="link.url || '#'" :class="[
+                            'px-3 md:px-4 py-2 text-[10px] font-black rounded-xl border transition-all',
+                            link.active
+                                ? 'bg-slate-900 dark:bg-rose-600 text-white border-slate-900 dark:border-rose-600 shadow-lg shadow-slate-900/20'
+                                : 'bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800 hover:border-rose-500 hover:text-rose-500',
+                            !link.url ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
+                        ]" v-html="link.label" />
+                    </div>
                 </div>
             </div>
         </div>
 
         <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="closeModal"></div>
+            <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-md transition-opacity" @click="closeModal"></div>
 
             <div
-                class="relative bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-                <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                    <h3 class="text-lg font-bold text-slate-800 dark:text-white">
-                        {{ editMode ? 'Edit Program Studi' : 'Tambah Program Studi' }}
-                    </h3>
-                    <button @click="closeModal" class="text-slate-400 hover:text-slate-600">&times;</button>
+                class="relative bg-white dark:bg-slate-900 w-full max-w-xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-white/10">
+                <div
+                    class="p-8 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex justify-between items-center">
+                    <div>
+                        <h3
+                            class="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic">
+                            {{ editMode ? 'Edit Program Studi' : 'Program Studi Baru' }}
+                        </h3>
+                        <p class="text-[10px] font-bold text-rose-500 uppercase tracking-widest mt-1">
+                            Manajemen Unit Kerja
+                        </p>
+                    </div>
+                    <button @click="closeModal"
+                        class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-rose-600 transition-colors font-bold text-lg">&times;</button>
                 </div>
 
-                <form @submit.prevent="submit" class="p-6 space-y-5">
-                    <div class="space-y-1.5">
-                        <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Nama Program
-                            Studi</label>
+                <form @submit.prevent="submit" class="p-8 space-y-6">
+                    <div class="space-y-2">
+                        <label
+                            class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Nama
+                            Program Studi</label>
                         <input v-model="form.name" type="text" required placeholder="Contoh: S1 Informatika"
-                            class="w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 transition-all"
-                            :class="form.errors.name ? 'border-red-500 focus:ring-red-200' : 'border-slate-300 focus:ring-rose-200 focus:border-rose-500'" />
-                        <p v-if="form.errors.name" class="text-xs text-red-500 mt-1">{{ form.errors.name }}</p>
-                    </div>
-
-                    <div class="space-y-1.5">
-                        <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Fakultas</label>
-                        <select v-model="form.faculty_id" required
-                            class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-500 transition-all bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200">
-                            <option value="" disabled>Pilih Fakultas</option>
-                            <option v-for="fac in faculties" :key="fac.id" :value="fac.id">{{ fac.name }}</option>
-                        </select>
-                        <p v-if="form.errors.faculty_id" class="text-xs text-red-500 mt-1">{{ form.errors.faculty_id }}
+                            class="w-full px-5 py-3.5 bg-white dark:bg-slate-900 border-none rounded-2xl text-xs font-bold text-slate-900 dark:text-white ring-1 ring-slate-200 dark:ring-slate-800 focus:ring-2 focus:ring-rose-500 transition-all shadow-sm focus:shadow-md" />
+                        <p v-if="form.errors.name" class="text-xs text-rose-500 font-bold ml-1">{{ form.errors.name }}
                         </p>
                     </div>
 
-                    <div class="flex justify-end gap-3 mt-8">
-                        <button type="button" @click="closeModal"
-                            class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
-                            Batal
-                        </button>
+                    <div class="space-y-2">
+                        <label
+                            class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Fakultas</label>
+                        <select v-model="form.faculty_id" required
+                            class="w-full px-5 py-3.5 bg-white dark:bg-slate-900 border-none rounded-2xl text-xs font-bold text-slate-900 dark:text-white ring-1 ring-slate-200 dark:ring-slate-800 focus:ring-2 focus:ring-rose-500 transition-all shadow-sm">
+                            <option value="" disabled>Pilih Fakultas</option>
+                            <option v-for="fac in faculties" :key="fac.id" :value="fac.id">{{ fac.name }}</option>
+                        </select>
+                        <p v-if="form.errors.faculty_id" class="text-xs text-rose-500 font-bold ml-1">{{
+                            form.errors.faculty_id }}
+                        </p>
+                    </div>
+
+                    <div class="pt-4">
                         <button type="submit" :disabled="form.processing"
-                            class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-sm font-medium rounded-lg shadow-sm disabled:opacity-50 transition-colors">
-                            <span v-if="form.processing">Memproses...</span>
-                            <span v-else>{{ editMode ? 'Simpan Perubahan' : 'Tambah Data' }}</span>
+                            class="w-full py-4 bg-slate-900 dark:bg-rose-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl shadow-slate-900/10 dark:shadow-rose-600/20 transition-all hover:bg-rose-600 dark:hover:bg-rose-500 hover:-translate-y-0.5 active:scale-95 disabled:opacity-50">
+                            {{ form.processing ? 'Menyimpan...' : (editMode ? 'Simpan Perubahan' : 'Buat Program Studi')
+                            }}
                         </button>
                     </div>
                 </form>

@@ -1,8 +1,8 @@
 {
-    "name": "sinan-aydogan/tailadmin-laravel",
+    "name": "yoga/ami",
     "type": "project",
-    "description": "TailAdmin is a dashboard theme / UI starter kit with Laravel, TailwindCSS, Inertia and VueJS",
-    "keywords": ["laravel", "admin", "dashboard", "starter kit", "component", "monolit", "admin panel", "tailadmin", "framework"],
+    "description": "AMI adalah aplikasi Audit Mutu Internal",
+    "keywords": ["laravel", "admin", "dashboard", "audit", "mutu", "internal", "component", "monolit", "framework"],
     "license": "MIT",
     "require": {
         "php": "^8.2",

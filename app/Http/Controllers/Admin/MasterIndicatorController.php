@@ -57,7 +57,7 @@ class MasterIndicatorController extends Controller
             ]);
         });
 
-        Session::flash('toastr', ['type' => 'gradient-primary', 'content' => 'Indikator berhasil ditambahkan.']);
+        Session::flash('toastr', ['type' => 'solid-blue', 'content' => 'Indikator berhasil ditambahkan.']);
         return back();
     }
 
@@ -102,7 +102,7 @@ class MasterIndicatorController extends Controller
             ]);
         });
 
-        Session::flash('toastr', ['type' => 'gradient-info', 'content' => 'Indikator dan riwayat perubahan berhasil diperbarui.']);
+        Session::flash('toastr', ['type' => 'solid-yellow', 'content' => 'Indikator dan riwayat perubahan berhasil diperbarui.']);
         return back();
     }
 

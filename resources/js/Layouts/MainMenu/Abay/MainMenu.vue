@@ -80,14 +80,17 @@ watch(breakpoints.value, (newValue) => {
 </script>
 
 <template>
-    <div class="abay-main-menu" :class="{
-        'border-r': showSubMenu,
-        'abay-main-menu-show': menuStatus === 'opened',
-        'abay-main-menu-hide': menuStatus === 'hidden',
-    }">
+    <div class="abay-main-menu bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-r border-white/20 dark:border-slate-800 h-screen transition-all duration-300 z-50 flex flex-col items-center py-4"
+        :class="{
+            'w-20': menuStatus === 'opened',
+            'hidden': menuStatus === 'hidden',
+        }">
         <!-- Logo -->
-        <Link :href="route('/')" class="h-16 w-16 text-rose-600 my-4 mx-auto">
-            <img :src="[
+        <Link :href="route('/')" class="relative group my-4">
+            <div
+                class="absolute inset-0 bg-rose-500 blur-2xl opacity-10 group-hover:opacity-30 transition-opacity duration-500 rounded-full">
+            </div>
+            <img class="relative h-12 w-12 object-contain transition-transform duration-500 group-hover:scale-110" :src="[
                 appearingMode === 'dark' ? mainMenuConf.abay.logo.dark ? mainMenuConf.abay.logo.dark : appConf.logo.dark :
                     mainMenuConf.abay.logo.light ? mainMenuConf.abay.logo.light : appConf.logo.light
             ]" />
@@ -95,40 +98,47 @@ watch(breakpoints.value, (newValue) => {
 
         <!-- Main Links -->
         <div
-            class="flex flex-col flex-grow space-y-[.25rem] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-rose-500 scrollbar-track-slate-200 overscroll-x-none pr-4 -mr-4 scroll-smooth">
+            class="flex flex-col flex-grow space-y-4 w-full px-2 mt-8 overflow-y-auto overflow-x-hidden custom-scrollbar">
 
             <!-- Link -->
             <template v-for="link in mainMenuLinks" :key="link.id">
-                <div @click="activeMainLink[0] = link.id; showSubMenu = true" class="abay-main-menu-root-wrapper"
-                    :class="{ 'bg-rose-500 text-gray-50': activeMainLink[0] === link.id }">
+                <div @click="activeMainLink[0] = link.id; showSubMenu = true"
+                    class="relative group cursor-pointer flex flex-col items-center justify-center w-full aspect-square rounded-2xl transition-all duration-300 hover:bg-white/60 dark:hover:bg-slate-800/60"
+                    :class="{ 'bg-white dark:bg-slate-800 shadow-lg shadow-rose-500/10 text-rose-600 dark:text-rose-500': activeMainLink[0] === link.id, 'text-slate-400 dark:text-slate-500 hover:text-rose-500': activeMainLink[0] !== link.id }">
+
+                    <!-- Active Indicator -->
+                    <div v-if="activeMainLink[0] === link.id"
+                        class="absolute inset-y-3 left-0 w-1 bg-rose-500 rounded-r-full shadow-[0_0_10px_rgba(244,63,94,0.4)]">
+                    </div>
+
                     <!--Dropdown-->
-
-                    <div v-if="link.type === 'dropdown'" class="abay-main-menu-root-link">
+                    <div v-if="link.type === 'dropdown'" class="flex flex-col items-center gap-1">
                         <!-- Icon -->
-                        <icon v-if="link.icon" :icon="link.icon" class="w-6 h-6" />
-
+                        <icon v-if="link.icon" :icon="link.icon"
+                            class="w-6 h-6 transition-transform group-hover:scale-110 duration-300" />
                         <!-- Label -->
-                        <span class="text-[.65rem]" v-text="link.label" />
+                        <span class="text-[9px] font-black uppercase tracking-wider" v-text="link.label" />
                     </div>
 
                     <!--Internal Route Link-->
-                    <Link v-if="link.type === 'route'" :href="route(link.link)" class="abay-main-menu-root-link">
-
+                    <Link v-if="link.type === 'route'" :href="route(link.link)"
+                        class="flex flex-col items-center gap-1 w-full h-full justify-center">
                         <!-- Icon -->
-                        <icon v-if="link.icon" :icon="link.icon" class="w-6 h-6" />
-
+                        <icon v-if="link.icon" :icon="link.icon"
+                            class="w-6 h-6 transition-transform group-hover:scale-110 duration-300" />
                         <!-- Label -->
-                        <span class="text-[.65rem]" v-text="link.label" />
+                        <span class="text-[9px] font-black uppercase tracking-wider" v-text="link.label" />
                     </Link>
 
                     <!--External Link-->
-                    <a v-if="link.type === 'simple-link'" class="abay-main-menu-root-link" :href="link.link"
-                        :target="!!link.target" :key="link.id">
+                    <a v-if="link.type === 'simple-link'"
+                        class="flex flex-col items-center gap-1 w-full h-full justify-center" :href="link.link"
+                        :target="link.target ? '_blank' : null">
                         <!-- Icon -->
-                        <icon v-if="link.icon" :icon="link.icon" class="w-6 h-6" />
-
+                        <icon v-if="link.icon" :icon="link.icon"
+                            class="w-6 h-6 transition-transform group-hover:scale-110 duration-300" />
                         <!-- Label -->
-                        <span class="text-[.65rem]" v-text="link.label" />
+                        <span class="text-[9px] font-black uppercase tracking-wider" v-text="link.label" />
                     </a>
 
                 </div>
@@ -136,30 +146,32 @@ watch(breakpoints.value, (newValue) => {
         </div>
 
         <!--Footer Links-->
-        <template v-for="link in mainMenuFooterLinks" :key="link.id">
-            <div
-                class="flex flex-shrink-0 justify-center items-center h-12 w-12 mx-auto bg-slate-100/10 mb-4 rounded-full">
+        <div class="mt-auto flex flex-col gap-2 w-full px-2">
+            <template v-for="link in mainMenuFooterLinks" :key="link.id">
+                <div
+                    class="flex justify-center items-center w-10 h-10 mx-auto rounded-xl bg-slate-50 dark:bg-slate-800/50 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all duration-300 cursor-pointer">
 
-                <!--Internal Route Link-->
-                <Link v-if="link.linkType === 'route'" id="footer-link" :href="route(link.link)" :key="link.id">
-                    <icon v-if="link.icon" :icon="link.icon" class="mt-1 w-6 h-6" />
-                </Link>
-                <!--External Link-->
-                <a v-else id="footer-link" :href="link.link" :target="!!link.target" :key="link.id">
-                    <icon v-if="link.icon" :icon="link.icon" class="mt-1 w-6 h-6" />
-                </a>
-            </div>
-        </template>
+                    <!--Internal Route Link-->
+                    <Link v-if="link.linkType === 'route'" id="footer-link" :href="route(link.link)">
+                        <icon v-if="link.icon" :icon="link.icon" class="w-5 h-5" />
+                    </Link>
+                    <!--External Link-->
+                    <a v-else id="footer-link" :href="link.link" :target="!!link.target">
+                        <icon v-if="link.icon" :icon="link.icon" class="w-5 h-5" />
+                    </a>
+                </div>
+            </template>
+        </div>
 
         <!-- User Menu -->
-        <div class="flex items-center justify-center">
+        <div class="mt-6 flex items-center justify-center w-full px-2 pb-2">
             <user-menu />
         </div>
     </div>
     <!-- Sub Links -->
 
     <div v-if="activeMainLink[0]"
-        class="absolute z-10 flex h-full flex-col px-4 -mb-4 w-56 bg-gradient-to-tl from-slate-700/90 to-slate-800  text-gray-50"
+        class="absolute z-10 flex h-full flex-col px-4 -mb-4 w-56 bg-slate-50/90 dark:bg-slate-900/95 backdrop-blur-xl border-r border-white/20 dark:border-slate-800 text-slate-600 dark:text-slate-300"
         :class="[
             showSubMenu ? 'left-28' : '-left-56',
             'transition-all duration-700'

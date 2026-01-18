@@ -1,6 +1,6 @@
 /*<editor-fold desc="Umay Main Menu">*/
 .umay-main-menu {
-    @apply flex flex-col flex-shrink-0 justify-between w-72 h-screen bg-gray-800 relative transition-size-medium
+    @apply flex flex-col flex-shrink-0 justify-between w-72 h-screen bg-gray-800 relative transition-size-medium shadow-sm border-r-2 border-slate-200 dark:border-slate-600
 }
 
 /*<editor-fold desc="Main Menu Header">*/
@@ -169,3 +169,6 @@
     @apply -ml-28 opacity-0
 }
 /*</editor-fold>*/
+.no-transition {
+    transition: none !important;
+}

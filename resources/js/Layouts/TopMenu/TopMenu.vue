@@ -34,7 +34,7 @@ provide('topBarConf', topBarConf);
 </script>
 
 <template>
-    <div class="top-menu shadow-sm" :class="`radius-${topBarConf.radius ? topBarConf.radius : appConf.radius}`">
+    <div class="top-menu shadow-sm">
         <div v-if="appConf.mainMenuDesign === 'umay' || (breakpoints.smaller('md') && appConf.mainMenuDesign === 'abay')"
             @click="updateMainMenuStatus" class="trigger"
             :class="`radius-${topBarConf.radius ? topBarConf.radius : appConf.radius}`">

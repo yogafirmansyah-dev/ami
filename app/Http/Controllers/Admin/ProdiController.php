@@ -48,7 +48,7 @@ class ProdiController extends Controller
             ]);
         });
 
-        Session::flash('toastr', ['type' => 'gradient-primary', 'content' => 'Prodi berhasil ditambahkan.']);
+        Session::flash('toastr', ['type' => 'solid-blue', 'content' => 'Prodi berhasil ditambahkan.']);
         return back();
     }
 
@@ -74,7 +74,7 @@ class ProdiController extends Controller
             ]);
         });
 
-        Session::flash('toastr', ['type' => 'gradient-info', 'content' => 'Data prodi diperbarui.']);
+        Session::flash('toastr', ['type' => 'solid-yellow', 'content' => 'Data prodi diperbarui.']);
         return back();
     }
 

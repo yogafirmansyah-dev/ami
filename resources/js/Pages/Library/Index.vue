@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import debounce from 'lodash/debounce';
@@ -23,6 +23,12 @@ const getFileIcon = (ext) => {
     if (['xls', 'xlsx'].includes(e)) return '📊';
     return '📁';
 };
+
+const emptyStateMessage = computed(() => {
+    return search.value
+        ? `Tidak ada hasil untuk kata kunci "${search.value}"`
+        : 'Database dokumen saat ini masih kosong.';
+});
 </script>
 
 <template>
@@ -143,35 +149,53 @@ const getFileIcon = (ext) => {
                                     </a>
                                 </td>
                             </tr>
+
+                            <tr v-if="documents.data.length === 0">
+                                <td colspan="5" class="p-12 text-center">
+                                    <div
+                                        class="flex flex-col items-center justify-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-700/50 rounded-[2.5rem]">
+                                        <div
+                                            class="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6 shadow-sm">
+                                            <icon :icon="search ? 'fa-solid fa-search' : 'fa-solid fa-folder'"
+                                                class="text-3xl text-slate-300 dark:text-slate-600" />
+                                        </div>
+                                        <h4
+                                            class="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest">
+                                            {{ search ? 'Tidak Ditemukan' : 'Belum Ada Dokumen' }}
+                                        </h4>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase mt-2 max-w-xs px-4">
+                                            {{ emptyStateMessage }}
+                                        </p>
+                                        <button v-if="search" @click="search = ''"
+                                            class="mt-6 px-6 py-2 bg-slate-100 dark:bg-slate-800 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                                            Reset Pencarian
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <div
+                <div v-if="documents.data.length > 0"
                     class="p-8 bg-slate-50/50 dark:bg-slate-800/50 border-t dark:border-slate-800 flex justify-between items-center">
                     <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">
                         Menampilkan {{ documents.data.length }} dari {{ documents.total }} Dokumen Tersedia
                     </p>
                     <div class="flex gap-2">
+                        <div class="flex justify-end gap-1 mt-6">
+                            <button v-for="link in documents.links" :key="link.label" v-html="link.label"
+                                :disabled="!link.url"
+                                @click="router.get(link.url, {}, { preserveState: true, replace: true })"
+                                class="px-4 py-2 text-[10px] font-black uppercase rounded-xl border transition" :class="[
+                                    link.active
+                                        ? 'bg-slate-900 text-white'
+                                        : 'bg-white text-slate-600 hover:bg-slate-100',
+                                    !link.url && 'opacity-40 cursor-not-allowed'
+                                ]" />
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <div v-if="documents.data.length === 0"
-                class="text-center py-32 bg-slate-50 dark:bg-slate-800/20 rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-800">
-                <div
-                    class="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <svg class="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9.172 17.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <h4 class="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest">Dokumen Tidak
-                    Ditemukan
-                </h4>
-                <p class="text-[10px] font-bold text-slate-400 uppercase mt-2">Coba gunakan kata kunci pencarian yang
-                    berbeda
-                </p>
             </div>
         </div>
     </AppLayout>

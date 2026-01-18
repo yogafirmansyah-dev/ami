@@ -12,7 +12,10 @@ return new class extends Migration {
     {
         Schema::create('audit_histories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->change()->comment('Siapa yang melakukan perubahan');
+            $table->foreignId('user_id')
+                ->nullable()
+                ->constrained()
+                ->nullOnDelete();
 
             // Polimorfik: Bisa merujuk ke MasterIndicator atau AssignmentIndicator
             $table->string('historable_type');

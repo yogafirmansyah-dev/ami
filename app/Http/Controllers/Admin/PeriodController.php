@@ -57,7 +57,7 @@ class PeriodController extends Controller
             ]);
         });
 
-        Session::flash('toastr', ['type' => 'gradient-primary', 'content' => 'Periode berhasil diterbitkan.']);
+        Session::flash('toastr', ['type' => 'solid-blue', 'content' => 'Periode berhasil diterbitkan.']);
         return back();
     }
 
@@ -94,7 +94,7 @@ class PeriodController extends Controller
             ]);
         });
 
-        Session::flash('toastr', ['type' => 'gradient-info', 'content' => 'Jadwal periode diperbarui.']);
+        Session::flash('toastr', ['type' => 'solid-yellow', 'content' => 'Jadwal periode diperbarui.']);
         return back();
     }
 

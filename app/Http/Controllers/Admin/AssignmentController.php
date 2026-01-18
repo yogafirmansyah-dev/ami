@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\AssignmentDocType;
+use App\Enums\AuditStage;
 use App\Http\Controllers\Controller;
-use App\Models\{Assignment, AuditHistory, Faculty, Prodi, Period, MasterStandard, User};
+use App\Models\{Assignment, AssignmentIndicator, AuditHistory, Faculty, Prodi, Period, MasterStandard, User};
 use App\Services\AssignmentService;
 use Carbon\Carbon;
 use Gate;
@@ -41,6 +42,7 @@ class AssignmentController extends Controller
         return Inertia::render('Admin/Assignment/Index', [
             'assignments' => $assignments,
             'filters' => $filters,
+            'stageBreakdown' => Assignment::stageBreakdown(),
             'prodis' => Prodi::all(['id', 'name']),
             'faculties' => Faculty::all(['id', 'name']),
             'periods' => Period::where('is_active', true)->get(['id', 'name']),
@@ -73,7 +75,10 @@ class AssignmentController extends Controller
                     return $q->where('period_id', $request->period_id)
                         ->where('assignable_type', $request->assignable_type === 'prodi'
                             ? Prodi::class
-                            : Faculty::class);
+                            : Faculty::class)
+                        ->where('assignable_id', $request->assignable_id)
+                        ->where('auditor_id', $request->auditor_id)
+                        ->where('master_standard_id', $request->master_standard_id);
                 })
             ],
             'auditor_id' => 'required|exists:users,id',
@@ -114,10 +119,23 @@ class AssignmentController extends Controller
         $filters = $request->only(['search', 'sort_field', 'direction', 'per_page']);
         $perPage = $request->input('per_page', 10);
 
-        // Eager load semua relasi
+        // Eager load relasi dasar
         $assignment->load(['period', 'standard', 'assignable', 'auditor', 'documents', 'histories.user']);
 
-        // --- LOGIKA GROUPING DOKUMEN ---
+        // LOGIKA DINAMIS: Filter Indikator berdasarkan Stage
+        $query = $assignment->indicators();
+
+        if ($assignment->current_stage->value === AuditStage::RTM_RTL->value) {
+            // Di tahap RTM, hanya tampilkan yang ada temuan (KTS/OB) dan muat relasi RTL
+            $query->whereIn('finding_type', ['KTS', 'OB'])->with('rtl');
+        }
+
+        $indicators = $query->search($filters['search'] ?? null, ['snapshot_code', 'snapshot_requirement'])
+            ->sort($filters['sort_field'] ?? 'snapshot_code', $filters['direction'] ?? 'asc')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        // Data Dokumen Tetap Sama
         $groupedDocuments = collect(AssignmentDocType::cases())->map(function ($type) use ($assignment) {
             return [
                 'type' => $type->value,
@@ -126,17 +144,20 @@ class AssignmentController extends Controller
             ];
         });
 
-        $indicators = $assignment->indicators()
-            ->search($filters['search'] ?? null, ['snapshot_code', 'snapshot_requirement', 'snapshot_target'])
-            ->sort($filters['sort_field'] ?? 'snapshot_code', $filters['direction'] ?? 'asc')
-            ->paginate($perPage)
-            ->withQueryString();
-
         return Inertia::render('Admin/Assignment/Show', [
             'assignment' => $assignment,
-            'groupedDocuments' => $groupedDocuments, // Kirim data yang sudah dikelompokkan
+            'groupedDocuments' => $groupedDocuments,
             'indicators' => $indicators,
-            'filters' => $filters
+            'filters' => $filters,
+            // Tambahkan statistik untuk progress bar di UI
+            'stageStats' => Assignment::stageBreakdown(),
+            'findingStats' => [
+                'ks' => $assignment->indicators()->where('finding_type', 'KS')->count(),
+                'kts' => $assignment->indicators()->where('finding_type', 'KTS')->count(),
+                'ob' => $assignment->indicators()->where('finding_type', 'OB')->count(),
+                'unassessed' => $assignment->indicators()->whereNull('finding_type')->count(),
+                'total_indicators' => $assignment->indicators()->count(),
+            ]
         ]);
     }
 
@@ -155,15 +176,15 @@ class AssignmentController extends Controller
 
         // Validasi Tahap (Stage-Gate) agar auditor tidak salah unggah
         if ($request->type === AssignmentDocType::FIELD_REPORT->value && !$stage->fieldReport()) {
-            return back()->withErrors(['message' => 'BA Lapangan hanya diunggah pada tahap Lapangan.']);
+            return back()->withErrors(['message' => 'BA Lapangan hanya diunggah pada tahap ' . AuditStage::FIELD_AUDIT->label() . '.']);
         }
 
         if ($request->type === AssignmentDocType::FINAL_REPORT->value && !$stage->finalReport()) {
-            return back()->withErrors(['message' => 'BA Final hanya diunggah pada tahap Pelaporan.']);
+            return back()->withErrors(['message' => 'BA Final hanya diunggah pada tahap ' . AuditStage::REPORTING->label() . '.']);
         }
 
         if ($request->type === AssignmentDocType::END_REPORT->value && !$stage->endReport()) {
-            return back()->withErrors(['message' => 'Laporan Akhir hanya diunggah pada tahap Selesai.']);
+            return back()->withErrors(['message' => 'Laporan Akhir hanya diunggah pada tahap Audit Selesai.']);
         }
 
         DB::transaction(function () use ($assignment, $request) {
@@ -175,7 +196,7 @@ class AssignmentController extends Controller
             );
         });
 
-        Session::flash('toastr', ['type' => 'gradient-primary', 'content' => 'Dokumen resmi berhasil diunggah.']);
+        Session::flash('toastr', ['type' => 'solid-blue', 'content' => 'Dokumen resmi berhasil diunggah.']);
         return back();
     }
 
@@ -218,10 +239,28 @@ class AssignmentController extends Controller
     public function finalize(Request $request, Assignment $assignment)
     {
         // Gate::authorize('finalize', $assignment);
+        // Pastikan hanya bisa difinalisasi jika sudah di tahap akhir (Reporting atau RTM)
+        if (
+            $assignment->current_stage->value !== AuditStage::REPORTING->value &&
+            $assignment->current_stage->value !== AuditStage::RTM_RTL->value
+        ) {
+            return back()->withErrors(['message' => 'Finalisasi hanya dapat dilakukan pada tahap Pelaporan atau RTM.']);
+        }
 
         // Pastikan audit belum selesai
         if ($assignment->completed_at) {
             return back()->withErrors(['message' => 'Audit ini sudah difinalisasi sebelumnya.']);
+        }
+
+        // Cek jika ada RTL yang belum CLOSED
+        $hasIncompleteRtl = $assignment->rtl()->where('status', '!=', \App\Enums\RtlStatus::CLOSED)->exists();
+        $hasMissingRtl = $assignment->indicators()
+            ->whereIn('finding_type', [\App\Enums\FindingType::KTS, \App\Enums\FindingType::OB])
+            ->doesntHave('rtl')
+            ->exists();
+
+        if ($hasIncompleteRtl || $hasMissingRtl) {
+            return back()->withErrors(['message' => 'Masih terdapat Rencana Tindak Lanjut (RTL) yang belum lengkap atau belum ditutup (Closed). Harap selesaikan semua RTL sebelum finalisasi.']);
         }
 
         // Validasi input
@@ -240,5 +279,64 @@ class AssignmentController extends Controller
         ]);
 
         return back();
+    }
+
+    /**
+     * Memajukan Tahapan Audit ke tahap selanjutnya
+     */
+    public function nextStage(Assignment $assignment)
+    {
+        $nextStage = $assignment->current_stage->next();
+
+        if (!$nextStage) {
+            Session::flash('toastr', ['type' => 'gradient-red-to-rose', 'content' => 'Sudah mencapai tahap akhir.']);
+            return back();
+        }
+
+        try {
+            $this->assignmentService->transitionToStage($assignment, $nextStage);
+        } catch (\Exception $e) {
+            return back()->withErrors(['message' => $e->getMessage()]);
+        }
+
+        Session::flash('toastr', [
+            'type' => 'solid-blue',
+            'content' => "Audit berpindah ke tahap: <b>{$nextStage->label()}</b>"
+        ]);
+
+        return back();
+    }
+
+    /**
+     * Mengembalikan Tahapan Audit ke tahap sebelumnya
+     */
+    public function previousStage(Assignment $assignment)
+    {
+        $prevStage = $assignment->current_stage->previous();
+
+        if (!$prevStage) {
+            Session::flash('toastr', ['type' => 'gradient-red-to-rose', 'content' => 'Sudah berada di tahap awal.']);
+            return back();
+        }
+
+        $this->assignmentService->transitionToStage($assignment, $prevStage);
+
+        Session::flash('toastr', [
+            'type' => 'gradient-warning',
+            'content' => "Audit dikembalikan ke tahap: <b>{$prevStage->label()}</b>"
+        ]);
+
+        return back();
+    }
+
+    public function history(AssignmentIndicator $indicator)
+    {
+        // Polymorphic relation: hanya mengambil log milik model AssignmentIndicator ini
+        $history = $indicator->histories()
+            ->with('user:id,name,role')
+            ->latest()
+            ->get();
+
+        return response()->json($history);
     }
 }

@@ -27,7 +27,7 @@ const dashboardComponent = computed(() => {
 </script>
 
 <template>
-    <AppLayout title="Dashboard Overview">
+    <AppLayout title="Ringkasan Dashboard">
         <template #header>Dashboard {{ role.toUpperCase() }}</template>
         <template #subHeader>Selamat Datang kembali, {{ $page.props.auth.user.name }}</template>
 

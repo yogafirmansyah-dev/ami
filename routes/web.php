@@ -5,10 +5,11 @@ use App\Http\Controllers\Admin\FacultyController;
 use App\Http\Controllers\Admin\LibraryDocumentController;
 use App\Http\Controllers\Admin\MasterIndicatorController;
 use App\Http\Controllers\Admin\MasterStandardController;
+use App\Http\Controllers\Admin\MonitoringRtmController;
 use App\Http\Controllers\Admin\PeriodController;
 use App\Http\Controllers\Admin\ProdiController;
 use App\Http\Controllers\AssignmentDocumentController;
-use App\Http\Controllers\{DashboardController, FileController, FilePreviewController, LibraryController, ReportExportController};
+use App\Http\Controllers\{Auditee\RtlController, Auditor\AuditorRtmController, DashboardController, FileController, FilePreviewController, LibraryController, ReportExportController};
 use App\Http\Controllers\Admin\AssignmentController as AdminAssignmentController;
 use App\Http\Controllers\Auditor\{AssignmentController as AuditorAssignmentController, AssignmentIndicatorController as AuditorIndicatorController};
 use App\Http\Controllers\Auditee\{AssignmentController as AuditeeAssignmentController, AssignmentIndicatorController as AuditeeIndicatorController};
@@ -273,8 +274,17 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
         // Penugasan Audit (Admin yang membuat tugas)
         Route::resource('assignments', AdminAssignmentController::class)->except(['edit', 'create']); // Baru
-        Route::post('/assignments/{assignment}/upload-document', [AdminAssignmentController::class, 'uploadDocument'])->name('assignments.upload-document');
-        Route::post('/assignments/{assignment}/finalize', [AdminAssignmentController::class, 'finalize'])->name('assignments.finalize');
+        // Rute Baru untuk Kontrol Tahapan (Stage Control)
+        Route::prefix('assignments/{assignment}')->name('assignments.')->group(function () {
+            // Menggunakan PATCH karena kita hanya mengupdate kolom 'current_stage'
+            Route::patch('/next', [AdminAssignmentController::class, 'nextStage'])->name('next');
+            Route::patch('/previous', [AdminAssignmentController::class, 'previousStage'])->name('previous');
+
+            // Rute yang sudah Anda miliki (Pastikan konsisten)
+            Route::post('/upload-document', [AdminAssignmentController::class, 'uploadDocument'])->name('upload-document');
+            Route::post('/finalize', [AdminAssignmentController::class, 'finalize'])->name('finalize');
+        });
+        Route::get('/indicators/{indicator}/history', [AdminAssignmentController::class, 'history'])->name('indicators.history');
 
         // Manajemen User & History
         Route::resource('users', UserController::class)->except(['show', 'edit', 'create']);
@@ -297,6 +307,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
         Route::post('/assignments/{assignment}/upload-document', [AuditorAssignmentController::class, 'uploadDocument'])->name('assignments.upload-document');
         Route::post('/assignments/{assignment}/finalize', [AuditorAssignmentController::class, 'finalize'])->name('assignments.finalize');
+
+        Route::patch('/rtl/{rtl}/verify', [AuditorIndicatorController::class, 'verifyRtl'])->name('indicators.verify-rtl');
     });
 
     // ==========================================
@@ -308,6 +320,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
         Route::patch('/indicators/{indicator}', [AuditeeIndicatorController::class, 'update'])->name('indicators.update');
         Route::get('/indicators/{indicator}/history', [AuditeeIndicatorController::class, 'history'])->name('indicators.history');
+        Route::patch('/rtl/{rtl}', [AuditeeIndicatorController::class, 'updateRtl'])->name('indicators.update-rtl');
     });
 
     // ==========================================

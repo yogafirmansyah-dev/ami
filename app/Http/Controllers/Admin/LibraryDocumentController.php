@@ -40,7 +40,7 @@ class LibraryDocumentController extends Controller
             'uploaded_by' => auth()->id()
         ]);
 
-        return back()->with('toastr', ['type' => 'success', 'content' => 'Dokumen berhasil ditambahkan.']);
+        return back()->with('toastr', ['type' => 'solid-blue', 'content' => 'Dokumen berhasil ditambahkan.']);
     }
 
     public function update(Request $request, LibraryDocument $library)
@@ -67,7 +67,8 @@ class LibraryDocumentController extends Controller
 
         $library->update($data);
 
-        return back()->with('toastr', ['type' => 'success', 'content' => 'Dokumen berhasil diperbarui.']);
+        Session::flash('toastr', ['type' => 'solid-green', 'content' => 'Dokumen berhasil diperbarui.']);
+        return back();
     }
 
     public function destroy(LibraryDocument $library)
@@ -75,6 +76,7 @@ class LibraryDocumentController extends Controller
         Storage::disk('local')->delete($library->file_path);
         $library->delete();
 
-        return back()->with('toastr', ['type' => 'success', 'content' => 'Dokumen berhasil dihapus.']);
+        Session::flash('toastr', ['type' => 'gradient-red-to-pink', 'content' => 'Dokumen berhasil dihapus.']);
+        return back();
     }
 }

@@ -38,4 +38,21 @@ class AssignmentIndicator extends Model
         'finding_type' => FindingType::class,
     ];
 
+    public function rtl()
+    {
+        return $this->hasOne(AssignmentRtl::class, 'assignment_indicator_id');
+    }
+
+    /**
+     * Cek apakah indikator ini memiliki temuan (KTS atau OB)
+     */
+    public function isFinding(): bool
+    {
+        // Pastikan Enum FindingType Anda memiliki value ini
+        return in_array($this->finding_type, [
+            FindingType::KTS,
+            FindingType::OB
+        ]);
+    }
+
 }

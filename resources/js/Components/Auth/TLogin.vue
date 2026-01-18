@@ -4,139 +4,145 @@
         <!--Container-->
         <div :class="[
             'auth-container',
-            { 'w-full': deviceType === 'phone' },
+            'flex items-center justify-center min-h-screen w-full relative z-10',
+            { 'p-4': deviceType === 'phone' },
         ]">
-            <!--Header-->
-            <div class="auth-header" :class="[
-                activeDesign.header,
-                deviceType !== 'phone' && `radius-t-${activeDesign.radius ? activeDesign.radius : appConf.radius}`,
-            ]">
-                <!--Logo-->
-                <div class="auth-logo">
-                    <slot v-if="$slots.logo" name="logo" />
-                    <div v-else :class="authScreenConf.logoAreaClasses">
-                        <img :src="temporaryLogo" :class="authScreenConf.logoClasses" />
-                        <span v-text="authScreenConf.appName ? authScreenConf.appName : appConf.appName"
-                            :class="authScreenConf.appNameClasses"></span>
+            <div
+                class="w-full max-w-md bg-white/10 dark:bg-slate-900/50 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-[2.5rem] overflow-hidden relative group">
+                <!-- Decorative Glow -->
+                <div
+                    class="absolute -top-24 -right-24 w-64 h-64 bg-rose-500/30 rounded-full blur-3xl group-hover:bg-rose-500/40 transition-all duration-1000">
+                </div>
+                <div
+                    class="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-500/30 rounded-full blur-3xl group-hover:bg-indigo-500/40 transition-all duration-1000">
+                </div>
+
+                <!--Header-->
+                <div class="relative z-10 p-8 pb-0 flex flex-col items-center text-center">
+                    <!--Logo-->
+                    <div class="mb-6 transform hover:scale-105 transition-transform duration-500">
+                        <slot v-if="$slots.logo" name="logo" />
+                        <div v-else class="flex flex-col items-center gap-4">
+                            <img :src="temporaryLogo" class="w-24 h-24 drop-shadow-2xl" />
+                            <span v-text="authScreenConf.appName ? authScreenConf.appName : appConf.appName"
+                                class="text-2xl font-black italic uppercase tracking-tighter text-white drop-shadow-md leading-tight"></span>
+                        </div>
+                    </div>
+                    <!--Greeting-->
+                    <div class="auth-greeting w-full" v-if="status || $slots.greeting">
+                        <div class="text-sm font-medium text-white/80">
+                            <div v-if="status"
+                                class="bg-emerald-500/20 text-emerald-100 p-3 rounded-xl border border-emerald-500/30 backdrop-blur-sm">
+                                {{ status }}</div>
+                            <slot v-else name="greeting" />
+                        </div>
                     </div>
                 </div>
-                <!--Greeting-->
-                <div class="auth-greeting" v-if="status || $slots.greeting">
-                    <div class="text-sm">
-                        <!--Status-->
-                        <div v-if="status" class="auth-status">{{ status }}</div>
-                        <slot v-else name="greeting" />
-                    </div>
+
+                <!--Form-->
+                <div class="relative z-10 p-8 pt-6">
+                    <form @submit.prevent="submit" class="space-y-5">
+                        <!--Email-->
+                        <div>
+                            <t-input-group :label="t('email')" label-for="email" :errors="v.email.$errors"
+                                class="text-white/90 font-bold tracking-wide text-xs uppercase">
+                                <t-input-text id="email" v-model="form.email" @blur="v.email.$touch" :radius="8"
+                                    autofocus autocomplete="username" required type="email"
+                                    placeholder="example@email.com"
+                                    class="bg-white/5 border-white/10 text-white placeholder-white/30 focus:border-rose-500 focus:ring-rose-500/20 !rounded-xl transition-all" />
+                            </t-input-group>
+                        </div>
+                        <!--Password-->
+                        <div>
+                            <t-input-group :label="t('password')" label-for="password" :errors="v.password.$errors"
+                                class="text-white/90 font-bold tracking-wide text-xs uppercase">
+                                <t-input-text id="password" v-model="form.password" @blur="v.password.$touch"
+                                    :radius="8" autocomplete="current-password" required type="password"
+                                    placeholder="••••••••"
+                                    class="bg-white/5 border-white/10 text-white placeholder-white/30 focus:border-rose-500 focus:ring-rose-500/20 !rounded-xl transition-all" />
+                            </t-input-group>
+                        </div>
+
+                        <div class="flex items-center justify-between mt-2">
+                            <!--Remember Me-->
+                            <label class="flex items-center cursor-pointer group">
+                                <t-input-check-box id="remember" v-model="form.remember" :label="t('rememberMe')"
+                                    class="text-white/80 group-hover:text-white transition-colors text-xs font-bold uppercase tracking-widest">
+                                    <template #icon>
+                                        <icon icon="key" size="sm"
+                                            class="text-rose-400 group-hover:text-rose-300 transition-colors" />
+                                    </template>
+                                </t-input-check-box>
+                            </label>
+
+                            <!--Forgot Password-->
+                            <Link v-if="canResetPassword" :href="route('password.request')"
+                                class="text-[10px] font-black uppercase tracking-widest text-rose-300 hover:text-rose-200 hover:underline decoration-rose-400/50 underline-offset-4 transition-all">
+                            {{
+                                t('forgotPassword') }}
+                            </Link>
+                        </div>
+
+                        <!--Submit Area-->
+                        <div class="pt-4 flex flex-col gap-3">
+                            <!--Submit Button-->
+                            <t-button :class="{ 'opacity-75': form.processing }" :color="'rose'" design="filled"
+                                :disabled="form.processing" :radius="8"
+                                class="w-full border border-slate-800 justify-center text-sm font-black uppercase tracking-[0.2em] py-4 shadow-lg shadow-rose-900/50 hover:bg-white/10 hover:shadow-rose-500/40 hover:-translate-y-0.5 transition-all !rounded-2xl">
+                                {{ t('login') }}
+                            </t-button>
+
+                            <!--Register Button-->
+                            <!-- <t-button :class="{ 'opacity-75': form.processing }" design="link" color="light"
+                                :link="route('register')" :radius="8" type="link"
+                                class="w-full justify-center text-xs font-bold tracking-widest text-white/60 hover:text-white transition-colors">
+                                {{ t('register') }}
+                            </t-button> -->
+                        </div>
+                    </form>
                 </div>
-            </div>
-
-            <!--Form-->
-            <div class="auth-form" :class="[
-                deviceType !== 'phone' && `radius-b-${activeDesign.radius ? activeDesign.radius : appConf.radius}`,
-                activeDesign.body,
-            ]">
-                <form @submit.prevent="submit">
-                    <!--Email-->
-                    <div>
-                        <t-input-group :label="t('email')" label-for="email" :errors="v.email.$errors">
-                            <t-input-text id="email" v-model="form.email" @blur="v.email.$touch" :radius="3" autofocus
-                                autocomplete="username" required type="email" />
-                        </t-input-group>
-                    </div>
-                    <!--Password-->
-                    <div class="mt-4">
-                        <t-input-group :label="t('password')" label-for="password" :errors="v.password.$errors">
-                            <t-input-text id="password" v-model="form.password" @blur="v.password.$touch" :radius="3"
-                                autocomplete="current-password" required type="password" />
-                        </t-input-group>
-                    </div>
-
-                    <div class="auth-remember">
-                        <!--Remember Me-->
-                        <label class="flex items-center">
-                            <t-input-check-box id="remember" v-model="form.remember" :label="t('rememberMe')">
-                                <template #icon>
-                                    <icon icon="key" size="sm" />
-                                </template>
-                            </t-input-check-box>
-                        </label>
-
-                        <!--Forgot Password-->
-                        <Link v-if="canResetPassword" :href="route('password.request')" class="auth-forgot-password">{{
-                            t('forgotPassword') }}
-                        </Link>
-                    </div>
-                    <!--Submit Area-->
-                    <div class="auth-submit-area">
-                        <!--Register Button-->
-                        <t-button :class="{ 'opacity-25': form.processing }"
-                            :design="activeDesign.login.registerButton[appearingMode].design"
-                            :color="activeDesign.login.registerButton[appearingMode].color" :link="route('register')"
-                            :radius="3" type="link">{{ t('register') }}
-                        </t-button>
-
-                        <!--Submit Button-->
-                        <t-button :class="{ 'opacity-25': form.processing }"
-                            :color="activeDesign.login.loginButton[appearingMode].color"
-                            :design="activeDesign.login.loginButton[appearingMode].design" :disabled="form.processing"
-                            :radius="3" class="ml-4">{{ t('login') }}
-                        </t-button>
-                    </div>
-                </form>
             </div>
         </div>
 
 
 
         <!--Selectors-->
-        <div class="fixed bottom-0 flex z-50 w-full justify-center sm:justify-end space-x-6 p-6">
+        <div class="fixed bottom-0 flex z-50 w-full justify-center sm:justify-end space-x-4 p-6">
             <!--Language Selector-->
-            <t-tooltip v-if="authScreenConf.showLanguageSelector" position="top" :border="false" :custom-style="true">
-                <!--Selected Language-->
-                <div class="flex justify-center items-center group bg-slate-100/50 hover:bg-slate-800/50 dark:text-slate-100 dark:bg-slate-800/75 dark:hover:bg-slate-100/75 dark:hover:text-slate-700 hover:text-slate-100 p-4 w-10 h-10 cursor-pointer overflow-hidden bg-cover"
-                    :class="`radius-${authScreenConf.radius ? authScreenConf.radius : appConf.radius}`">
+            <!-- <t-tooltip v-if="authScreenConf.showLanguageSelector" position="top" :border="false" :custom-style="true"> -->
+            <!--Selected Language-->
+            <!-- <div
+                    class="flex justify-center items-center group bg-black/20 hover:bg-black/40 backdrop-blur-md text-white p-3 w-10 h-10 cursor-pointer overflow-hidden rounded-xl border border-white/10 transition-all hover:border-white/20 shadow-lg">
                     <component :is="languages.find(i => i.id === locale).flag"
-                        class="flex flex-shrink-0 w-14 aspect-auto drop-shadow transform hover:scale-110 active:scale-90 hover:-rotate-12 transition-all duration-300"
+                        class="flex flex-shrink-0 w-8 aspect-auto drop-shadow-md transform hover:scale-110 transition-all duration-300"
                         :alt="languages.find(i => i.id === locale).name" />
-                    <span
-                        class="absolute text-sm -top-2 -right-2 bg-slate-100/10 dark:bg-slate-800/50 backdrop-filter backdrop-blur text-slate-100 px-1 rounded"
-                        v-text="languages.find(i => i.id === locale).id"></span>
-                </div>
-                <template #boxContent>
-                    <!--Language Lists-->
+                </div> -->
+            <!-- ... existing template logic for content ... -->
+            <!-- <template #boxContent>
                     <div class="top-menu-dropdown-content-wrapper-transparent mb-3">
                         <template v-for="lang in languages" :key="lang.id">
-                            <div @click="changeLang(lang.id)" class="top-menu-dropdown-item-transparent">
-                                <component :is="lang.flag" class="w-6 aspect-auto drop-shadow" />
+                            <div @click="changeLang(lang.id)"
+                                class="top-menu-dropdown-item-transparent text-xs font-bold uppercase tracking-widest">
+                                <component :is="lang.flag" class="w-5 aspect-auto drop-shadow" />
                                 <span v-text="lang.name"></span>
                             </div>
                         </template>
                     </div>
                 </template>
-            </t-tooltip>
+            </t-tooltip> -->
+
             <!--Dark Mode-->
             <div v-if="authScreenConf.showDarkModeSelector"
-                class="flex justify-center items-center bg-slate-100/50 hover:bg-slate-800/50 dark:text-slate-100 dark:bg-slate-800/75 dark:hover:bg-slate-100/75 dark:hover:text-slate-700 hover:text-slate-100 p-4 w-10 h-10 cursor-pointer overflow-hidden"
-                :class="`radius-${authScreenConf.radius ? authScreenConf.radius : appConf.radius}`"
+                class="flex justify-center items-center bg-black/20 hover:bg-black/40 backdrop-blur-md text-white p-3 w-10 h-10 cursor-pointer overflow-hidden rounded-xl border border-white/10 transition-all hover:border-white/20 shadow-lg"
                 @click="changeTheme">
                 <transition mode="out-in" name="darkModeTransition">
-                    <!-- Light -->
-                    <icon v-if="darkMode === 'light'" icon="sun" size="lg" key="light" :alt="tm('lightMode')"
-                        class="transform hover:scale-110 active:scale-90 transition-transform duration-300" />
-                    <!-- Auto -->
-                    <icon v-else-if="darkMode === 'auto'" icon="palette" size="lg" key="auto" :alt="tm('auto')"
-                        class="transform hover:scale-110 active:scale-90 transition-transform duration-300" />
-                    <!-- Dark -->
-                    <icon v-else icon="moon" size="lg" key="dark" :alt="tm('darkMode')"
-                        class="transform hover:scale-110 active:scale-90 transition-transform duration-300" />
+                    <icon v-if="darkMode === 'light'" icon="sun" size="lg" key="light"
+                        class="transform hover:scale-110 active:scale-90 transition-transform duration-300 text-amber-300" />
+                    <icon v-else-if="darkMode === 'auto'" icon="palette" size="lg" key="auto"
+                        class="transform hover:scale-110 active:scale-90 transition-transform duration-300 text-indigo-300" />
+                    <icon v-else icon="moon" size="lg" key="dark"
+                        class="transform hover:scale-110 active:scale-90 transition-transform duration-300 text-sky-300" />
                 </transition>
-            </div>
-            <!--Change Background-->
-            <div v-if="authScreenConf.showDesignChanger && authDesigns.length > 1" @click="changeBg"
-                class="flex justify-center items-center group bg-slate-100/50 hover:bg-slate-800/50 dark:text-slate-100 dark:bg-slate-800/75 dark:hover:bg-slate-100/75 dark:hover:text-slate-700 hover:text-slate-100 p-4 w-10 h-10 cursor-pointer"
-                :class="`radius-${authScreenConf.radius ? authScreenConf.radius : appConf.radius}`">
-                <icon icon="redo"
-                    class="transform group-hover:scale-110 group-active:scale-90 transition-transform duration-300" />
             </div>
         </div>
     </full-screen-layout>

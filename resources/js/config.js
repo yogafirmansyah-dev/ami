@@ -1,10 +1,10 @@
 /*Default Settings*/
 const appConf = {
-    appName: 'TailAdmin',
-    catchPhrase: 'Peace at Home, Peace in the World',
+    appName: 'AMI',
+    catchPhrase: 'Audit Mutu Internal',
     logo: {
-      dark: '/img/dark-logo.svg',
-      light: '/img/light-logo.svg'
+      dark: '/img/logo.png',
+      light: '/img/logo.png'
     },
     logoAreaClasses: null,
     appNameClasses: null,
@@ -15,14 +15,14 @@ const appConf = {
 
 /*Layout Settings*/
 const authScreenConf = {
-    appName: null,
+    appName: 'AMI Audit Mutu Internal',
     logo: {
         dark: null,
         light: null,
     },
-    logoAreaClasses: ['flex', 'flex-col', 'justify-center', 'items-center', 'space-x-2', 'min-w-[25rem]'],
-    appNameClasses: ['text-3xl', 'font-semibold'],
-    logoClasses: ['w-12', 'text-white', 'h-auto'],
+    logoAreaClasses: ['flex', 'flex-col', 'justify-center', 'items-center', 'space-y-4', 'pb-4'],
+    appNameClasses: ['text-3xl', 'md:text-4xl', 'font-black', 'text-center', 'uppercase', 'italic', 'tracking-tighter', 'text-white', 'drop-shadow-lg'],
+    logoClasses: ['w-20', 'h-20', 'text-white', 'drop-shadow-lg'],
     showDesignChanger: true,
     showDarkModeSelector: true,
     showLanguageSelector: true,
@@ -34,13 +34,13 @@ const mainMenuConf = {
     catchPhrase: null,
     umay: {
         logo: {
-            dark: '/img/dark-logo.svg',
-            light: '/img/dark-logo.svg',
+            dark: '/img/logo.png',
+            light: '/img/logo.png',
         },
         logoAreaRadius: null,
-        logoAreaClasses: ['flex', 'flex-col', 'justify-center', 'items-center', 'space-x-6', 'bg-blue-500'],
-        appNameClasses: ['text-6xl', 'font-semibold', 'text-white'],
-        logoClasses: ['w-10', 'text-white', 'h-auto'],
+        logoAreaClasses: ['flex', 'flex-col', 'justify-center', 'items-center', 'space-y-2', 'p-6', 'bg-gradient-to-tr', 'dark:bg-gradient-to-br', 'from-slate-600', 'via-rose-500', 'to-slate-600', 'dark:from-slate-900', 'dark:via-rose-950', 'dark:to-slate-900', 'border-b', 'border-rose-200/50', 'dark:border-rose-900/50', 'shadow-lg', 'relative', 'overflow-hidden', 'group', 'transition-all', 'duration-500'],
+        appNameClasses: ['text-xl', 'font-black', 'italic', 'uppercase', 'tracking-[0.2em]', 'text-rose-950', 'dark:text-white', 'drop-shadow-sm', 'group-hover:scale-105', 'transition-transform', 'duration-500'],
+        logoClasses: ['w-12', 'h-auto', 'drop-shadow-2xl', 'transform', 'group-hover:scale-110', 'group-hover:-rotate-3', 'transition-all', 'duration-500'],
         /*Menu*/
         menuRadius: 3,
         rootLinkClasses: {
@@ -61,8 +61,8 @@ const mainMenuConf = {
     },
     abay: {
         logo: {
-            dark: '/img/rose-logo.svg',
-            light: '/img/rose-logo.svg',
+            dark: '/img/logo.png',
+            light: '/img/logo.png',
         },
         logoAreaRadius: null,
         logoAreaClasses: ['flex', 'flex-col', 'justify-center', 'items-center', 'space-x-6', 'bg-blue-500'],
@@ -96,7 +96,7 @@ const topBarConf = {
 };
 
 const footerConf = {
-    visible: true,
+    visible: false,
     content: "<a\n" +
         "              class=\"text-blue-600 hover:underline\"\n" +
         "              href=\"https://tailadmin.dev/\"\n" +

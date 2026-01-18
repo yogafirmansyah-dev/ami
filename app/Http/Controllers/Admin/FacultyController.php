@@ -46,7 +46,7 @@ class FacultyController extends Controller
             ]);
         });
 
-        Session::flash('toastr', ['type' => 'gradient-primary', 'content' => 'Fakultas berhasil ditambahkan.']);
+        Session::flash('toastr', ['type' => 'solid-blue', 'content' => 'Fakultas berhasil ditambahkan.']);
         return back();
     }
 
@@ -71,7 +71,7 @@ class FacultyController extends Controller
             ]);
         });
 
-        Session::flash('toastr', ['type' => 'gradient-info', 'content' => 'Data fakultas diperbarui.']);
+        Session::flash('toastr', ['type' => 'solid-yellow', 'content' => 'Data fakultas diperbarui.']);
         return back();
     }
 

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Auditor;
 
 use App\Enums\AssignmentDocType;
+use App\Enums\AuditStage;
+use App\Enums\FindingType;
 use App\Http\Controllers\Controller;
 use App\Models\Assignment;
 use App\Services\AssignmentService;
@@ -31,12 +33,8 @@ class AssignmentController extends Controller
             ->where('auditor_id', auth()->id())
 
             // 3. Logika Filter Status (Berdasarkan tombol di Vue)
-            ->when($request->status === 'on_going', function ($query) {
-                $query->whereNull('completed_at');
-            })
-            ->when($request->status === 'completed', function ($query) {
-                $query->whereNotNull('completed_at');
-            })
+            ->when($request->status === 'on_going', fn($q) => $q->where('current_stage', '!=', 'finished'))
+            ->when($request->status === 'completed', fn($q) => $q->where('current_stage', 'finished'))
 
             // 4. Logika Perhitungan Progres (Penting untuk persentase di Vue)
             ->withCount([
@@ -66,7 +64,7 @@ class AssignmentController extends Controller
 
         $assignment->load(['period', 'standard', 'assignable', 'auditor', 'documents', 'histories.user']);
 
-        // Grouping dokumen resmi untuk sidebar/header
+        // Grouping dokumen resmi
         $groupedDocuments = collect(AssignmentDocType::cases())->map(function ($type) use ($assignment) {
             return [
                 'type' => $type->value,
@@ -75,8 +73,16 @@ class AssignmentController extends Controller
             ];
         });
 
-        $indicators = $assignment->indicators()
-            ->search($request->search, ['snapshot_code', 'snapshot_requirement'])
+        // --- LOGIKA DINAMIS INDIKATOR ---
+        $query = $assignment->indicators();
+
+        // Jika tahap RTM_RTL, tampilkan HANYA temuan dan sertakan data RTL
+        if ($assignment->current_stage === AuditStage::RTM_RTL) {
+            $query->whereIn('finding_type', [FindingType::KTS, FindingType::OB])
+                ->with('rtl');
+        }
+
+        $indicators = $query->search($request->search, ['snapshot_code', 'snapshot_requirement'])
             ->sort($request->sort_field ?? 'snapshot_code', $request->direction ?? 'asc')
             ->paginate($request->input('per_page', 10))
             ->withQueryString();
@@ -86,7 +92,14 @@ class AssignmentController extends Controller
             'groupedDocuments' => $groupedDocuments,
             'indicators' => $indicators,
             'filters' => $request->only(['search']),
-            'currentStage' => $assignment->current_stage
+            // Kirim stage stats untuk Stepper di UI
+            'stageStats' => Assignment::stageBreakdown(),
+            'findingStats' => [
+                'kts' => $assignment->indicators()->where('finding_type', 'KTS')->count(),
+                'ob' => $assignment->indicators()->where('finding_type', 'OB')->count(),
+                'unassessed' => $assignment->indicators()->whereNull('score')->count(),
+                'total_indicators' => $assignment->indicators()->count(),
+            ]
         ]);
     }
 
@@ -134,6 +147,20 @@ class AssignmentController extends Controller
     public function finalize(Request $request, Assignment $assignment)
     {
         // Gate::authorize('finalize', $assignment);
+        if (!in_array($assignment->current_stage, [AuditStage::REPORTING, AuditStage::RTM_RTL])) {
+            return back()->withErrors(['message' => 'Audit hanya bisa difinalisasi pada tahap Pelaporan atau RTM.']);
+        }
+
+        // Cek jika ada RTL yang belum CLOSED
+        $hasIncompleteRtl = $assignment->rtl()->where('status', '!=', \App\Enums\RtlStatus::CLOSED)->exists();
+        $hasMissingRtl = $assignment->indicators()
+            ->whereIn('finding_type', [FindingType::KTS, FindingType::OB])
+            ->doesntHave('rtl')
+            ->exists();
+
+        if ($hasIncompleteRtl || $hasMissingRtl) {
+            return back()->withErrors(['message' => 'Masih terdapat Rencana Tindak Lanjut (RTL) yang belum lengkap atau belum ditutup (Closed). Harap selesaikan semua RTL sebelum finalisasi.']);
+        }
 
         $validated = $request->validate([
             'summary_note' => 'required|string|min:10',
@@ -144,7 +171,7 @@ class AssignmentController extends Controller
             $this->assignmentService->finalizeAssignment($assignment, $validated, auth()->id());
         });
 
-        Session::flash('toastr', ['type' => 'gradient-green-to-emerald', 'content' => 'Audit telah difinalisasi.']);
+        Session::flash('toastr', ['type' => 'gradient-green-to-emerald', 'content' => 'Siklus AMI telah resmi diselesaikan dan dikunci.']);
         return back();
     }
 }

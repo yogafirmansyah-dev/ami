@@ -5,60 +5,77 @@
     <!--TODO: Convert to Announcement Bar Component(TA-23)-->
     <jet-banner />
     <!--Main Container-->
-    <div class="main-container">
-        <!--Main Menu -->
-        <main-menu />
-        <!--Content Container-->
-        <div class="content-wrapper">
-            <!--Top Menu-->
-            <top-menu />
-            <!--TODO: Sync with Popup Menu-->
-            <!--Content-->
-            <div class="content-container">
-                <!--Content Header-->
-                <div class="container-header">
-                    <!--Page Header-->
-                    <header class="page-header">
-                        <!--Page Title-->
-                        <h1 v-if="hasSlot('header') || header" class="page-title">
-                            <slot v-if="hasSlot('header')" name="header" />
-                            <span v-else v-text="header" />
-                        </h1>
-                        <!--Page SubTitle-->
-                        <h2 v-if="hasSlot('subHeader') || subHeader" class="page-subtitle">
-                            <slot v-if="hasSlot('subHeader')" name="subHeader"></slot>
-                            <span v-else v-text="subHeader" />
-                        </h2>
-                    </header>
-                    <!--Page Action Buttons-->
-                    <div v-if="hasSlot('action-buttons')" class="page-action-buttons">
-                        <slot name="action-buttons"></slot>
-                    </div>
-                </div>
-                <!--Breadcrumb-->
-                <slot name="breadcrumb"></slot>
+    <div
+        class="min-h-screen bg-slate-50 dark:bg-slate-950 bg-[radial-gradient(circle_at_top_left,_var(--tw-gradient-stops))] from-rose-50/50 via-slate-50/50 to-white dark:from-rose-950/20 dark:via-slate-950 dark:to-black transition-colors duration-300 ease-in-out">
+        <div class="flex h-screen overflow-hidden">
+            <!--Main Menu -->
+            <main-menu />
+
+            <!--Content Container-->
+            <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+                <!--Top Menu-->
+                <top-menu />
+
                 <!--Content-->
-                <main class="flex flex-col flex-grow">
-                    <!--Flash Messages-->
-                    <div v-if="$page.props.flash.message" class="alert">
-                        <t-alert :color="$page.props.flash.message.type" :timer="5000" class="my-2">
-                            <span v-html="$page.props.flash.message.content"></span>
-                        </t-alert>
+                <div class="w-full px-6 py-8 mx-auto scroll-smooth app-content-container">
+                    <!--Content Header-->
+                    <div class="mb-8">
+                        <!--Page Header-->
+                        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                            <div class="space-y-1 w-full">
+                                <!--Page Title-->
+                                <h1
+                                    class="text-2xl md:text-3xl font-black text-slate-800 dark:text-white uppercase tracking-tighter italic">
+                                    <slot v-if="hasSlot('header')" name="header" />
+                                    <span v-else-if="header" v-text="header" />
+                                </h1>
+                                <!--Page SubTitle-->
+                                <h2 class="text-[10px] font-black text-rose-500 uppercase tracking-[0.2em]">
+                                    <slot v-if="hasSlot('subHeader')" name="subHeader"></slot>
+                                    <span v-else-if="subHeader" v-text="subHeader" />
+                                </h2>
+                            </div>
+
+                            <!--Page Action Buttons-->
+                            <div class="flex items-center gap-3">
+                                <slot name="action-buttons"></slot>
+                            </div>
+                        </header>
                     </div>
-                    <slot></slot>
-                </main>
-                <!--Toastr Notifications-->
-                <div v-if="$page.props.flash.toastr">
-                    <t-toastr :key="$page.props.flash.toastr.content" :closeable="true"
-                        :color="$page.props.flash.toastr.type" :position="$page.props.flash.toastr.position"
-                        :timer="3000">
-                        <span v-html="$page.props.flash.toastr.content"></span>
-                    </t-toastr>
+
+                    <!--Breadcrumb-->
+                    <div class="mb-6">
+                        <slot name="breadcrumb"></slot>
+                    </div>
+
+                    <!--Content-->
+                    <main class="flex flex-col flex-grow relative z-0">
+                        <!--Flash Messages-->
+                        <div v-if="$page.props.flash.message" class="mb-6 animate-in slide-in-from-top-2 duration-300">
+                            <t-alert :color="$page.props.flash.message.type" :timer="5000">
+                                <span v-html="$page.props.flash.message.content"></span>
+                            </t-alert>
+                        </div>
+                        <slot></slot>
+                    </main>
+
+                    <!--Toastr Notifications-->
+                    <div v-if="$page.props.flash.toastr">
+                        <t-toastr :key="$page.props.flash.toastr.content" :closeable="true"
+                            :color="$page.props.flash.toastr.type" :position="$page.props.flash.toastr.position"
+                            :timer="3000">
+                            <span v-html="$page.props.flash.toastr.content"></span>
+                        </t-toastr>
+                    </div>
+
+                    <footer v-if="footerConf.visible"
+                        class="mt-12 py-6 text-center border-t border-slate-100 dark:border-slate-800">
+                        <span
+                            class="text-[10px] font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest select-none"
+                            v-html="footerConf.content" />
+                    </footer>
                 </div>
             </div>
-            <footer v-if="footerConf.visible" class="footer">
-                <span class="mt-1 space-x-1 select-none" v-html="footerConf.content" />
-            </footer>
         </div>
     </div>
     <!--Modals-->

@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Auditor;
 
 use App\Enums\FindingType;
+use App\Enums\RtlStatus;
 use App\Http\Controllers\Controller;
 use App\Models\AssignmentIndicator;
+use App\Models\AssignmentRtl;
 use App\Services\AssignmentService;
 use DB;
 use Gate;
@@ -65,5 +67,27 @@ class AssignmentIndicatorController extends Controller
             ->get();
 
         return response()->json($history);
+    }
+
+    /**
+     * Verifikasi & Closing Temuan di Matriks RTL
+     */
+    public function verifyRtl(Request $request, AssignmentRtl $rtl)
+    {
+        $validated = $request->validate([
+            'status' => ['required', Rule::enum(RtlStatus::class)],
+            'auditor_feedback' => 'nullable|string|min:5',
+        ]);
+
+        $rtl->update($validated);
+
+        Session::flash('toastr', [
+            'type' => $validated['status'] === RtlStatus::CLOSED->value
+                ? 'gradient-green-to-emerald'
+                : 'gradient-amber-to-orange',
+            'content' => 'Status verifikasi rencana perbaikan diperbarui.'
+        ]);
+
+        return back();
     }
 }

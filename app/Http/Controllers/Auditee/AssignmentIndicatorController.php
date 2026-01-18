@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers\Auditee;
 
+use App\Enums\AuditStage;
+use App\Enums\RtlStatus;
 use App\Http\Controllers\Controller;
 use App\Models\AssignmentIndicator;
+use App\Models\AssignmentRtl;
 use App\Services\AssignmentService;
 use DB;
 use Illuminate\Http\Request;
@@ -53,5 +56,34 @@ class AssignmentIndicatorController extends Controller
             ->get();
 
         return response()->json($history);
+    }
+
+    /**
+     * Mengisi Rencana Tindak Lanjut (Matriks RTL)
+     */
+    public function updateRtl(Request $request, AssignmentRtl $rtl)
+    {
+        // Pastikan audit sedang di tahap RTM_RTL
+        if ($rtl->indicator->assignment->current_stage !== AuditStage::RTM_RTL) {
+            return back()->withErrors(['message' => 'Rencana perbaikan hanya dapat diisi pada tahap RTM / RTL.']);
+        }
+
+        $validated = $request->validate([
+            'root_cause' => 'required|string|min:10',
+            'action_plan' => 'required|string|min:10',
+            'pic' => 'required|string',
+            'deadline' => 'required|string',
+            'success_indicator' => 'required|string',
+        ]);
+
+        // Set status ke in_progress karena sedang ditindaklanjuti oleh Auditee
+        $validated['status'] = RtlStatus::IN_PROGRESS;
+
+        $rtl->update($validated);
+
+        return back()->with('toastr', [
+            'type' => 'solid-blue',
+            'content' => 'Rencana perbaikan berhasil disimpan.'
+        ]);
     }
 }

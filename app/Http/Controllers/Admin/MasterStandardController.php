@@ -18,9 +18,8 @@ class MasterStandardController extends Controller
         $perPage = $request->input('per_page', 10);
 
         $standards = MasterStandard::withCount('indicators')
-            ->latest()
             ->search($request->search, ['name', 'code'])
-            ->sort($request->sort_field ?? 'code', $request->direction ?? 'asc')
+            ->orderBy('name', 'asc')
             ->paginate($perPage)
             ->withQueryString();
 
@@ -56,7 +55,7 @@ class MasterStandardController extends Controller
             ]);
         });
 
-        Session::flash('toastr', ['type' => 'gradient-primary', 'content' => 'Standar Mutu berhasil dibuat.']);
+        Session::flash('toastr', ['type' => 'solid-blue', 'content' => 'Standar Mutu berhasil dibuat.']);
         return back();
     }
 
@@ -83,7 +82,7 @@ class MasterStandardController extends Controller
             ]);
         });
 
-        Session::flash('toastr', ['type' => 'gradient-info', 'content' => 'Standar diperbarui.']);
+        Session::flash('toastr', ['type' => 'solid-yellow', 'content' => 'Standar diperbarui.']);
         return back();
     }
 

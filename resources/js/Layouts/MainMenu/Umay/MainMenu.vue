@@ -48,12 +48,12 @@ watch(breakpoints.value, (newValue) => {
         ]">
             <Link :href="route('/')" class="logo-out-container">
                 <div class="logo-inside-container" :class="menuStatus === 'closed' && 'ml-1'">
-                    <!--TODO: Title and Logo will come from DB-->
                     <!--Logo-->
                     <img :src="[
                         appearingMode === 'dark' ? mainMenuConf.umay.logo.dark ? mainMenuConf.umay.logo.dark : appConf.logo.dark :
                             mainMenuConf.umay.logo.light ? mainMenuConf.umay.logo.light : appConf.logo.light
                     ]" :class="mainMenuConf.umay.logoClasses" />
+
                     <!--Title-->
                     <div id="logo-title" v-html="mainMenuConf.appName ? mainMenuConf.appName : appConf.appName" :class="[
                         menuStatus !== 'closed' ? 'umay-main-menu-title-show' : 'umay-main-menu-title-hide',
@@ -64,13 +64,14 @@ watch(breakpoints.value, (newValue) => {
         </div>
 
         <!--Menu Items-->
-        <nav id="links-wrapper">
+        <nav id="links-wrapper" class="flex-grow px-3 space-y-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
             <template v-for="link in mainMenuLinks" :key="link.id">
                 <main-menu-item :link="link" @selected="selectedLink = $event" />
             </template>
         </nav>
+
         <!--Menu Footer-->
-        <div id="footer">
+        <div id="footer" class="mt-auto px-4 pt-4 border-t border-white/10 dark:border-slate-800/50">
             <transition name="fade" mode="out-in">
                 <!--Settings-->
                 <div key="mainMenuFooterLinks" id="footer-links-wrapper"
@@ -79,19 +80,19 @@ watch(breakpoints.value, (newValue) => {
                         `radius-${mainMenuConf.umay.radius ? mainMenuConf.umay.radius : appConf.radius}`
                     ]">
                     <!--Footer Links-->
-                    <template v-for="link in mainMenuFooterLinks">
+                    <template v-for="link in mainMenuFooterLinks" :key="link.id">
                         <!--Internal Route Link-->
                         <Link v-if="link.linkType === 'route'" id="footer-link"
                             :class="mainMenuFooterLinks.length > 2 ? 'justify-start' : 'justify-center'"
-                            :href="route(link.link)" :key="link.id">
-                            <icon v-if="link.icon" :icon="link.icon" />
+                            :href="route(link.link)">
+                            <icon v-if="link.icon" :icon="link.icon" class="w-4 h-4" />
                             <span v-text="link.label ? link.label : link.label" />
                         </Link>
                         <!--External Link-->
                         <a v-else id="footer-link"
-                            :class="mainMenuFooterLinks.length > 2 ? 'justify-start' : 'justify-center'" :href="link.link"
-                            target="_blank" :key="link.id">
-                            <icon v-if="link.icon" :icon="link.icon" />
+                            :class="mainMenuFooterLinks.length > 2 ? 'justify-start' : 'justify-center'"
+                            :href="link.link" :target="link.target ? '_blank' : null">
+                            <icon v-if="link.icon" :icon="link.icon" class="w-4 h-4" />
                             <span v-text="link.label ? link.label : link.label" />
                         </a>
                     </template>

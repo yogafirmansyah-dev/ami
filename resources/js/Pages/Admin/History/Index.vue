@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue';
-import { router, Head } from '@inertiajs/vue3';
+import { router, Head, Link } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import debounce from 'lodash/debounce';
 
@@ -11,9 +11,15 @@ const props = defineProps({
 
 /* --- SEARCH & FILTER LOGIC --- */
 const search = ref(props.filters.search);
+const perPage = ref(props.filters.per_page || 10);
+
 watch(search, debounce((value) => {
-    router.get(route('admin.histories.index'), { search: value }, { preserveState: true, replace: true });
+    router.get(route('admin.histories.index'), { search: value, per_page: perPage.value }, { preserveState: true, replace: true });
 }, 500));
+
+watch(perPage, (value) => {
+    router.get(route('admin.histories.index'), { search: search.value, per_page: value }, { preserveState: true, replace: true });
+});
 
 /* --- MODAL DETAIL LOGIC --- */
 const showModal = ref(false);
@@ -33,9 +39,9 @@ const formatDate = (dateString) => {
 };
 
 const getActionBadge = (action) => {
-    if (action.includes('create')) return 'bg-emerald-50 text-emerald-700 border-emerald-100';
-    if (action.includes('delete')) return 'bg-rose-50 text-rose-700 border-rose-100';
-    return 'bg-blue-50 text-blue-700 border-blue-100'; // Update/Edit
+    if (action.includes('create')) return 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border-emerald-100 dark:border-emerald-500/20';
+    if (action.includes('delete')) return 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 border-rose-100 dark:border-rose-500/20';
+    return 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 border-blue-100 dark:border-blue-500/20'; // Update/Edit
 };
 
 const formatEntityName = (type) => {
@@ -50,159 +56,214 @@ const formatEntityName = (type) => {
         <template #header>Audit Trail & History</template>
         <template #subHeader>Log aktivitas sistem untuk melacak setiap perubahan data Master dan Transaksi</template>
 
-        <div class="space-y-4">
-            <div class="flex justify-between items-center gap-4">
-                <div class="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                    Menampilkan {{ histories.total }} Aktivitas Terakhir
+        <div class="space-y-6">
+            <div class="flex flex-col lg:flex-row justify-between items-center gap-6">
+                <!-- Search & PerPage -->
+                <div class="flex items-stretch gap-3 w-full max-w-2xl">
+                    <div class="relative flex-1 group">
+                        <span class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                            <icon icon="fa-solid fa-magnifying-glass"
+                                class="text-slate-400 text-xs group-focus-within:text-rose-500 transition-colors" />
+                        </span>
+                        <input v-model="search" type="text" placeholder="Cari aktor, aksi, atau entitas..."
+                            class="w-full pl-11 pr-4 py-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400/50 font-bold text-xs rounded-2xl border-none outline-none focus:outline-none ring-1 ring-slate-200 dark:ring-slate-800 dark:focus:ring-rose-500/50 focus:ring-4 focus:ring-rose-500/50 shadow-sm focus:shadow-md transition-[ring,background-color,box-shadow] duration-300 ease-out focus:bg-slate-50 dark:focus:bg-slate-800/80" />
+                    </div>
+
+                    <div
+                        class="flex items-center bg-white dark:bg-slate-900 rounded-2xl px-4 ring-1 ring-slate-200 dark:ring-slate-800 shadow-sm hover:ring-rose-500/50 dark:hover:ring-rose-500/50 transition-all duration-300">
+                        <span
+                            class="hidden sm:inline text-[9px] font-black uppercase text-slate-400 px-2 border-r border-slate-200 dark:border-slate-800 mr-2">Tampilkan</span>
+                        <select v-model="perPage"
+                            class="bg-transparent dark:bg-slate-900 border-none focus:ring-0 text-xs font-black text-slate-900 dark:text-white py-4 pr-8 cursor-pointer hover:text-rose-500 dark:hover:text-rose-500 transition-colors duration-300 outline-none">
+                            <option :value="10">10</option>
+                            <option :value="25">25</option>
+                            <option :value="50">50</option>
+                            <option :value="100">100</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="relative w-full max-w-sm">
-                    <input v-model="search" type="text" placeholder="Cari aktor, aksi, atau entitas..."
-                        class="w-full pl-4 pr-10 py-2 border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 focus:ring-2 focus:ring-rose-500 outline-none transition-all text-sm" />
+
+                <!-- Total Count Badge -->
+                <div
+                    class="px-6 py-3 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        Total Aktivitas: <span class="text-rose-500 ml-1">{{ histories.total }}</span>
+                    </span>
                 </div>
             </div>
 
             <div
-                class="overflow-x-auto bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
-                <table class="w-full text-sm text-left">
-                    <thead
-                        class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 uppercase text-[10px] font-black tracking-widest border-b dark:border-slate-800">
-                        <tr>
-                            <th class="p-4">Waktu</th>
-                            <th class="p-4">Aktor (User)</th>
-                            <th class="p-4">Aksi</th>
-                            <th class="p-4">Entitas Terkait</th>
-                            <th class="p-4 text-center">Detail</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                        <tr v-for="log in histories.data" :key="log.id" class="hover:bg-slate-50/50 transition-colors">
-                            <td class="p-4 text-[11px] font-bold text-slate-500 whitespace-nowrap">
-                                {{ formatDate(log.created_at) }}
-                            </td>
-                            <td class="p-4">
-                                <div class="flex items-center gap-2">
-                                    <div
-                                        class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center font-bold text-[10px] text-slate-400 border">
-                                        {{ log.user?.name?.substring(0, 2).toUpperCase() }}
+                class="bg-white/60 dark:bg-slate-900 backdrop-blur-3xl rounded-[2.5rem] border border-white/40 dark:border-white/5 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left border-collapse min-w-[1000px] lg:min-w-full">
+                        <thead>
+                            <tr
+                                class="bg-slate-50/80 dark:bg-slate-800/20 text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] sticky top-0 z-20 border-b border-slate-100 dark:border-slate-800/50">
+                                <th class="p-6 md:p-8 pl-8">Waktu</th>
+                                <th class="p-6 md:p-8">Aktor (User)</th>
+                                <th class="p-6 md:p-8">Aksi</th>
+                                <th class="p-6 md:p-8">Entitas Terkait</th>
+                                <th class="p-6 md:p-8 text-center">Detail</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-50 dark:divide-slate-800/20">
+                            <tr v-for="log in histories.data" :key="log.id"
+                                class="group hover:bg-white/50 dark:hover:bg-white/[0.02] transition-colors duration-300">
+                                <td
+                                    class="p-6 md:p-8 pl-8 text-[10px] font-bold text-slate-400 font-mono whitespace-nowrap">
+                                    {{ formatDate(log.created_at) }}
+                                </td>
+                                <td class="p-6 md:p-8">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-black text-[10px] text-slate-400 border border-slate-200 dark:border-slate-700">
+                                            {{ log.user?.name?.substring(0, 2).toUpperCase() || '?' }}
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span
+                                                class="font-bold text-slate-700 dark:text-slate-200 text-xs leading-tight">{{
+                                                    log.user?.name || 'Unknown' }}</span>
+                                            <span class="text-[9px] text-slate-400 uppercase tracking-tighter">{{
+                                                log.user?.role || '-'
+                                                }}</span>
+                                        </div>
                                     </div>
-                                    <div class="flex flex-col">
-                                        <span class="font-bold text-slate-700 dark:text-slate-200 leading-tight">{{
-                                            log.user?.name }}</span>
-                                        <span class="text-[9px] text-slate-400 uppercase tracking-tighter">{{
-                                            log.user?.role
-                                        }}</span>
+                                </td>
+                                <td class="p-6 md:p-8">
+                                    <span
+                                        :class="['px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border shadow-sm', getActionBadge(log.action)]">
+                                        {{ log.action.replace('_', ' ') }}
+                                    </span>
+                                </td>
+                                <td class="p-6 md:p-8">
+                                    <div class="text-xs font-bold text-slate-600 dark:text-slate-400">{{
+                                        formatEntityName(log.historable_type) }}</div>
+                                    <div class="text-[9px] text-slate-400 tracking-tighter mt-0.5">
+                                        ID: <span class="font-mono text-rose-500">#{{ log.historable_id }}</span>
+                                        <span v-if="log.stage" class="mx-1">•</span>
+                                        <span v-if="log.stage">{{ log.stage }}</span>
                                     </div>
-                                </div>
-                            </td>
-                            <td class="p-4">
-                                <span
-                                    :class="['px-2 py-0.5 rounded text-[9px] font-black uppercase border', getActionBadge(log.action)]">
-                                    {{ log.action.replace('_', ' ') }}
-                                </span>
-                            </td>
-                            <td class="p-4">
-                                <div class="text-xs font-bold text-slate-600 dark:text-slate-400">{{
-                                    formatEntityName(log.historable_type) }}</div>
-                                <div class="text-[10px] text-slate-400 tracking-tighter">ID: #{{ log.historable_id }} |
-                                    Stage:
-                                    {{ log.stage }}</div>
-                            </td>
-                            <td class="p-4 text-center">
-                                <button @click="openDetail(log)"
-                                    class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mx-auto" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                </button>
-                            </td>
-                        </tr>
-                        <tr v-if="histories.data.length === 0">
-                            <td colspan="5" class="p-12 text-center text-slate-400 italic font-medium">Belum ada
-                                aktivitas
-                                terekam.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="flex items-center justify-between py-2">
-                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    Data {{ histories.from }} - {{ histories.to }} dari {{ histories.total }}
+                                </td>
+                                <td class="flex items-center justify-center p-6 md:p-8 text-center">
+                                    <button @click="openDetail(log)"
+                                        class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-600 rounded-xl transition-all shadow-sm hover:shadow-md hover:border-rose-200 active:scale-95">
+                                        <icon icon="fa-solid fa-eye" class="text-[10px]" />
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr v-if="histories.data.length === 0">
+                                <td colspan="5" class="p-12 text-center">
+                                    <div class="flex flex-col items-center justify-center opacity-50">
+                                        <icon icon="fa-solid fa-clock-rotate-left"
+                                            class="text-4xl text-slate-300 dark:text-slate-600 mb-4" />
+                                        <p class="text-xs font-black text-slate-400 uppercase tracking-widest italic">
+                                            Belum ada log aktivitas terekam</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <div class="flex gap-1">
-                    <button v-for="link in histories.links" :key="link.label" v-html="link.label"
-                        @click="link.url ? $inertia.visit(link.url) : null"
-                        class="px-3 py-1 text-[10px] font-bold rounded-lg border transition-all"
-                        :class="[link.active ? 'bg-rose-600 text-white border-rose-600 shadow-lg shadow-rose-200' : 'bg-white border-slate-200 text-slate-400 hover:border-rose-500', !link.url ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer']" />
+
+                <!-- PAGINATION -->
+                <div
+                    class="flex flex-col md:flex-row items-center justify-between gap-4 px-6 md:px-8 py-6 border-t border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-800/20 backdrop-blur-sm">
+                    <div
+                        class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest italic text-center md:text-left">
+                        Data {{ histories.from }} - {{ histories.to }} dari total {{ histories.total }}
+                    </div>
+                    <div class="flex flex-wrap justify-center gap-1.5">
+                        <Link v-for="(link, k) in histories.links" :key="k" :href="link.url || '#'" :class="[
+                            'px-3 md:px-4 py-2 text-[10px] font-black rounded-xl border transition-all',
+                            link.active
+                                ? 'bg-slate-900 dark:bg-rose-600 text-white border-slate-900 dark:border-rose-600 shadow-lg shadow-slate-900/20'
+                                : 'bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800 hover:border-rose-500 hover:text-rose-500',
+                            !link.url ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
+                        ]" v-html="link.label" />
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div v-if="showModal" class="fixed inset-0 z-[999] flex items-center justify-center p-4">
-            <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" @click="showModal = false">
+        <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-md transition-opacity" @click="showModal = false">
             </div>
 
             <div
-                class="relative bg-white dark:bg-slate-900 w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
-                <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                class="relative bg-white dark:bg-slate-900 w-full max-w-4xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[85vh] border border-white/10">
+                <div
+                    class="p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30">
                     <div>
-                        <h3 class="text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight">Detail
-                            Perubahan
-                            Data</h3>
-                        <p class="text-[10px] text-slate-400 font-bold uppercase">{{ selectedLog.action }} - {{
-                            formatDate(selectedLog.created_at) }}</p>
+                        <h3 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic">
+                            Detail
+                            Perubahan Data</h3>
+                        <p class="text-[10px] font-bold text-rose-500 uppercase tracking-widest mt-1">
+                            {{ selectedLog.action }} • {{ formatDate(selectedLog.created_at) }}
+                        </p>
                     </div>
                     <button @click="showModal = false"
-                        class="text-3xl text-slate-300 hover:text-rose-500">&times;</button>
+                        class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-rose-600 transition-colors font-bold text-lg">&times;</button>
                 </div>
 
-                <div class="p-8 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-8 bg-slate-50 dark:bg-slate-900">
+                <div
+                    class="p-8 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-8 bg-white dark:bg-slate-900 custom-scrollbar">
+                    <!-- OLD DATA -->
                     <div class="space-y-4">
-                        <div class="flex items-center gap-2 text-rose-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <h4 class="text-xs font-black uppercase tracking-widest">Data Sebelumnya (Old)</h4>
+                        <div class="flex items-center gap-2 text-rose-600 dark:text-rose-500">
+                            <icon icon="fa-solid fa-file-circle-minus" />
+                            <h4 class="text-[10px] font-black uppercase tracking-widest">Data Sebelumnya (Old)</h4>
                         </div>
                         <div
-                            class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 font-mono text-[11px] overflow-x-auto shadow-sm">
+                            class="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 font-mono text-[11px] overflow-x-auto shadow-inner h-full max-h-[400px] custom-scrollbar">
                             <pre v-if="selectedLog.old_values" class="text-slate-600 dark:text-slate-400">{{
                                 JSON.stringify(selectedLog.old_values, null, 2) }}</pre>
-                            <div v-else class="text-slate-400 italic">Tidak ada data sebelumnya (Record Baru).</div>
+                            <div v-else
+                                class="text-slate-400 italic text-[10px] font-bold uppercase tracking-wider py-10 text-center">
+                                Tidak ada data sebelumnya (Record Baru)</div>
                         </div>
                     </div>
 
+                    <!-- NEW DATA -->
                     <div class="space-y-4">
-                        <div class="flex items-center gap-2 text-emerald-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <h4 class="text-xs font-black uppercase tracking-widest">Data Sesudahnya (New)</h4>
+                        <div class="flex items-center gap-2 text-emerald-600 dark:text-emerald-500">
+                            <icon icon="fa-solid fa-file-circle-plus" />
+                            <h4 class="text-[10px] font-black uppercase tracking-widest">Data Sesudahnya (New)</h4>
                         </div>
                         <div
-                            class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-emerald-100 dark:border-emerald-900/30 font-mono text-[11px] overflow-x-auto shadow-sm ring-4 ring-emerald-500/5">
+                            class="bg-emerald-50/30 dark:bg-emerald-900/10 rounded-2xl p-4 border border-emerald-100 dark:border-emerald-500/20 font-mono text-[11px] overflow-x-auto shadow-inner h-full max-h-[400px] custom-scrollbar ring-2 ring-emerald-500/10">
                             <pre v-if="selectedLog.new_values" class="text-slate-700 dark:text-slate-200 font-bold">{{
                                 JSON.stringify(selectedLog.new_values, null, 2) }}</pre>
-                            <div v-else class="text-slate-400 italic text-rose-500 font-bold">Data Telah Dihapus
-                                Permanen.</div>
+                            <div v-else
+                                class="text-rose-500 italic text-[10px] font-bold uppercase tracking-wider py-10 text-center">
+                                Data Telah Dihapus Permanen</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="p-6 bg-white dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700 text-right">
+                <div
+                    class="p-6 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800 text-right">
                     <button @click="showModal = false"
-                        class="px-8 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-black uppercase rounded-xl transition-all">Tutup
-                        Detail</button>
+                        class="px-8 py-3 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm">
+                        Tutup Detail
+                    </button>
                 </div>
             </div>
         </div>
     </AppLayout>
 </template>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 10px;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #334155;
+}
+</style>

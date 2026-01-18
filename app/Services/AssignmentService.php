@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Enums\AuditStage;
+use App\Enums\FindingType;
+use App\Enums\RtlStatus;
 use App\Models\{Assignment, AssignmentDocument, MasterIndicator, AssignmentIndicator, AuditHistory};
 use Carbon\Carbon;
 use Illuminate\Support\Facades\{DB, Storage};
@@ -110,7 +112,7 @@ class AssignmentService
     }
 
     /**
-     * Sinkronisasi Tahap AMI (Middleware & Scheduler)
+     * Sinkronisasi Tahap AMI (Perbaikan Logika Enum & RTL)
      */
     public function syncCurrentStage(Assignment $assignment): void
     {
@@ -120,20 +122,47 @@ class AssignmentService
         $newStage = $this->calculateStage($period, $now);
 
         if ($newStage !== $oldStage) {
+            // SAFEGUARD 1: Jangan biarkan masuk ke tahap FINDING jika ada indikator belum dinilai
+            if ($newStage === AuditStage::FINDING) {
+                $hasUnassessed = $assignment->indicators()->whereNull('score')->exists();
+                if ($hasUnassessed) {
+                    return; // Block transition
+                }
+            }
+
+            // SAFEGUARD 2: Jangan biarkan masuk ke tahap FINISHED jika ada RTL yang belum CLOSED
+            if ($newStage === AuditStage::FINISHED) {
+                $incompleteRtl = $assignment->rtls()->where('status', '!=', RtlStatus::CLOSED)->exists();
+                // Opsional: Cek juga jika ada temuan tapi belum ada record RTL-nya sama sekali
+                $noRtlForFindings = $assignment->indicators()
+                    ->whereIn('finding_type', [\App\Enums\FindingType::KTS, FindingType::OB])
+                    ->doesntHave('rtl')
+                    ->exists();
+
+                if ($incompleteRtl || $noRtlForFindings) {
+                    return; // Block transition
+                }
+            }
+
             DB::transaction(function () use ($assignment, $oldStage, $newStage) {
                 $assignment->update([
                     'current_stage' => $newStage,
-                    'completed_at' => ($newStage === 'finished') ? now() : $assignment->completed_at
+                    // PERBAIKAN: Gunakan Enum untuk perbandingan, bukan string
+                    'completed_at' => ($newStage === AuditStage::FINISHED) ? now() : $assignment->completed_at
                 ]);
 
-                // Kirim null (BUKAN 0) untuk aksi sistem otomatis
+                // OTOMATISASI RTL: Panggil logika generate RTL jika tahap berubah ke RTM_RTL
+                if ($newStage === AuditStage::RTM_RTL) {
+                    $this->generateRtlRecords($assignment);
+                }
+
                 $this->recordHistory(
                     $assignment,
-                    ['stage' => $oldStage],
-                    ['stage' => $newStage],
+                    ['stage' => $oldStage->value],
+                    ['stage' => $newStage->value],
                     $newStage,
-                    null, // Diubah dari 0 ke null
-                    'system_auto_sync' // Gunakan label aksi yang jelas
+                    null,
+                    'system_auto_sync'
                 );
             });
         }
@@ -223,6 +252,9 @@ class AssignmentService
         }
     }
 
+    /**
+     * Finalisasi (Perbaikan Enum)
+     */
     public function finalizeAssignment(Assignment $assignment, array $data, int $userId): void
     {
         DB::transaction(function () use ($assignment, $data, $userId) {
@@ -230,10 +262,81 @@ class AssignmentService
                 'summary_note' => $data['summary_note'],
                 'overall_rating' => $data['overall_rating'],
                 'completed_at' => now(),
-                'current_stage' => 'finished' // Otomatis set ke selesai
+                'current_stage' => AuditStage::FINISHED // Gunakan Enum, jangan string 'finished'
             ]);
 
             $this->recordHistory($assignment, [], $data, $assignment->current_stage, $userId, 'finalize_assignment');
         });
+    }
+
+    /**
+     * Memindahkan Tahapan Audit Secara Manual (Oleh Admin)
+     */
+    /**
+     * Memindahkan Tahapan Secara Manual (Perbaikan Reusability)
+     */
+    public function transitionToStage(Assignment $assignment, AuditStage $nextStage): void
+    {
+        // SAFEGUARD 1: Jangan biarkan masuk ke tahap FINDING jika ada indikator belum dinilai
+        // if ($nextStage === AuditStage::FINDING) {
+        //     $hasUnassessed = $assignment->indicators()->whereNull('score')->exists();
+        //     if ($hasUnassessed) {
+        //         // Untuk manual transition, kita mungkin ingin melempar exception agar Controller bisa menangkapnya
+        //         // atau return false. Karena return void, kita throw exception saja.
+        //         throw new \Exception('Tidak dapat lanjut ke tahap Temuan karena masih ada indikator yang belum dinilai.');
+        //     }
+        // }
+
+        // SAFEGUARD 2: Jangan biarkan masuk ke tahap FINISHED jika ada RTL yang belum CLOSED
+        if ($nextStage === AuditStage::FINISHED) {
+            $incompleteRtl = $assignment->rtls()->where('status', '!=', RtlStatus::CLOSED)->exists();
+            $noRtlForFindings = $assignment->indicators()
+                ->whereIn('finding_type', [FindingType::KTS, FindingType::OB])
+                ->doesntHave('rtl')
+                ->exists();
+
+            if ($incompleteRtl || $noRtlForFindings) {
+                throw new \Exception('Tidak dapat menyelesaikan audit karena masih ada RTL yang belum lengkap/closed.');
+            }
+        }
+
+        DB::transaction(function () use ($assignment, $nextStage) {
+            $oldStage = $assignment->current_stage;
+
+            $assignment->update([
+                'current_stage' => $nextStage,
+                'completed_at' => ($nextStage === AuditStage::FINISHED) ? now() : $assignment->completed_at
+            ]);
+
+            // OTOMATISASI RTL: Panggil logika yang sama
+            if ($nextStage === AuditStage::RTM_RTL) {
+                $this->generateRtlRecords($assignment);
+            }
+
+            $this->recordHistory(
+                $assignment,
+                ['stage' => $oldStage->value],
+                ['stage' => $nextStage->value],
+                $nextStage,
+                auth()->id(),
+                'manual_stage_transition'
+            );
+        });
+    }
+    /**
+     * Private Helper: Logic pembuatan baris RTL agar tidak duplikasi kode
+     */
+    private function generateRtlRecords(Assignment $assignment): void
+    {
+        $findings = $assignment->indicators()
+            ->whereIn('finding_type', ['KTS', 'OB'])
+            ->get();
+
+        foreach ($findings as $indicator) {
+            \App\Models\AssignmentRtl::firstOrCreate(
+                ['assignment_indicator_id' => $indicator->id],
+                ['status' => RtlStatus::OPEN] // Pastikan menggunakan Enum status Anda
+            );
+        }
     }
 }

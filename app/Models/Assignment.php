@@ -66,6 +66,11 @@ class Assignment extends Model
         return $this->hasMany(AssignmentDocument::class);
     }
 
+    public function rtls()
+    {
+        return $this->hasManyThrough(AssignmentRtl::class, AssignmentIndicator::class);
+    }
+
     /**
      * Override scopeSearch dari Filterable Trait khusus untuk relasi
      */

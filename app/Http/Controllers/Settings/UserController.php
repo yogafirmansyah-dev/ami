@@ -74,7 +74,7 @@ class UserController extends Controller
             ]);
         });
 
-        Session::flash('toastr', ['type' => 'gradient-primary', 'content' => 'User baru berhasil dibuat']);
+        Session::flash('toastr', ['type' => 'solid-blue', 'content' => 'User baru berhasil dibuat']);
         return redirect()->back();
     }
 
@@ -126,7 +126,7 @@ class UserController extends Controller
             // PENTING: Hapus cache agar frontend mendapatkan data terbaru
             HandleInertiaRequests::clearUserCache($user->id);
         });
-        Session::flash('toastr', ['type' => 'gradient-info', 'content' => 'Data user diperbarui']);
+        Session::flash('toastr', ['type' => 'solid-yellow', 'content' => 'Data user diperbarui']);
         return redirect()->back();
     }
 
@@ -185,7 +185,7 @@ class UserController extends Controller
         });
 
         Session::flash('toastr', [
-            'type' => 'gradient-primary',
+            'type' => 'solid-blue',
             'content' => '2FA untuk user ' . $user->name . ' telah dinonaktifkan.'
         ]);
 

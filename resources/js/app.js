@@ -42,7 +42,7 @@ import VueHighlightJS from 'vue3-highlightjs'
 /* Pinia */
 import setupPinia from './Stores';
 
-const appName = import.meta.env.VITE_APP_NAME || 'TailAdmin';
+const appName = import.meta.env.VITE_APP_NAME || 'AMI';
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,

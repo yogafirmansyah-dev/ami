@@ -4,17 +4,17 @@ namespace App\Enums;
 
 enum FindingType: string
 {
-    case KESESUAIAN = 'KS';
-    case KETIDAKSESUAIAN = 'KTS';
-    case OBSERVASI = 'OB';
+    case KS = 'KS';
+    case KTS = 'KTS';
+    case OB = 'OB';
 
     // Helper untuk label di Frontend
     public function label(): string
     {
         return match ($this) {
-            self::KESESUAIAN => 'Kesesuaian',
-            self::KETIDAKSESUAIAN => 'Ketidaksesuaian (KTS)',
-            self::OBSERVASI => 'Observasi (OB)',
+            self::KS => 'Kesesuaian',
+            self::KTS => 'Ketidaksesuaian (KTS)',
+            self::OB => 'Observasi (OB)',
         };
     }
 }

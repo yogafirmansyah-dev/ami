@@ -84,7 +84,7 @@ const messages = {
         },
         title: {
             page: {
-                welcomeMessage: "Welcome to TailAdmin"
+                welcomeMessage: "Welcome to AMI"
             }
         },
         message: {},
@@ -185,7 +185,7 @@ const messages = {
         },
         title: {
             page: {
-                welcomeMessage: "TailAdmin'e Hoşgeldiniz"
+                welcomeMessage: "AMI'e Hoşgeldiniz"
             }
         },
         message: {},
