@@ -24,6 +24,14 @@ watch(perPage, (value) => {
     router.get(route('admin.users.index'), { search: search.value, per_page: value }, { preserveState: true, replace: true });
 });
 
+/* --- SORTING --- */
+const handleSort = (field) => {
+    const currentSort = props.filters.sort_field;
+    const currentDir = props.filters.direction || 'asc';
+    const nextDir = currentSort === field && currentDir === 'asc' ? 'desc' : 'asc';
+    router.get(window.location.href, { ...props.filters, sort_field: field, direction: nextDir }, { preserveState: true, replace: true });
+};
+
 /* --- LOGIKA MODAL & FORM --- */
 const showModal = ref(false);
 const editMode = ref(false);
@@ -160,10 +168,49 @@ const getUnitName = (user) => {
                             <tr
                                 class="bg-slate-50/80 dark:bg-slate-800/20 text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] sticky top-0 z-20 border-b border-slate-100 dark:border-slate-800/50">
                                 <th class="p-6 md:p-8 pl-8 text-center">No</th>
-                                <th class="p-6 md:p-8 pl-8">Pengguna</th>
-                                <th class="p-6 md:p-8">Role</th>
+                                <th @click="handleSort('name')"
+                                    class="p-6 md:p-8 pl-8 cursor-pointer hover:text-rose-500 transition-colors group select-none">
+                                    <div class="flex items-center gap-2">
+                                        Pengguna
+                                        <div
+                                            class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                            <icon icon="fa-solid fa-caret-up"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'name' && filters.direction === 'asc' }"
+                                                class="-mb-1" />
+                                            <icon icon="fa-solid fa-caret-down"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'name' && filters.direction === 'desc' }" />
+                                        </div>
+                                    </div>
+                                </th>
+                                <th @click="handleSort('role')"
+                                    class="p-6 md:p-8 cursor-pointer hover:text-rose-500 transition-colors group select-none">
+                                    <div class="flex items-center gap-2">
+                                        Role
+                                        <div
+                                            class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                            <icon icon="fa-solid fa-caret-up"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'role' && filters.direction === 'asc' }"
+                                                class="-mb-1" />
+                                            <icon icon="fa-solid fa-caret-down"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'role' && filters.direction === 'desc' }" />
+                                        </div>
+                                    </div>
+                                </th>
                                 <th class="p-6 md:p-8">Unit Kerja</th>
-                                <th class="p-6 md:p-8 text-center">2FA</th>
+                                <th @click="handleSort('two_factor_confirmed_at')"
+                                    class="p-6 md:p-8 text-center cursor-pointer hover:text-rose-500 transition-colors group select-none">
+                                    <div class="flex items-center justify-center gap-2">
+                                        2FA
+                                        <div
+                                            class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                            <icon icon="fa-solid fa-caret-up"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'two_factor_confirmed_at' && filters.direction === 'asc' }"
+                                                class="-mb-1" />
+                                            <icon icon="fa-solid fa-caret-down"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'two_factor_confirmed_at' && filters.direction === 'desc' }" />
+                                        </div>
+                                    </div>
+                                </th>
                                 <th class="p-6 md:p-8 text-center">Aksi</th>
                             </tr>
                         </thead>
@@ -301,7 +348,7 @@ const getUnitName = (user) => {
                             <input v-model="form.name" type="text" required
                                 class="w-full px-5 py-3.5 bg-white dark:bg-slate-900 border-none rounded-2xl text-xs font-bold text-slate-900 dark:text-white ring-1 ring-slate-200 dark:ring-slate-800 focus:ring-2 focus:ring-rose-500 transition-all shadow-sm" />
                             <p v-if="form.errors.name" class="text-xs text-rose-500 font-bold ml-1">{{ form.errors.name
-                            }}</p>
+                                }}</p>
                         </div>
                         <div class="space-y-2">
                             <label
@@ -363,7 +410,7 @@ const getUnitName = (user) => {
                                         class="w-full px-4 py-2.5 text-xs font-bold border-none ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl bg-white dark:bg-slate-900 outline-none focus:ring-2 focus:ring-rose-500">
                                         <option :value="null">Tidak Ada</option>
                                         <option v-for="prodi in prodis" :key="prodi.id" :value="prodi.id">{{ prodi.name
-                                        }}
+                                            }}
                                         </option>
                                     </select>
                                     <p v-if="form.errors.prodi_id" class="text-xs text-rose-500 font-bold ml-1">{{

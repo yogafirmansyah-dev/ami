@@ -1,11 +1,12 @@
 <script setup>
 import { computed } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 
 const props = defineProps({
     assignment: Object,
     indicators: Object,
     role: String,
+    filters: Object, // Added filters prop
 });
 
 const emit = defineEmits(['open-upload', 'open-assessment', 'open-history']);
@@ -23,6 +24,27 @@ const canScore = computed(() => {
     if (props.role === 'auditor') return ['doc_audit', 'field_audit'].includes(props.assignment.current_stage);
     return false;
 });
+
+/* --- SORTING LOGIC (Server-Side) --- */
+const handleSort = (field) => {
+    const currentSortField = props.filters?.sort_field;
+    const currentDirection = props.filters?.direction || 'asc';
+
+    let nextDirection = 'asc';
+    if (currentSortField === field) {
+        nextDirection = currentDirection === 'asc' ? 'desc' : 'asc';
+    }
+
+    router.get(window.location.href, {
+        ...props.filters,
+        sort_field: field,
+        direction: nextDirection,
+    }, {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+    });
+};
 
 /* --- DYNAMIC STYLING --- */
 const getScoreColor = (score) => {
@@ -52,11 +74,50 @@ const getFindingBadge = (type) => {
                         <tr
                             class="bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-md text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] sticky top-0 z-20 border-b border-slate-200/50 dark:border-slate-800">
                             <th class="p-6 text-center min-w-20">No</th>
-                            <th class="p-6 text-center min-w-24">Kode</th>
-                            <th class="p-6 min-w-[350px]">Indikator & Kriteria</th>
+                            <th @click="handleSort('snapshot_code')"
+                                class="p-6 text-center min-w-24 cursor-pointer hover:text-sky-500 transition-colors group select-none">
+                                <div class="flex items-center justify-center gap-1">
+                                    Kode
+                                    <div
+                                        class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                        <icon icon="fa-solid fa-caret-up"
+                                            :class="{ 'text-sky-500 opacity-100': filters?.sort_field === 'snapshot_code' && filters?.direction === 'asc' }"
+                                            class="-mb-1" />
+                                        <icon icon="fa-solid fa-caret-down"
+                                            :class="{ 'text-sky-500 opacity-100': filters?.sort_field === 'snapshot_code' && filters?.direction === 'desc' }" />
+                                    </div>
+                                </div>
+                            </th>
+                            <th @click="handleSort('snapshot_requirement')"
+                                class="p-6 min-w-[350px] cursor-pointer hover:text-sky-500 transition-colors group select-none">
+                                <div class="flex items-center justify-center gap-1">
+                                    Indikator & Kriteria
+                                    <div
+                                        class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                        <icon icon="fa-solid fa-caret-up"
+                                            :class="{ 'text-sky-500 opacity-100': filters?.sort_field === 'snapshot_requirement' && filters?.direction === 'asc' }"
+                                            class="-mb-1" />
+                                        <icon icon="fa-solid fa-caret-down"
+                                            :class="{ 'text-sky-500 opacity-100': filters?.sort_field === 'snapshot_requirement' && filters?.direction === 'desc' }" />
+                                    </div>
+                                </div>
+                            </th>
                             <th class="p-6 min-w-[250px]">Bukti yang Diperiksa</th>
                             <th class="p-6 text-center w-32">Bukti</th>
-                            <th class="p-6 text-center w-40">Hasil Audit</th>
+                            <th @click="handleSort('score')"
+                                class="p-6 text-center w-40 cursor-pointer hover:text-sky-500 transition-colors group select-none">
+                                <div class="flex items-center justify-center gap-1">
+                                    Hasil Audit
+                                    <div
+                                        class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                        <icon icon="fa-solid fa-caret-up"
+                                            :class="{ 'text-sky-500 opacity-100': filters?.sort_field === 'score' && filters?.direction === 'asc' }"
+                                            class="-mb-1" />
+                                        <icon icon="fa-solid fa-caret-down"
+                                            :class="{ 'text-sky-500 opacity-100': filters?.sort_field === 'score' && filters?.direction === 'desc' }" />
+                                    </div>
+                                </div>
+                            </th>
                             <th class="p-6 min-w-[300px]">Catatan & Rekomendasi</th>
                             <th
                                 class="p-6 text-center w-40 sticky right-0 bg-slate-50/80 dark:bg-slate-900/90 backdrop-blur-md z-30 shadow-none">

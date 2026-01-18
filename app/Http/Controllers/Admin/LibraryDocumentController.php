@@ -5,19 +5,23 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\LibraryDocument;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 
 class LibraryDocumentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         // Admin bisa melihat semua, user lain (jika rute dibuka nanti) pakai scope
         $documents = LibraryDocument::with('uploader:id,name')
-            ->latest()
-            ->paginate(10);
+            ->search($request->search, ['name'])
+            ->sort($request->sort_field ?? 'name', $request->direction ?? 'asc')
+            ->paginate(10)
+            ->withQueryString();
 
         return inertia('Admin/Library/Index', [
-            'documents' => $documents
+            'documents' => $documents,
+            'filters' => $request->only(['search', 'sort_field', 'direction'])
         ]);
     }
 

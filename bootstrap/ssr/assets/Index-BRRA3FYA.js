@@ -32,6 +32,12 @@ const _sfc_main = {
     watch(perPage, (value) => {
       router.get(route("admin.history.index"), { search: search.value, per_page: value }, { preserveState: true, replace: true });
     });
+    const handleSort = (field) => {
+      const currentSort = props.filters.sort_field;
+      const currentDir = props.filters.direction || "asc";
+      const nextDir = currentSort === field && currentDir === "asc" ? "desc" : "asc";
+      router.get(window.location.href, { ...props.filters, sort_field: field, direction: nextDir }, { preserveState: true, replace: true });
+    };
     const showModal = ref(false);
     const selectedLog = ref(null);
     const openDetail = (log) => {
@@ -79,25 +85,43 @@ const _sfc_main = {
         }),
         default: withCtx((_, _push2, _parent2, _scopeId) => {
           if (_push2) {
-            _push2(`<div class="space-y-6" data-v-40fd08e3${_scopeId}><div class="flex flex-col lg:flex-row justify-between items-center gap-6" data-v-40fd08e3${_scopeId}><div class="flex items-stretch gap-3 w-full max-w-2xl" data-v-40fd08e3${_scopeId}><div class="relative flex-1 group" data-v-40fd08e3${_scopeId}><span class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none" data-v-40fd08e3${_scopeId}>`);
+            _push2(`<div class="space-y-6" data-v-141b67f3${_scopeId}><div class="flex flex-col lg:flex-row justify-between items-center gap-6" data-v-141b67f3${_scopeId}><div class="flex items-stretch gap-3 w-full max-w-2xl" data-v-141b67f3${_scopeId}><div class="relative flex-1 group" data-v-141b67f3${_scopeId}><span class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none" data-v-141b67f3${_scopeId}>`);
             _push2(ssrRenderComponent(_component_icon, {
               icon: "fa-solid fa-magnifying-glass",
               class: "text-slate-400 text-xs group-focus-within:text-rose-500 transition-colors"
             }, null, _parent2, _scopeId));
-            _push2(`</span><input${ssrRenderAttr("value", search.value)} type="text" placeholder="Cari aktor, aksi, atau entitas..." class="w-full pl-11 pr-4 py-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400/50 font-bold text-xs rounded-2xl border-none outline-none focus:outline-none ring-1 ring-slate-200 dark:ring-slate-800 dark:focus:ring-rose-500/50 focus:ring-4 focus:ring-rose-500/50 shadow-sm focus:shadow-md transition-[ring,background-color,box-shadow] duration-300 ease-out focus:bg-slate-50 dark:focus:bg-slate-800/80" data-v-40fd08e3${_scopeId}></div><div class="flex items-center bg-white dark:bg-slate-900 rounded-2xl px-4 ring-1 ring-slate-200 dark:ring-slate-800 shadow-sm hover:ring-rose-500/50 dark:hover:ring-rose-500/50 transition-all duration-300" data-v-40fd08e3${_scopeId}><span class="hidden sm:inline text-[9px] font-black uppercase text-slate-400 px-2 border-r border-slate-200 dark:border-slate-800 mr-2" data-v-40fd08e3${_scopeId}>Tampilkan</span><select class="bg-transparent dark:bg-slate-900 border-none focus:ring-0 text-xs font-black text-slate-900 dark:text-white py-4 pr-8 cursor-pointer hover:text-rose-500 dark:hover:text-rose-500 transition-colors duration-300 outline-none" data-v-40fd08e3${_scopeId}><option${ssrRenderAttr("value", 10)} data-v-40fd08e3${ssrIncludeBooleanAttr(Array.isArray(perPage.value) ? ssrLooseContain(perPage.value, 10) : ssrLooseEqual(perPage.value, 10)) ? " selected" : ""}${_scopeId}>10</option><option${ssrRenderAttr("value", 25)} data-v-40fd08e3${ssrIncludeBooleanAttr(Array.isArray(perPage.value) ? ssrLooseContain(perPage.value, 25) : ssrLooseEqual(perPage.value, 25)) ? " selected" : ""}${_scopeId}>25</option><option${ssrRenderAttr("value", 50)} data-v-40fd08e3${ssrIncludeBooleanAttr(Array.isArray(perPage.value) ? ssrLooseContain(perPage.value, 50) : ssrLooseEqual(perPage.value, 50)) ? " selected" : ""}${_scopeId}>50</option><option${ssrRenderAttr("value", 100)} data-v-40fd08e3${ssrIncludeBooleanAttr(Array.isArray(perPage.value) ? ssrLooseContain(perPage.value, 100) : ssrLooseEqual(perPage.value, 100)) ? " selected" : ""}${_scopeId}>100</option></select></div></div><div class="px-6 py-3 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800" data-v-40fd08e3${_scopeId}><span class="text-[10px] font-black text-slate-400 uppercase tracking-widest" data-v-40fd08e3${_scopeId}> Total Aktivitas: <span class="text-rose-500 ml-1" data-v-40fd08e3${_scopeId}>${ssrInterpolate(__props.histories.total)}</span></span></div></div><div class="bg-white/60 dark:bg-slate-900 backdrop-blur-3xl rounded-[2.5rem] border border-white/40 dark:border-white/5 shadow-sm overflow-hidden" data-v-40fd08e3${_scopeId}><div class="overflow-x-auto custom-scrollbar" data-v-40fd08e3${_scopeId}><table class="w-full text-left border-collapse min-w-[1000px] lg:min-w-full" data-v-40fd08e3${_scopeId}><thead data-v-40fd08e3${_scopeId}><tr class="bg-slate-50/80 dark:bg-slate-800/20 text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] sticky top-0 z-20 border-b border-slate-100 dark:border-slate-800/50" data-v-40fd08e3${_scopeId}><th class="p-6 md:p-8 pl-8 text-center" data-v-40fd08e3${_scopeId}>No</th><th class="p-6 md:p-8 pl-8" data-v-40fd08e3${_scopeId}>Waktu</th><th class="p-6 md:p-8" data-v-40fd08e3${_scopeId}>Aktor (User)</th><th class="p-6 md:p-8" data-v-40fd08e3${_scopeId}>Aksi</th><th class="p-6 md:p-8" data-v-40fd08e3${_scopeId}>Entitas Terkait</th><th class="p-6 md:p-8 text-center" data-v-40fd08e3${_scopeId}>Detail</th></tr></thead><tbody class="divide-y divide-slate-50 dark:divide-slate-800/20" data-v-40fd08e3${_scopeId}><!--[-->`);
+            _push2(`</span><input${ssrRenderAttr("value", search.value)} type="text" placeholder="Cari aktor, aksi, atau entitas..." class="w-full pl-11 pr-4 py-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400/50 font-bold text-xs rounded-2xl border-none outline-none focus:outline-none ring-1 ring-slate-200 dark:ring-slate-800 dark:focus:ring-rose-500/50 focus:ring-4 focus:ring-rose-500/50 shadow-sm focus:shadow-md transition-[ring,background-color,box-shadow] duration-300 ease-out focus:bg-slate-50 dark:focus:bg-slate-800/80" data-v-141b67f3${_scopeId}></div><div class="flex items-center bg-white dark:bg-slate-900 rounded-2xl px-4 ring-1 ring-slate-200 dark:ring-slate-800 shadow-sm hover:ring-rose-500/50 dark:hover:ring-rose-500/50 transition-all duration-300" data-v-141b67f3${_scopeId}><span class="hidden sm:inline text-[9px] font-black uppercase text-slate-400 px-2 border-r border-slate-200 dark:border-slate-800 mr-2" data-v-141b67f3${_scopeId}>Tampilkan</span><select class="bg-transparent dark:bg-slate-900 border-none focus:ring-0 text-xs font-black text-slate-900 dark:text-white py-4 pr-8 cursor-pointer hover:text-rose-500 dark:hover:text-rose-500 transition-colors duration-300 outline-none" data-v-141b67f3${_scopeId}><option${ssrRenderAttr("value", 10)} data-v-141b67f3${ssrIncludeBooleanAttr(Array.isArray(perPage.value) ? ssrLooseContain(perPage.value, 10) : ssrLooseEqual(perPage.value, 10)) ? " selected" : ""}${_scopeId}>10</option><option${ssrRenderAttr("value", 25)} data-v-141b67f3${ssrIncludeBooleanAttr(Array.isArray(perPage.value) ? ssrLooseContain(perPage.value, 25) : ssrLooseEqual(perPage.value, 25)) ? " selected" : ""}${_scopeId}>25</option><option${ssrRenderAttr("value", 50)} data-v-141b67f3${ssrIncludeBooleanAttr(Array.isArray(perPage.value) ? ssrLooseContain(perPage.value, 50) : ssrLooseEqual(perPage.value, 50)) ? " selected" : ""}${_scopeId}>50</option><option${ssrRenderAttr("value", 100)} data-v-141b67f3${ssrIncludeBooleanAttr(Array.isArray(perPage.value) ? ssrLooseContain(perPage.value, 100) : ssrLooseEqual(perPage.value, 100)) ? " selected" : ""}${_scopeId}>100</option></select></div></div><div class="px-6 py-3 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800" data-v-141b67f3${_scopeId}><span class="text-[10px] font-black text-slate-400 uppercase tracking-widest" data-v-141b67f3${_scopeId}> Total Aktivitas: <span class="text-rose-500 ml-1" data-v-141b67f3${_scopeId}>${ssrInterpolate(__props.histories.total)}</span></span></div></div><div class="bg-white/60 dark:bg-slate-900 backdrop-blur-3xl rounded-[2.5rem] border border-white/40 dark:border-white/5 shadow-sm overflow-hidden" data-v-141b67f3${_scopeId}><div class="overflow-x-auto custom-scrollbar" data-v-141b67f3${_scopeId}><table class="w-full text-left border-collapse min-w-[1000px] lg:min-w-full" data-v-141b67f3${_scopeId}><thead data-v-141b67f3${_scopeId}><tr class="bg-slate-50/80 dark:bg-slate-800/20 text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] sticky top-0 z-20 border-b border-slate-100 dark:border-slate-800/50" data-v-141b67f3${_scopeId}><th class="p-6 md:p-8 pl-8 text-center" data-v-141b67f3${_scopeId}>No</th><th class="p-6 md:p-8 pl-8 cursor-pointer hover:text-rose-500 transition-colors group select-none" data-v-141b67f3${_scopeId}><div class="flex items-center gap-2" data-v-141b67f3${_scopeId}> Waktu <div class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity" data-v-141b67f3${_scopeId}>`);
+            _push2(ssrRenderComponent(_component_icon, {
+              icon: "fa-solid fa-caret-up",
+              class: [{ "text-rose-500 opacity-100": __props.filters.sort_field === "created_at" && __props.filters.direction === "asc" }, "-mb-1"]
+            }, null, _parent2, _scopeId));
+            _push2(ssrRenderComponent(_component_icon, {
+              icon: "fa-solid fa-caret-down",
+              class: { "text-rose-500 opacity-100": __props.filters.sort_field === "created_at" && __props.filters.direction === "desc" }
+            }, null, _parent2, _scopeId));
+            _push2(`</div></div></th><th class="p-6 md:p-8" data-v-141b67f3${_scopeId}>Aktor (User)</th><th class="p-6 md:p-8 cursor-pointer hover:text-rose-500 transition-colors group select-none" data-v-141b67f3${_scopeId}><div class="flex items-center gap-2" data-v-141b67f3${_scopeId}> Aksi <div class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity" data-v-141b67f3${_scopeId}>`);
+            _push2(ssrRenderComponent(_component_icon, {
+              icon: "fa-solid fa-caret-up",
+              class: [{ "text-rose-500 opacity-100": __props.filters.sort_field === "action" && __props.filters.direction === "asc" }, "-mb-1"]
+            }, null, _parent2, _scopeId));
+            _push2(ssrRenderComponent(_component_icon, {
+              icon: "fa-solid fa-caret-down",
+              class: { "text-rose-500 opacity-100": __props.filters.sort_field === "action" && __props.filters.direction === "desc" }
+            }, null, _parent2, _scopeId));
+            _push2(`</div></div></th><th class="p-6 md:p-8" data-v-141b67f3${_scopeId}>Entitas Terkait</th><th class="p-6 md:p-8 text-center" data-v-141b67f3${_scopeId}>Detail</th></tr></thead><tbody class="divide-y divide-slate-50 dark:divide-slate-800/20" data-v-141b67f3${_scopeId}><!--[-->`);
             ssrRenderList(__props.histories.data, (log) => {
-              _push2(`<tr class="group hover:bg-white/50 dark:hover:bg-white/[0.02] transition-colors duration-300" data-v-40fd08e3${_scopeId}><td class="p-6 md:p-8 text-center" data-v-40fd08e3${_scopeId}><span class="font-mono text-sm font-black text-rose-500 bg-rose-50 dark:bg-rose-500/10 px-2 py-1 rounded-md border border-rose-100 dark:border-rose-500/20" data-v-40fd08e3${_scopeId}>${ssrInterpolate(__props.histories.from + __props.histories.data.indexOf(log))}</span></td><td class="p-6 md:p-8 pl-8 text-[10px] font-bold text-slate-400 font-mono whitespace-nowrap" data-v-40fd08e3${_scopeId}>${ssrInterpolate(formatDate(log.created_at))}</td><td class="p-6 md:p-8" data-v-40fd08e3${_scopeId}><div class="flex items-center gap-3" data-v-40fd08e3${_scopeId}><div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-black text-[10px] text-slate-400 border border-slate-200 dark:border-slate-700" data-v-40fd08e3${_scopeId}>${ssrInterpolate(log.user?.name?.substring(0, 2).toUpperCase() || "?")}</div><div class="flex flex-col" data-v-40fd08e3${_scopeId}><span class="font-bold text-slate-700 dark:text-slate-200 text-xs leading-tight" data-v-40fd08e3${_scopeId}>${ssrInterpolate(log.user?.name || "Unknown")}</span><span class="text-[9px] text-slate-400 uppercase tracking-tighter" data-v-40fd08e3${_scopeId}>${ssrInterpolate(log.user?.role || "-")}</span></div></div></td><td class="p-6 md:p-8" data-v-40fd08e3${_scopeId}><span class="${ssrRenderClass(["px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border shadow-sm", getActionBadge(log.action)])}" data-v-40fd08e3${_scopeId}>${ssrInterpolate(log.action.replace("_", " "))}</span></td><td class="p-6 md:p-8" data-v-40fd08e3${_scopeId}><div class="text-xs font-bold text-slate-600 dark:text-slate-400" data-v-40fd08e3${_scopeId}>${ssrInterpolate(formatEntityName(log.historable_type))}</div><div class="text-[9px] text-slate-400 tracking-tighter mt-0.5" data-v-40fd08e3${_scopeId}> ID: <span class="font-mono text-rose-500" data-v-40fd08e3${_scopeId}>#${ssrInterpolate(log.historable_id)}</span>`);
+              _push2(`<tr class="group hover:bg-white/50 dark:hover:bg-white/[0.02] transition-colors duration-300" data-v-141b67f3${_scopeId}><td class="p-6 md:p-8 text-center" data-v-141b67f3${_scopeId}><span class="font-mono text-sm font-black text-rose-500 bg-rose-50 dark:bg-rose-500/10 px-2 py-1 rounded-md border border-rose-100 dark:border-rose-500/20" data-v-141b67f3${_scopeId}>${ssrInterpolate(__props.histories.from + __props.histories.data.indexOf(log))}</span></td><td class="p-6 md:p-8 pl-8 text-[10px] font-bold text-slate-400 font-mono whitespace-nowrap" data-v-141b67f3${_scopeId}>${ssrInterpolate(formatDate(log.created_at))}</td><td class="p-6 md:p-8" data-v-141b67f3${_scopeId}><div class="flex items-center gap-3" data-v-141b67f3${_scopeId}><div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-black text-[10px] text-slate-400 border border-slate-200 dark:border-slate-700" data-v-141b67f3${_scopeId}>${ssrInterpolate(log.user?.name?.substring(0, 2).toUpperCase() || "?")}</div><div class="flex flex-col" data-v-141b67f3${_scopeId}><span class="font-bold text-slate-700 dark:text-slate-200 text-xs leading-tight" data-v-141b67f3${_scopeId}>${ssrInterpolate(log.user?.name || "Unknown")}</span><span class="text-[9px] text-slate-400 uppercase tracking-tighter" data-v-141b67f3${_scopeId}>${ssrInterpolate(log.user?.role || "-")}</span></div></div></td><td class="p-6 md:p-8" data-v-141b67f3${_scopeId}><span class="${ssrRenderClass(["px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border shadow-sm", getActionBadge(log.action)])}" data-v-141b67f3${_scopeId}>${ssrInterpolate(log.action.replace("_", " "))}</span></td><td class="p-6 md:p-8" data-v-141b67f3${_scopeId}><div class="text-xs font-bold text-slate-600 dark:text-slate-400" data-v-141b67f3${_scopeId}>${ssrInterpolate(formatEntityName(log.historable_type))}</div><div class="text-[9px] text-slate-400 tracking-tighter mt-0.5" data-v-141b67f3${_scopeId}> ID: <span class="font-mono text-rose-500" data-v-141b67f3${_scopeId}>#${ssrInterpolate(log.historable_id)}</span>`);
               if (log.stage) {
-                _push2(`<span class="mx-1" data-v-40fd08e3${_scopeId}>•</span>`);
+                _push2(`<span class="mx-1" data-v-141b67f3${_scopeId}>•</span>`);
               } else {
                 _push2(`<!---->`);
               }
               if (log.stage) {
-                _push2(`<span data-v-40fd08e3${_scopeId}>${ssrInterpolate(log.stage)}</span>`);
+                _push2(`<span data-v-141b67f3${_scopeId}>${ssrInterpolate(log.stage)}</span>`);
               } else {
                 _push2(`<!---->`);
               }
-              _push2(`</div></td><td class="flex items-center justify-center p-6 md:p-8 text-center" data-v-40fd08e3${_scopeId}><button class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-600 rounded-xl transition-all shadow-sm hover:shadow-md hover:border-rose-200 active:scale-95" data-v-40fd08e3${_scopeId}>`);
+              _push2(`</div></td><td class="flex items-center justify-center p-6 md:p-8 text-center" data-v-141b67f3${_scopeId}><button class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-600 rounded-xl transition-all shadow-sm hover:shadow-md hover:border-rose-200 active:scale-95" data-v-141b67f3${_scopeId}>`);
               _push2(ssrRenderComponent(_component_icon, {
                 icon: "fa-solid fa-eye",
                 class: "text-[10px]"
@@ -106,16 +130,16 @@ const _sfc_main = {
             });
             _push2(`<!--]-->`);
             if (__props.histories.data.length === 0) {
-              _push2(`<tr data-v-40fd08e3${_scopeId}><td colspan="5" class="p-12 text-center" data-v-40fd08e3${_scopeId}><div class="flex flex-col items-center justify-center opacity-50" data-v-40fd08e3${_scopeId}>`);
+              _push2(`<tr data-v-141b67f3${_scopeId}><td colspan="5" class="p-12 text-center" data-v-141b67f3${_scopeId}><div class="flex flex-col items-center justify-center opacity-50" data-v-141b67f3${_scopeId}>`);
               _push2(ssrRenderComponent(_component_icon, {
                 icon: "fa-solid fa-clock-rotate-left",
                 class: "text-4xl text-slate-300 dark:text-slate-600 mb-4"
               }, null, _parent2, _scopeId));
-              _push2(`<p class="text-xs font-black text-slate-400 uppercase tracking-widest italic" data-v-40fd08e3${_scopeId}> Belum ada log aktivitas terekam</p></div></td></tr>`);
+              _push2(`<p class="text-xs font-black text-slate-400 uppercase tracking-widest italic" data-v-141b67f3${_scopeId}> Belum ada log aktivitas terekam</p></div></td></tr>`);
             } else {
               _push2(`<!---->`);
             }
-            _push2(`</tbody></table></div><div class="flex flex-col md:flex-row items-center justify-between gap-4 px-6 md:px-8 py-6 border-t border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-800/20 backdrop-blur-sm" data-v-40fd08e3${_scopeId}><div class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest italic text-center md:text-left" data-v-40fd08e3${_scopeId}> Data ${ssrInterpolate(__props.histories.from)} - ${ssrInterpolate(__props.histories.to)} dari total ${ssrInterpolate(__props.histories.total)}</div><div class="flex flex-wrap justify-center gap-1.5" data-v-40fd08e3${_scopeId}><!--[-->`);
+            _push2(`</tbody></table></div><div class="flex flex-col md:flex-row items-center justify-between gap-4 px-6 md:px-8 py-6 border-t border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-800/20 backdrop-blur-sm" data-v-141b67f3${_scopeId}><div class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest italic text-center md:text-left" data-v-141b67f3${_scopeId}> Data ${ssrInterpolate(__props.histories.from)} - ${ssrInterpolate(__props.histories.to)} dari total ${ssrInterpolate(__props.histories.total)}</div><div class="flex flex-wrap justify-center gap-1.5" data-v-141b67f3${_scopeId}><!--[-->`);
             ssrRenderList(__props.histories.links, (link, k) => {
               _push2(`<!--[-->`);
               if (link.url) {
@@ -130,29 +154,29 @@ const _sfc_main = {
                 _push2(`<span class="${ssrRenderClass([
                   "px-3 md:px-4 py-2 text-[10px] font-black rounded-xl border transition-all opacity-30 cursor-not-allowed",
                   "bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800"
-                ])}" data-v-40fd08e3${_scopeId}>${link.label ?? ""}</span>`);
+                ])}" data-v-141b67f3${_scopeId}>${link.label ?? ""}</span>`);
               }
               _push2(`<!--]-->`);
             });
             _push2(`<!--]--></div></div></div></div>`);
             if (showModal.value) {
-              _push2(`<div class="fixed inset-0 z-50 flex items-center justify-center p-4" data-v-40fd08e3${_scopeId}><div class="fixed inset-0 bg-slate-900/80 backdrop-blur-md transition-opacity" data-v-40fd08e3${_scopeId}></div><div class="relative bg-white dark:bg-slate-900 w-full max-w-4xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[85vh] border border-white/10" data-v-40fd08e3${_scopeId}><div class="p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30" data-v-40fd08e3${_scopeId}><div data-v-40fd08e3${_scopeId}><h3 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic" data-v-40fd08e3${_scopeId}> Detail Perubahan Data</h3><p class="text-[10px] font-bold text-rose-500 uppercase tracking-widest mt-1" data-v-40fd08e3${_scopeId}>${ssrInterpolate(selectedLog.value.action)} • ${ssrInterpolate(formatDate(selectedLog.value.created_at))}</p></div><button class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-rose-600 transition-colors font-bold text-lg" data-v-40fd08e3${_scopeId}>×</button></div><div class="p-8 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-8 bg-white dark:bg-slate-900 custom-scrollbar" data-v-40fd08e3${_scopeId}><div class="space-y-4" data-v-40fd08e3${_scopeId}><div class="flex items-center gap-2 text-rose-600 dark:text-rose-500" data-v-40fd08e3${_scopeId}>`);
+              _push2(`<div class="fixed inset-0 z-50 flex items-center justify-center p-4" data-v-141b67f3${_scopeId}><div class="fixed inset-0 bg-slate-900/80 backdrop-blur-md transition-opacity" data-v-141b67f3${_scopeId}></div><div class="relative bg-white dark:bg-slate-900 w-full max-w-4xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[85vh] border border-white/10" data-v-141b67f3${_scopeId}><div class="p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30" data-v-141b67f3${_scopeId}><div data-v-141b67f3${_scopeId}><h3 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic" data-v-141b67f3${_scopeId}> Detail Perubahan Data</h3><p class="text-[10px] font-bold text-rose-500 uppercase tracking-widest mt-1" data-v-141b67f3${_scopeId}>${ssrInterpolate(selectedLog.value.action)} • ${ssrInterpolate(formatDate(selectedLog.value.created_at))}</p></div><button class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-rose-600 transition-colors font-bold text-lg" data-v-141b67f3${_scopeId}>×</button></div><div class="p-8 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-8 bg-white dark:bg-slate-900 custom-scrollbar" data-v-141b67f3${_scopeId}><div class="space-y-4" data-v-141b67f3${_scopeId}><div class="flex items-center gap-2 text-rose-600 dark:text-rose-500" data-v-141b67f3${_scopeId}>`);
               _push2(ssrRenderComponent(_component_icon, { icon: "fa-solid fa-file-circle-minus" }, null, _parent2, _scopeId));
-              _push2(`<h4 class="text-[10px] font-black uppercase tracking-widest" data-v-40fd08e3${_scopeId}>Data Sebelumnya (Old)</h4></div><div class="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 font-mono text-[11px] overflow-x-auto shadow-inner h-full max-h-[400px] custom-scrollbar" data-v-40fd08e3${_scopeId}>`);
+              _push2(`<h4 class="text-[10px] font-black uppercase tracking-widest" data-v-141b67f3${_scopeId}>Data Sebelumnya (Old)</h4></div><div class="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 font-mono text-[11px] overflow-x-auto shadow-inner h-full max-h-[400px] custom-scrollbar" data-v-141b67f3${_scopeId}>`);
               if (selectedLog.value.old_values) {
-                _push2(`<pre class="text-slate-600 dark:text-slate-400" data-v-40fd08e3${_scopeId}>${ssrInterpolate(JSON.stringify(selectedLog.value.old_values, null, 2))}</pre>`);
+                _push2(`<pre class="text-slate-600 dark:text-slate-400" data-v-141b67f3${_scopeId}>${ssrInterpolate(JSON.stringify(selectedLog.value.old_values, null, 2))}</pre>`);
               } else {
-                _push2(`<div class="text-slate-400 italic text-[10px] font-bold uppercase tracking-wider py-10 text-center" data-v-40fd08e3${_scopeId}> Tidak ada data sebelumnya (Record Baru)</div>`);
+                _push2(`<div class="text-slate-400 italic text-[10px] font-bold uppercase tracking-wider py-10 text-center" data-v-141b67f3${_scopeId}> Tidak ada data sebelumnya (Record Baru)</div>`);
               }
-              _push2(`</div></div><div class="space-y-4" data-v-40fd08e3${_scopeId}><div class="flex items-center gap-2 text-emerald-600 dark:text-emerald-500" data-v-40fd08e3${_scopeId}>`);
+              _push2(`</div></div><div class="space-y-4" data-v-141b67f3${_scopeId}><div class="flex items-center gap-2 text-emerald-600 dark:text-emerald-500" data-v-141b67f3${_scopeId}>`);
               _push2(ssrRenderComponent(_component_icon, { icon: "fa-solid fa-file-circle-plus" }, null, _parent2, _scopeId));
-              _push2(`<h4 class="text-[10px] font-black uppercase tracking-widest" data-v-40fd08e3${_scopeId}>Data Sesudahnya (New)</h4></div><div class="bg-emerald-50/30 dark:bg-emerald-900/10 rounded-2xl p-4 border border-emerald-100 dark:border-emerald-500/20 font-mono text-[11px] overflow-x-auto shadow-inner h-full max-h-[400px] custom-scrollbar ring-2 ring-emerald-500/10" data-v-40fd08e3${_scopeId}>`);
+              _push2(`<h4 class="text-[10px] font-black uppercase tracking-widest" data-v-141b67f3${_scopeId}>Data Sesudahnya (New)</h4></div><div class="bg-emerald-50/30 dark:bg-emerald-900/10 rounded-2xl p-4 border border-emerald-100 dark:border-emerald-500/20 font-mono text-[11px] overflow-x-auto shadow-inner h-full max-h-[400px] custom-scrollbar ring-2 ring-emerald-500/10" data-v-141b67f3${_scopeId}>`);
               if (selectedLog.value.new_values) {
-                _push2(`<pre class="text-slate-700 dark:text-slate-200 font-bold" data-v-40fd08e3${_scopeId}>${ssrInterpolate(JSON.stringify(selectedLog.value.new_values, null, 2))}</pre>`);
+                _push2(`<pre class="text-slate-700 dark:text-slate-200 font-bold" data-v-141b67f3${_scopeId}>${ssrInterpolate(JSON.stringify(selectedLog.value.new_values, null, 2))}</pre>`);
               } else {
-                _push2(`<div class="text-rose-500 italic text-[10px] font-bold uppercase tracking-wider py-10 text-center" data-v-40fd08e3${_scopeId}> Data Telah Dihapus Permanen</div>`);
+                _push2(`<div class="text-rose-500 italic text-[10px] font-bold uppercase tracking-wider py-10 text-center" data-v-141b67f3${_scopeId}> Data Telah Dihapus Permanen</div>`);
               }
-              _push2(`</div></div></div><div class="p-6 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800 text-right" data-v-40fd08e3${_scopeId}><button class="px-8 py-3 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm" data-v-40fd08e3${_scopeId}> Tutup Detail </button></div></div></div>`);
+              _push2(`</div></div></div><div class="p-6 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800 text-right" data-v-141b67f3${_scopeId}><button class="px-8 py-3 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm" data-v-141b67f3${_scopeId}> Tutup Detail </button></div></div></div>`);
             } else {
               _push2(`<!---->`);
             }
@@ -205,9 +229,43 @@ const _sfc_main = {
                       createVNode("thead", null, [
                         createVNode("tr", { class: "bg-slate-50/80 dark:bg-slate-800/20 text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] sticky top-0 z-20 border-b border-slate-100 dark:border-slate-800/50" }, [
                           createVNode("th", { class: "p-6 md:p-8 pl-8 text-center" }, "No"),
-                          createVNode("th", { class: "p-6 md:p-8 pl-8" }, "Waktu"),
+                          createVNode("th", {
+                            onClick: ($event) => handleSort("created_at"),
+                            class: "p-6 md:p-8 pl-8 cursor-pointer hover:text-rose-500 transition-colors group select-none"
+                          }, [
+                            createVNode("div", { class: "flex items-center gap-2" }, [
+                              createTextVNode(" Waktu "),
+                              createVNode("div", { class: "flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity" }, [
+                                createVNode(_component_icon, {
+                                  icon: "fa-solid fa-caret-up",
+                                  class: [{ "text-rose-500 opacity-100": __props.filters.sort_field === "created_at" && __props.filters.direction === "asc" }, "-mb-1"]
+                                }, null, 8, ["class"]),
+                                createVNode(_component_icon, {
+                                  icon: "fa-solid fa-caret-down",
+                                  class: { "text-rose-500 opacity-100": __props.filters.sort_field === "created_at" && __props.filters.direction === "desc" }
+                                }, null, 8, ["class"])
+                              ])
+                            ])
+                          ], 8, ["onClick"]),
                           createVNode("th", { class: "p-6 md:p-8" }, "Aktor (User)"),
-                          createVNode("th", { class: "p-6 md:p-8" }, "Aksi"),
+                          createVNode("th", {
+                            onClick: ($event) => handleSort("action"),
+                            class: "p-6 md:p-8 cursor-pointer hover:text-rose-500 transition-colors group select-none"
+                          }, [
+                            createVNode("div", { class: "flex items-center gap-2" }, [
+                              createTextVNode(" Aksi "),
+                              createVNode("div", { class: "flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity" }, [
+                                createVNode(_component_icon, {
+                                  icon: "fa-solid fa-caret-up",
+                                  class: [{ "text-rose-500 opacity-100": __props.filters.sort_field === "action" && __props.filters.direction === "asc" }, "-mb-1"]
+                                }, null, 8, ["class"]),
+                                createVNode(_component_icon, {
+                                  icon: "fa-solid fa-caret-down",
+                                  class: { "text-rose-500 opacity-100": __props.filters.sort_field === "action" && __props.filters.direction === "desc" }
+                                }, null, 8, ["class"])
+                              ])
+                            ])
+                          ], 8, ["onClick"]),
                           createVNode("th", { class: "p-6 md:p-8" }, "Entitas Terkait"),
                           createVNode("th", { class: "p-6 md:p-8 text-center" }, "Detail")
                         ])
@@ -378,7 +436,7 @@ _sfc_main.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("resources/js/Pages/Admin/History/Index.vue");
   return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
 };
-const Index = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-40fd08e3"]]);
+const Index = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-141b67f3"]]);
 export {
   Index as default
 };

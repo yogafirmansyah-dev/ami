@@ -18,7 +18,9 @@ const updateSearch = debounce((value) => {
     isSearching.value = true;
     router.get(route('auditor.assignments.index'), {
         search: value,
-        status: status.value
+        status: status.value,
+        sort_field: props.filters.sort_field,
+        direction: props.filters.direction
     }, {
         preserveState: true,
         replace: true,
@@ -33,7 +35,26 @@ const changeStatus = (newStatus) => {
     status.value = newStatus;
     router.get(route('auditor.assignments.index'), {
         search: search.value,
-        status: newStatus
+        status: newStatus,
+        sort_field: props.filters.sort_field,
+        direction: props.filters.direction
+    }, {
+        preserveState: true,
+        preserveScroll: true,
+    });
+};
+
+/* --- SORTING --- */
+const handleSort = (field) => {
+    const currentSort = props.filters.sort_field;
+    const currentDir = props.filters.direction || 'asc';
+    const nextDir = currentSort === field && currentDir === 'asc' ? 'desc' : 'asc';
+
+    router.get(route('auditor.assignments.index'), {
+        search: search.value,
+        status: status.value,
+        sort_field: field,
+        direction: nextDir
     }, {
         preserveState: true,
         preserveScroll: true,
@@ -162,13 +183,40 @@ const getCategoryStyle = (type) => {
                                 class="bg-slate-50/80 dark:bg-slate-800/20 text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] sticky top-0 z-20 border-b border-slate-100 dark:border-slate-800/50">
                                 <th class="p-6 md:p-8">No</th>
                                 <th class="p-6 md:p-8">Unit Audit</th>
-                                <th class="p-6 md:p-8">Referensi</th>
-                                <th class="p-6 md:p-8 text-center">Tahapan</th>
+                                <th @click="handleSort('standard_name')"
+                                    class="p-6 md:p-8 cursor-pointer hover:text-emerald-500 transition-colors group select-none">
+                                    <div class="flex items-center gap-2">
+                                        Referensi
+                                        <div
+                                            class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                            <icon icon="fa-solid fa-caret-up"
+                                                :class="{ 'text-emerald-500 opacity-100': filters.sort_field === 'standard_name' && filters.direction === 'asc' }"
+                                                class="-mb-1" />
+                                            <icon icon="fa-solid fa-caret-down"
+                                                :class="{ 'text-emerald-500 opacity-100': filters.sort_field === 'standard_name' && filters.direction === 'desc' }" />
+                                        </div>
+                                    </div>
+                                </th>
+                                <th @click="handleSort('current_stage')"
+                                    class="p-6 md:p-8 text-center cursor-pointer hover:text-emerald-500 transition-colors group select-none">
+                                    <div class="flex items-center justify-center gap-2">
+                                        Tahapan
+                                        <div
+                                            class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                            <icon icon="fa-solid fa-caret-up"
+                                                :class="{ 'text-emerald-500 opacity-100': filters.sort_field === 'current_stage' && filters.direction === 'asc' }"
+                                                class="-mb-1" />
+                                            <icon icon="fa-solid fa-caret-down"
+                                                :class="{ 'text-emerald-500 opacity-100': filters.sort_field === 'current_stage' && filters.direction === 'desc' }" />
+                                        </div>
+                                    </div>
+                                </th>
                                 <th class="p-6 md:p-8">Progres</th>
                                 <th class="p-6 md:p-8 text-right">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-50 dark:divide-slate-800/20">
+                        <tbody v-if="assignments.data.length > 0"
+                            class="divide-y divide-slate-50 dark:divide-slate-800/20">
                             <tr v-for="item in assignments.data" :key="item.id"
                                 class="group hover:bg-white/50 dark:hover:bg-white/[0.02] transition-colors duration-300">
                                 <td class="p-6 md:p-8">
@@ -235,6 +283,26 @@ const getCategoryStyle = (type) => {
                                         title="Buka Evaluasi">
                                         <icon icon="fa-solid fa-arrow-right-to-bracket" class="text-xs" />
                                     </Link>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tbody v-else>
+                            <tr>
+                                <td colspan="6" class="p-12 text-center">
+                                    <div class="flex flex-col items-center justify-center py-12">
+                                        <div
+                                            class="w-24 h-24 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6 shadow-sm">
+                                            <icon icon="fa-solid fa-clipboard-check"
+                                                class="text-4xl text-slate-300 dark:text-slate-600" />
+                                        </div>
+                                        <h4
+                                            class="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest mb-2">
+                                            Belum Ada Penugasan
+                                        </h4>
+                                        <p class="text-xs font-bold text-slate-400 max-w-xs mx-auto">
+                                            Saat ini belum ada data penugasan audit yang tersedia untuk Anda.
+                                        </p>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>

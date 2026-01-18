@@ -35,7 +35,7 @@ class AssignmentController extends Controller
 
         $assignments = Assignment::with(['assignable', 'period', 'standard', 'auditor'])
             ->search($request->search) // Memanggil scope kustom di model
-            ->sort($request->sort_field ?? 'created_at', $request->direction ?? 'desc') // Memanggil scope dari trait
+            ->sort($request->sort_field ?? 'standard_name', $request->direction ?? 'asc') // Memanggil scope dari trait
             ->paginate($perPage)
             ->withQueryString();
 
@@ -131,7 +131,7 @@ class AssignmentController extends Controller
         }
 
         $indicators = $query->search($filters['search'] ?? null, ['snapshot_code', 'snapshot_requirement'])
-            ->sort($filters['sort_field'] ?? 'snapshot_code', $filters['direction'] ?? 'asc')
+            ->sort($filters['sort_field'] ?? 'snapshot_requirement', $filters['direction'] ?? 'asc')
             ->paginate($perPage)
             ->withQueryString();
 

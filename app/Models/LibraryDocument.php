@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class LibraryDocument extends Model
 {
+    use Filterable;
 
     protected $fillable = ['name', 'file_path', 'type', 'extension', 'uploaded_by'];
 

@@ -83,7 +83,7 @@ class AssignmentController extends Controller
         }
 
         $indicators = $query->search($request->search, ['snapshot_code', 'snapshot_requirement'])
-            ->sort($request->sort_field ?? 'snapshot_code', $request->direction ?? 'asc')
+            ->sort($request->sort_field ?? 'snapshot_requirement', $request->direction ?? 'asc')
             ->paginate($request->input('per_page', 10))
             ->withQueryString();
 
@@ -91,7 +91,7 @@ class AssignmentController extends Controller
             'assignment' => $assignment,
             'groupedDocuments' => $groupedDocuments,
             'indicators' => $indicators,
-            'filters' => $request->only(['search']),
+            'filters' => $request->only(['search', 'sort_field', 'direction']),
             // Kirim stage stats untuk Stepper di UI
             'stageStats' => Assignment::stageBreakdown(),
             'findingStats' => [

@@ -27,6 +27,22 @@ watch(perPage, (value) => {
     });
 });
 
+/* --- SORTING LOGIC --- */
+const handleSort = (field) => {
+    const currentSortField = props.filters.sort_field;
+    const currentDirection = props.filters.direction || 'asc';
+    const nextDirection = currentSortField === field && currentDirection === 'asc' ? 'desc' : 'asc';
+
+    router.get(window.location.href, {
+        ...props.filters,
+        sort_field: field,
+        direction: nextDirection,
+    }, {
+        preserveState: true,
+        replace: true,
+    });
+};
+
 /* --- MODAL & FORM LOGIC --- */
 const showModal = ref(false);
 const editMode = ref(false);
@@ -143,8 +159,34 @@ const deleteData = (id) => {
                             <tr
                                 class="bg-slate-50/80 dark:bg-slate-800/20 text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] sticky top-0 z-20 border-b border-slate-100 dark:border-slate-800/50">
                                 <th class="p-6 md:p-8 text-center w-24">No</th>
-                                <th class="p-6 md:p-8 pl-8">Nama Fakultas</th>
-                                <th class="p-6 md:p-8 text-center">Total Prodi</th>
+                                <th @click="handleSort('name')"
+                                    class="p-6 md:p-8 pl-8 cursor-pointer hover:text-rose-500 transition-colors group select-none">
+                                    <div class="flex items-center gap-2">
+                                        Nama Fakultas
+                                        <div
+                                            class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                            <icon icon="fa-solid fa-caret-up"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'name' && filters.direction === 'asc' }"
+                                                class="-mb-1" />
+                                            <icon icon="fa-solid fa-caret-down"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'name' && filters.direction === 'desc' }" />
+                                        </div>
+                                    </div>
+                                </th>
+                                <th @click="handleSort('prodis_count')"
+                                    class="p-6 md:p-8 text-center cursor-pointer hover:text-rose-500 transition-colors group select-none">
+                                    <div class="flex items-center justify-center gap-2">
+                                        Total Prodi
+                                        <div
+                                            class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                            <icon icon="fa-solid fa-caret-up"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'prodis_count' && filters.direction === 'asc' }"
+                                                class="-mb-1" />
+                                            <icon icon="fa-solid fa-caret-down"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'prodis_count' && filters.direction === 'desc' }" />
+                                        </div>
+                                    </div>
+                                </th>
                                 <th class="p-6 md:p-8 pr-8 text-center w-24">Aksi</th>
                             </tr>
                         </thead>

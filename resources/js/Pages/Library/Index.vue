@@ -29,6 +29,14 @@ const emptyStateMessage = computed(() => {
         ? `Tidak ada hasil untuk kata kunci "${search.value}"`
         : 'Database dokumen saat ini masih kosong.';
 });
+
+/* --- SORTING --- */
+const handleSort = (field) => {
+    const currentSort = props.filters?.sort_field;
+    const currentDir = props.filters?.direction || 'desc';
+    const nextDir = currentSort === field && currentDir === 'asc' ? 'desc' : 'asc';
+    router.get(window.location.href, { ...props.filters, sort_field: field, direction: nextDir }, { preserveState: true, replace: true });
+};
 </script>
 
 <template>
@@ -68,17 +76,51 @@ const emptyStateMessage = computed(() => {
                                     class="p-8 text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] text-center">
                                     No
                                 </th>
-                                <th class="p-8 text-[10px] font-black uppercase text-slate-500 tracking-[0.2em]">Info
-                                    Dokumen
+                                <th @click="handleSort('name')"
+                                    class="p-8 text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] cursor-pointer hover:text-rose-500 transition-colors group select-none">
+                                    <div class="flex items-center gap-2">
+                                        Info Dokumen
+                                        <div
+                                            class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                            <icon icon="fa-solid fa-caret-up"
+                                                :class="{ 'text-rose-500 opacity-100': filters?.sort_field === 'name' && filters?.direction === 'asc' }"
+                                                class="-mb-1" />
+                                            <icon icon="fa-solid fa-caret-down"
+                                                :class="{ 'text-rose-500 opacity-100': filters?.sort_field === 'name' && filters?.direction === 'desc' }" />
+                                        </div>
+                                    </div>
+                                </th>
+                                <th @click="handleSort('type')"
+                                    class="p-8 text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] text-center cursor-pointer hover:text-rose-500 transition-colors group select-none">
+                                    <div class="flex items-center justify-center gap-2">
+                                        Tipe
+                                        <div
+                                            class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                            <icon icon="fa-solid fa-caret-up"
+                                                :class="{ 'text-rose-500 opacity-100': filters?.sort_field === 'type' && filters?.direction === 'asc' }"
+                                                class="-mb-1" />
+                                            <icon icon="fa-solid fa-caret-down"
+                                                :class="{ 'text-rose-500 opacity-100': filters?.sort_field === 'type' && filters?.direction === 'desc' }" />
+                                        </div>
+                                    </div>
                                 </th>
                                 <th
                                     class="p-8 text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] text-center">
-                                    Tipe</th>
-                                <th
-                                    class="p-8 text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] text-center">
                                     Format</th>
-                                <th class="p-8 text-[10px] font-black uppercase text-slate-500 tracking-[0.2em]">
-                                    Metadata</th>
+                                <th @click="handleSort('created_at')"
+                                    class="p-8 text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] cursor-pointer hover:text-rose-500 transition-colors group select-none">
+                                    <div class="flex items-center gap-2">
+                                        Metadata
+                                        <div
+                                            class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                            <icon icon="fa-solid fa-caret-up"
+                                                :class="{ 'text-rose-500 opacity-100': filters?.sort_field === 'created_at' && filters?.direction === 'asc' }"
+                                                class="-mb-1" />
+                                            <icon icon="fa-solid fa-caret-down"
+                                                :class="{ 'text-rose-500 opacity-100': filters?.sort_field === 'created_at' && filters?.direction === 'desc' }" />
+                                        </div>
+                                    </div>
+                                </th>
                                 <th
                                     class="p-8 text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] text-right">
                                     Aksi

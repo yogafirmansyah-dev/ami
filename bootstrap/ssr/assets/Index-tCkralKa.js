@@ -1,4 +1,4 @@
-import { ref, watch, resolveComponent, mergeProps, withCtx, unref, createVNode, createBlock, createCommentVNode, withDirectives, vModelText, vModelSelect, openBlock, Fragment, renderList, toDisplayString, createTextVNode, withModifiers, useSSRContext } from "vue";
+import { ref, watch, resolveComponent, mergeProps, withCtx, unref, createVNode, createBlock, createCommentVNode, withDirectives, vModelText, vModelSelect, createTextVNode, openBlock, Fragment, renderList, toDisplayString, withModifiers, useSSRContext } from "vue";
 import { ssrRenderComponent, ssrRenderAttr, ssrIncludeBooleanAttr, ssrLooseContain, ssrLooseEqual, ssrRenderList, ssrInterpolate, ssrRenderClass } from "vue/server-renderer";
 import { router, useForm, Link, usePage } from "@inertiajs/vue3";
 import { A as AppLayout } from "./AppLayout-BXpqpYTS.js";
@@ -38,6 +38,12 @@ const _sfc_main = {
         replace: true
       });
     });
+    const handleSort = (field) => {
+      const currentSort = props.filters.sort_field;
+      const currentDir = props.filters.direction || "asc";
+      const nextDir = currentSort === field && currentDir === "asc" ? "desc" : "asc";
+      router.get(window.location.href, { ...props.filters, sort_field: field, direction: nextDir }, { preserveState: true, replace: true });
+    };
     const showModal = ref(false);
     const editMode = ref(false);
     const form = useForm({
@@ -134,7 +140,16 @@ const _sfc_main = {
               icon: "fa-solid fa-magnifying-glass",
               class: "text-slate-400 text-xs group-focus-within:text-rose-500 transition-colors"
             }, null, _parent2, _scopeId));
-            _push2(`</span><input${ssrRenderAttr("value", search.value)} type="text" placeholder="Cari nama prodi..." class="w-full pl-11 pr-4 py-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400/50 font-bold text-xs rounded-2xl border-none outline-none focus:outline-none ring-1 ring-slate-200 dark:ring-slate-800 dark:focus:ring-rose-500/50 focus:ring-4 focus:ring-rose-500/50 shadow-sm focus:shadow-md transition-[ring,background-color,box-shadow] duration-300 ease-out focus:bg-slate-50 dark:focus:bg-slate-800/80"${_scopeId}></div><div class="flex items-center bg-white dark:bg-slate-900 rounded-2xl px-4 ring-1 ring-slate-200 dark:ring-slate-800 shadow-sm hover:ring-rose-500/50 dark:hover:ring-rose-500/50 transition-all duration-300"${_scopeId}><span class="hidden sm:inline text-[9px] font-black uppercase text-slate-400 px-2 border-r border-slate-200 dark:border-slate-800 mr-2"${_scopeId}>Tampilkan</span><select class="bg-transparent dark:bg-slate-900 border-none focus:ring-0 text-xs font-black text-slate-900 dark:text-white py-4 pr-8 cursor-pointer hover:text-rose-500 dark:hover:text-rose-500 transition-colors duration-300 outline-none"${_scopeId}><option${ssrRenderAttr("value", 10)}${ssrIncludeBooleanAttr(Array.isArray(perPage.value) ? ssrLooseContain(perPage.value, 10) : ssrLooseEqual(perPage.value, 10)) ? " selected" : ""}${_scopeId}>10</option><option${ssrRenderAttr("value", 25)}${ssrIncludeBooleanAttr(Array.isArray(perPage.value) ? ssrLooseContain(perPage.value, 25) : ssrLooseEqual(perPage.value, 25)) ? " selected" : ""}${_scopeId}>25</option><option${ssrRenderAttr("value", 50)}${ssrIncludeBooleanAttr(Array.isArray(perPage.value) ? ssrLooseContain(perPage.value, 50) : ssrLooseEqual(perPage.value, 50)) ? " selected" : ""}${_scopeId}>50</option><option${ssrRenderAttr("value", 100)}${ssrIncludeBooleanAttr(Array.isArray(perPage.value) ? ssrLooseContain(perPage.value, 100) : ssrLooseEqual(perPage.value, 100)) ? " selected" : ""}${_scopeId}>100</option></select></div></div><div class="flex items-center gap-3"${_scopeId}></div></div><div class="bg-white/60 dark:bg-slate-900 backdrop-blur-3xl rounded-[2.5rem] border border-white/40 dark:border-white/5 shadow-sm overflow-hidden"${_scopeId}><div class="overflow-x-auto custom-scrollbar"${_scopeId}><table class="w-full text-left border-collapse min-w-[1000px] lg:min-w-full"${_scopeId}><thead${_scopeId}><tr class="bg-slate-50/80 dark:bg-slate-800/20 text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] sticky top-0 z-20 border-b border-slate-100 dark:border-slate-800/50"${_scopeId}><th class="p-6 md:p-8 pl-8 w-24"${_scopeId}>No</th><th class="p-6 md:p-8"${_scopeId}>Nama Program Studi</th><th class="p-6 md:p-8"${_scopeId}>Fakultas</th><th class="p-6 md:p-8 text-center"${_scopeId}>Aksi</th></tr></thead><tbody class="divide-y divide-slate-50 dark:divide-slate-800/20"${_scopeId}><!--[-->`);
+            _push2(`</span><input${ssrRenderAttr("value", search.value)} type="text" placeholder="Cari nama prodi..." class="w-full pl-11 pr-4 py-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400/50 font-bold text-xs rounded-2xl border-none outline-none focus:outline-none ring-1 ring-slate-200 dark:ring-slate-800 dark:focus:ring-rose-500/50 focus:ring-4 focus:ring-rose-500/50 shadow-sm focus:shadow-md transition-[ring,background-color,box-shadow] duration-300 ease-out focus:bg-slate-50 dark:focus:bg-slate-800/80"${_scopeId}></div><div class="flex items-center bg-white dark:bg-slate-900 rounded-2xl px-4 ring-1 ring-slate-200 dark:ring-slate-800 shadow-sm hover:ring-rose-500/50 dark:hover:ring-rose-500/50 transition-all duration-300"${_scopeId}><span class="hidden sm:inline text-[9px] font-black uppercase text-slate-400 px-2 border-r border-slate-200 dark:border-slate-800 mr-2"${_scopeId}>Tampilkan</span><select class="bg-transparent dark:bg-slate-900 border-none focus:ring-0 text-xs font-black text-slate-900 dark:text-white py-4 pr-8 cursor-pointer hover:text-rose-500 dark:hover:text-rose-500 transition-colors duration-300 outline-none"${_scopeId}><option${ssrRenderAttr("value", 10)}${ssrIncludeBooleanAttr(Array.isArray(perPage.value) ? ssrLooseContain(perPage.value, 10) : ssrLooseEqual(perPage.value, 10)) ? " selected" : ""}${_scopeId}>10</option><option${ssrRenderAttr("value", 25)}${ssrIncludeBooleanAttr(Array.isArray(perPage.value) ? ssrLooseContain(perPage.value, 25) : ssrLooseEqual(perPage.value, 25)) ? " selected" : ""}${_scopeId}>25</option><option${ssrRenderAttr("value", 50)}${ssrIncludeBooleanAttr(Array.isArray(perPage.value) ? ssrLooseContain(perPage.value, 50) : ssrLooseEqual(perPage.value, 50)) ? " selected" : ""}${_scopeId}>50</option><option${ssrRenderAttr("value", 100)}${ssrIncludeBooleanAttr(Array.isArray(perPage.value) ? ssrLooseContain(perPage.value, 100) : ssrLooseEqual(perPage.value, 100)) ? " selected" : ""}${_scopeId}>100</option></select></div></div><div class="flex items-center gap-3"${_scopeId}></div></div><div class="bg-white/60 dark:bg-slate-900 backdrop-blur-3xl rounded-[2.5rem] border border-white/40 dark:border-white/5 shadow-sm overflow-hidden"${_scopeId}><div class="overflow-x-auto custom-scrollbar"${_scopeId}><table class="w-full text-left border-collapse min-w-[1000px] lg:min-w-full"${_scopeId}><thead${_scopeId}><tr class="bg-slate-50/80 dark:bg-slate-800/20 text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] sticky top-0 z-20 border-b border-slate-100 dark:border-slate-800/50"${_scopeId}><th class="p-6 md:p-8 pl-8 w-24"${_scopeId}>No</th><th class="p-6 md:p-8 cursor-pointer hover:text-rose-500 transition-colors group select-none"${_scopeId}><div class="flex items-center gap-2"${_scopeId}> Nama Program Studi <div class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity"${_scopeId}>`);
+            _push2(ssrRenderComponent(_component_icon, {
+              icon: "fa-solid fa-caret-up",
+              class: [{ "text-rose-500 opacity-100": __props.filters.sort_field === "name" && __props.filters.direction === "asc" }, "-mb-1"]
+            }, null, _parent2, _scopeId));
+            _push2(ssrRenderComponent(_component_icon, {
+              icon: "fa-solid fa-caret-down",
+              class: { "text-rose-500 opacity-100": __props.filters.sort_field === "name" && __props.filters.direction === "desc" }
+            }, null, _parent2, _scopeId));
+            _push2(`</div></div></th><th class="p-6 md:p-8"${_scopeId}>Fakultas</th><th class="p-6 md:p-8 text-center"${_scopeId}>Aksi</th></tr></thead><tbody class="divide-y divide-slate-50 dark:divide-slate-800/20"${_scopeId}><!--[-->`);
             ssrRenderList(__props.prodis.data, (item) => {
               _push2(`<tr class="group hover:bg-white/50 dark:hover:bg-white/[0.02] transition-colors duration-300"${_scopeId}><td class="p-6 md:p-8 pl-8"${_scopeId}><span class="font-mono text-sm font-black text-rose-500 bg-rose-50 dark:bg-rose-500/10 px-2 py-1 rounded-md border border-rose-100 dark:border-rose-500/20"${_scopeId}>${ssrInterpolate(__props.prodis.from + __props.prodis.data.indexOf(item))}</span></td><td class="p-6 md:p-8"${_scopeId}><div class="font-bold text-slate-700 dark:text-slate-200 text-sm"${_scopeId}>${ssrInterpolate(item.name)}</div><div class="text-[10px] font-bold text-rose-500/80 uppercase italic tracking-tighter flex items-center gap-1 mt-1"${_scopeId}> ID: #${ssrInterpolate(item.id)}</div></td><td class="p-6 md:p-8"${_scopeId}><span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wide bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border border-emerald-100 dark:border-emerald-500/20 shadow-sm"${_scopeId}>`);
               _push2(ssrRenderComponent(_component_icon, {
@@ -249,7 +264,24 @@ const _sfc_main = {
                       createVNode("thead", null, [
                         createVNode("tr", { class: "bg-slate-50/80 dark:bg-slate-800/20 text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] sticky top-0 z-20 border-b border-slate-100 dark:border-slate-800/50" }, [
                           createVNode("th", { class: "p-6 md:p-8 pl-8 w-24" }, "No"),
-                          createVNode("th", { class: "p-6 md:p-8" }, "Nama Program Studi"),
+                          createVNode("th", {
+                            onClick: ($event) => handleSort("name"),
+                            class: "p-6 md:p-8 cursor-pointer hover:text-rose-500 transition-colors group select-none"
+                          }, [
+                            createVNode("div", { class: "flex items-center gap-2" }, [
+                              createTextVNode(" Nama Program Studi "),
+                              createVNode("div", { class: "flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity" }, [
+                                createVNode(_component_icon, {
+                                  icon: "fa-solid fa-caret-up",
+                                  class: [{ "text-rose-500 opacity-100": __props.filters.sort_field === "name" && __props.filters.direction === "asc" }, "-mb-1"]
+                                }, null, 8, ["class"]),
+                                createVNode(_component_icon, {
+                                  icon: "fa-solid fa-caret-down",
+                                  class: { "text-rose-500 opacity-100": __props.filters.sort_field === "name" && __props.filters.direction === "desc" }
+                                }, null, 8, ["class"])
+                              ])
+                            ])
+                          ], 8, ["onClick"]),
                           createVNode("th", { class: "p-6 md:p-8" }, "Fakultas"),
                           createVNode("th", { class: "p-6 md:p-8 text-center" }, "Aksi")
                         ])

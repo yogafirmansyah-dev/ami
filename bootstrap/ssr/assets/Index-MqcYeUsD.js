@@ -1,4 +1,4 @@
-import { ref, watch, resolveComponent, mergeProps, withCtx, unref, createVNode, createBlock, createCommentVNode, withDirectives, vModelText, vModelSelect, openBlock, Fragment, renderList, toDisplayString, withModifiers, createTextVNode, useSSRContext } from "vue";
+import { ref, watch, resolveComponent, mergeProps, withCtx, unref, createVNode, createBlock, createCommentVNode, withDirectives, vModelText, vModelSelect, createTextVNode, openBlock, Fragment, renderList, toDisplayString, withModifiers, useSSRContext } from "vue";
 import { ssrRenderComponent, ssrRenderAttr, ssrIncludeBooleanAttr, ssrLooseContain, ssrLooseEqual, ssrRenderList, ssrInterpolate, ssrRenderClass } from "vue/server-renderer";
 import { router, useForm, Link, usePage } from "@inertiajs/vue3";
 import { A as AppLayout } from "./AppLayout-BXpqpYTS.js";
@@ -38,6 +38,19 @@ const _sfc_main = {
         replace: true
       });
     });
+    const handleSort = (field) => {
+      const currentSortField = props.filters.sort_field;
+      const currentDirection = props.filters.direction || "asc";
+      const nextDirection = currentSortField === field && currentDirection === "asc" ? "desc" : "asc";
+      router.get(window.location.href, {
+        ...props.filters,
+        sort_field: field,
+        direction: nextDirection
+      }, {
+        preserveState: true,
+        replace: true
+      });
+    };
     const showModal = ref(false);
     const editMode = ref(false);
     const form = useForm({
@@ -103,7 +116,7 @@ const _sfc_main = {
         }),
         subHeader: withCtx((_, _push2, _parent2, _scopeId) => {
           if (_push2) {
-            _push2(`<span class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider" data-v-d9ee9ce7${_scopeId}>Manajemen unit kerja tingkat Fakultas / Dekanat</span>`);
+            _push2(`<span class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider" data-v-e8746d8a${_scopeId}>Manajemen unit kerja tingkat Fakultas / Dekanat</span>`);
           } else {
             return [
               createVNode("span", { class: "text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider" }, "Manajemen unit kerja tingkat Fakultas / Dekanat")
@@ -112,7 +125,7 @@ const _sfc_main = {
         }),
         "action-buttons": withCtx((_, _push2, _parent2, _scopeId) => {
           if (_push2) {
-            _push2(`<button class="group inline-flex items-center px-6 py-2.5 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 dark:from-rose-600 dark:via-rose-500 dark:to-rose-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-lg shadow-slate-900/20 dark:shadow-rose-600/30 transition-all hover:shadow-xl hover:shadow-slate-900/30 dark:hover:shadow-rose-600/40 hover:-translate-y-0.5 active:scale-95 border-t border-white/10" data-v-d9ee9ce7${_scopeId}><span class="mr-2 text-rose-400 dark:text-white group-hover:rotate-90 transition-transform duration-300 text-sm leading-none" data-v-d9ee9ce7${_scopeId}>+</span> Tambah Fakultas </button>`);
+            _push2(`<button class="group inline-flex items-center px-6 py-2.5 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 dark:from-rose-600 dark:via-rose-500 dark:to-rose-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-lg shadow-slate-900/20 dark:shadow-rose-600/30 transition-all hover:shadow-xl hover:shadow-slate-900/30 dark:hover:shadow-rose-600/40 hover:-translate-y-0.5 active:scale-95 border-t border-white/10" data-v-e8746d8a${_scopeId}><span class="mr-2 text-rose-400 dark:text-white group-hover:rotate-90 transition-transform duration-300 text-sm leading-none" data-v-e8746d8a${_scopeId}>+</span> Tambah Fakultas </button>`);
           } else {
             return [
               createVNode("button", {
@@ -127,19 +140,37 @@ const _sfc_main = {
         }),
         default: withCtx((_, _push2, _parent2, _scopeId) => {
           if (_push2) {
-            _push2(`<div class="space-y-6" data-v-d9ee9ce7${_scopeId}><div class="flex flex-col lg:flex-row justify-between items-center gap-6" data-v-d9ee9ce7${_scopeId}><div class="flex items-stretch gap-3 w-full max-w-2xl" data-v-d9ee9ce7${_scopeId}><div class="relative flex-1 group" data-v-d9ee9ce7${_scopeId}><span class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none" data-v-d9ee9ce7${_scopeId}>`);
+            _push2(`<div class="space-y-6" data-v-e8746d8a${_scopeId}><div class="flex flex-col lg:flex-row justify-between items-center gap-6" data-v-e8746d8a${_scopeId}><div class="flex items-stretch gap-3 w-full max-w-2xl" data-v-e8746d8a${_scopeId}><div class="relative flex-1 group" data-v-e8746d8a${_scopeId}><span class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none" data-v-e8746d8a${_scopeId}>`);
             _push2(ssrRenderComponent(_component_icon, {
               icon: "fa-solid fa-magnifying-glass",
               class: "text-slate-400 text-xs group-focus-within:text-rose-500 transition-colors"
             }, null, _parent2, _scopeId));
-            _push2(`</span><input${ssrRenderAttr("value", search.value)} type="text" placeholder="Cari nama fakultas..." class="w-full pl-11 pr-4 py-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400/50 font-bold text-xs rounded-2xl border-none outline-none focus:outline-none ring-1 ring-slate-200 dark:ring-slate-800 dark:focus:ring-rose-500/50 focus:ring-4 focus:ring-rose-500/50 shadow-sm focus:shadow-md transition-[ring,background-color,box-shadow] duration-300 ease-out focus:bg-slate-50 dark:focus:bg-slate-800/80" data-v-d9ee9ce7${_scopeId}></div><div class="flex items-center bg-white dark:bg-slate-900 rounded-2xl px-4 ring-1 ring-slate-200 dark:ring-slate-800 shadow-sm hover:ring-rose-500/50 dark:hover:ring-rose-500/50 transition-all duration-300" data-v-d9ee9ce7${_scopeId}><span class="hidden sm:inline text-[9px] font-black uppercase text-slate-400 px-2 border-r border-slate-200 dark:border-slate-800 mr-2" data-v-d9ee9ce7${_scopeId}>Tampilkan</span><select class="bg-transparent dark:bg-slate-900 border-none focus:ring-0 text-xs font-black text-slate-900 dark:text-white py-4 pr-8 cursor-pointer hover:text-rose-500 dark:hover:text-rose-500 transition-colors duration-300 outline-none" data-v-d9ee9ce7${_scopeId}><option${ssrRenderAttr("value", 10)} data-v-d9ee9ce7${ssrIncludeBooleanAttr(Array.isArray(perPage.value) ? ssrLooseContain(perPage.value, 10) : ssrLooseEqual(perPage.value, 10)) ? " selected" : ""}${_scopeId}>10</option><option${ssrRenderAttr("value", 25)} data-v-d9ee9ce7${ssrIncludeBooleanAttr(Array.isArray(perPage.value) ? ssrLooseContain(perPage.value, 25) : ssrLooseEqual(perPage.value, 25)) ? " selected" : ""}${_scopeId}>25</option><option${ssrRenderAttr("value", 50)} data-v-d9ee9ce7${ssrIncludeBooleanAttr(Array.isArray(perPage.value) ? ssrLooseContain(perPage.value, 50) : ssrLooseEqual(perPage.value, 50)) ? " selected" : ""}${_scopeId}>50</option><option${ssrRenderAttr("value", 100)} data-v-d9ee9ce7${ssrIncludeBooleanAttr(Array.isArray(perPage.value) ? ssrLooseContain(perPage.value, 100) : ssrLooseEqual(perPage.value, 100)) ? " selected" : ""}${_scopeId}>100</option></select></div></div><div class="flex items-center gap-3" data-v-d9ee9ce7${_scopeId}></div></div><div class="bg-white/60 dark:bg-slate-900 backdrop-blur-3xl rounded-[2.5rem] border border-white/40 dark:border-white/5 shadow-sm overflow-hidden" data-v-d9ee9ce7${_scopeId}><div class="overflow-x-auto custom-scrollbar" data-v-d9ee9ce7${_scopeId}><table class="w-full text-left border-collapse min-w-[800px] lg:min-w-full" data-v-d9ee9ce7${_scopeId}><thead data-v-d9ee9ce7${_scopeId}><tr class="bg-slate-50/80 dark:bg-slate-800/20 text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] sticky top-0 z-20 border-b border-slate-100 dark:border-slate-800/50" data-v-d9ee9ce7${_scopeId}><th class="p-6 md:p-8 text-center w-24" data-v-d9ee9ce7${_scopeId}>No</th><th class="p-6 md:p-8 pl-8" data-v-d9ee9ce7${_scopeId}>Nama Fakultas</th><th class="p-6 md:p-8 text-center" data-v-d9ee9ce7${_scopeId}>Total Prodi</th><th class="p-6 md:p-8 pr-8 text-center w-24" data-v-d9ee9ce7${_scopeId}>Aksi</th></tr></thead><tbody class="divide-y divide-slate-50 dark:divide-slate-800/20" data-v-d9ee9ce7${_scopeId}><!--[-->`);
+            _push2(`</span><input${ssrRenderAttr("value", search.value)} type="text" placeholder="Cari nama fakultas..." class="w-full pl-11 pr-4 py-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400/50 font-bold text-xs rounded-2xl border-none outline-none focus:outline-none ring-1 ring-slate-200 dark:ring-slate-800 dark:focus:ring-rose-500/50 focus:ring-4 focus:ring-rose-500/50 shadow-sm focus:shadow-md transition-[ring,background-color,box-shadow] duration-300 ease-out focus:bg-slate-50 dark:focus:bg-slate-800/80" data-v-e8746d8a${_scopeId}></div><div class="flex items-center bg-white dark:bg-slate-900 rounded-2xl px-4 ring-1 ring-slate-200 dark:ring-slate-800 shadow-sm hover:ring-rose-500/50 dark:hover:ring-rose-500/50 transition-all duration-300" data-v-e8746d8a${_scopeId}><span class="hidden sm:inline text-[9px] font-black uppercase text-slate-400 px-2 border-r border-slate-200 dark:border-slate-800 mr-2" data-v-e8746d8a${_scopeId}>Tampilkan</span><select class="bg-transparent dark:bg-slate-900 border-none focus:ring-0 text-xs font-black text-slate-900 dark:text-white py-4 pr-8 cursor-pointer hover:text-rose-500 dark:hover:text-rose-500 transition-colors duration-300 outline-none" data-v-e8746d8a${_scopeId}><option${ssrRenderAttr("value", 10)} data-v-e8746d8a${ssrIncludeBooleanAttr(Array.isArray(perPage.value) ? ssrLooseContain(perPage.value, 10) : ssrLooseEqual(perPage.value, 10)) ? " selected" : ""}${_scopeId}>10</option><option${ssrRenderAttr("value", 25)} data-v-e8746d8a${ssrIncludeBooleanAttr(Array.isArray(perPage.value) ? ssrLooseContain(perPage.value, 25) : ssrLooseEqual(perPage.value, 25)) ? " selected" : ""}${_scopeId}>25</option><option${ssrRenderAttr("value", 50)} data-v-e8746d8a${ssrIncludeBooleanAttr(Array.isArray(perPage.value) ? ssrLooseContain(perPage.value, 50) : ssrLooseEqual(perPage.value, 50)) ? " selected" : ""}${_scopeId}>50</option><option${ssrRenderAttr("value", 100)} data-v-e8746d8a${ssrIncludeBooleanAttr(Array.isArray(perPage.value) ? ssrLooseContain(perPage.value, 100) : ssrLooseEqual(perPage.value, 100)) ? " selected" : ""}${_scopeId}>100</option></select></div></div><div class="flex items-center gap-3" data-v-e8746d8a${_scopeId}></div></div><div class="bg-white/60 dark:bg-slate-900 backdrop-blur-3xl rounded-[2.5rem] border border-white/40 dark:border-white/5 shadow-sm overflow-hidden" data-v-e8746d8a${_scopeId}><div class="overflow-x-auto custom-scrollbar" data-v-e8746d8a${_scopeId}><table class="w-full text-left border-collapse min-w-[800px] lg:min-w-full" data-v-e8746d8a${_scopeId}><thead data-v-e8746d8a${_scopeId}><tr class="bg-slate-50/80 dark:bg-slate-800/20 text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] sticky top-0 z-20 border-b border-slate-100 dark:border-slate-800/50" data-v-e8746d8a${_scopeId}><th class="p-6 md:p-8 text-center w-24" data-v-e8746d8a${_scopeId}>No</th><th class="p-6 md:p-8 pl-8 cursor-pointer hover:text-rose-500 transition-colors group select-none" data-v-e8746d8a${_scopeId}><div class="flex items-center gap-2" data-v-e8746d8a${_scopeId}> Nama Fakultas <div class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity" data-v-e8746d8a${_scopeId}>`);
+            _push2(ssrRenderComponent(_component_icon, {
+              icon: "fa-solid fa-caret-up",
+              class: [{ "text-rose-500 opacity-100": __props.filters.sort_field === "name" && __props.filters.direction === "asc" }, "-mb-1"]
+            }, null, _parent2, _scopeId));
+            _push2(ssrRenderComponent(_component_icon, {
+              icon: "fa-solid fa-caret-down",
+              class: { "text-rose-500 opacity-100": __props.filters.sort_field === "name" && __props.filters.direction === "desc" }
+            }, null, _parent2, _scopeId));
+            _push2(`</div></div></th><th class="p-6 md:p-8 text-center cursor-pointer hover:text-rose-500 transition-colors group select-none" data-v-e8746d8a${_scopeId}><div class="flex items-center justify-center gap-2" data-v-e8746d8a${_scopeId}> Total Prodi <div class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity" data-v-e8746d8a${_scopeId}>`);
+            _push2(ssrRenderComponent(_component_icon, {
+              icon: "fa-solid fa-caret-up",
+              class: [{ "text-rose-500 opacity-100": __props.filters.sort_field === "prodis_count" && __props.filters.direction === "asc" }, "-mb-1"]
+            }, null, _parent2, _scopeId));
+            _push2(ssrRenderComponent(_component_icon, {
+              icon: "fa-solid fa-caret-down",
+              class: { "text-rose-500 opacity-100": __props.filters.sort_field === "prodis_count" && __props.filters.direction === "desc" }
+            }, null, _parent2, _scopeId));
+            _push2(`</div></div></th><th class="p-6 md:p-8 pr-8 text-center w-24" data-v-e8746d8a${_scopeId}>Aksi</th></tr></thead><tbody class="divide-y divide-slate-50 dark:divide-slate-800/20" data-v-e8746d8a${_scopeId}><!--[-->`);
             ssrRenderList(__props.faculties.data, (item, index) => {
-              _push2(`<tr class="group hover:bg-white/50 dark:hover:bg-white/[0.02] transition-colors duration-300" data-v-d9ee9ce7${_scopeId}><td class="p-6 md:p-8 text-center" data-v-d9ee9ce7${_scopeId}><span class="font-mono text-sm font-black text-rose-500 bg-rose-50 dark:bg-rose-500/10 px-2 py-1 rounded-md border border-rose-100 dark:border-rose-500/20" data-v-d9ee9ce7${_scopeId}>${ssrInterpolate(__props.faculties.from + __props.faculties.data.indexOf(item))}</span></td><td class="p-6 md:p-8 pl-8" data-v-d9ee9ce7${_scopeId}><div class="font-black text-slate-800 dark:text-slate-200 text-sm" data-v-d9ee9ce7${_scopeId}>${ssrInterpolate(item.name)}</div></td><td class="p-6 md:p-8 text-center" data-v-d9ee9ce7${_scopeId}><div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-500/20 transition-colors" data-v-d9ee9ce7${_scopeId}><span class="text-xs font-black text-indigo-600 dark:text-indigo-400" data-v-d9ee9ce7${_scopeId}>${ssrInterpolate(item.prodis_count || 0)}</span><span class="text-[9px] font-bold text-indigo-400 dark:text-indigo-500 uppercase tracking-wider" data-v-d9ee9ce7${_scopeId}>Prodi</span></div></td><td class="p-6 md:p-8 pr-8" data-v-d9ee9ce7${_scopeId}><div class="flex justify-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity" data-v-d9ee9ce7${_scopeId}><button class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-blue-600 rounded-xl transition-all shadow-sm hover:shadow-md hover:border-blue-200 active:scale-95" data-v-d9ee9ce7${_scopeId}>`);
+              _push2(`<tr class="group hover:bg-white/50 dark:hover:bg-white/[0.02] transition-colors duration-300" data-v-e8746d8a${_scopeId}><td class="p-6 md:p-8 text-center" data-v-e8746d8a${_scopeId}><span class="font-mono text-sm font-black text-rose-500 bg-rose-50 dark:bg-rose-500/10 px-2 py-1 rounded-md border border-rose-100 dark:border-rose-500/20" data-v-e8746d8a${_scopeId}>${ssrInterpolate(__props.faculties.from + __props.faculties.data.indexOf(item))}</span></td><td class="p-6 md:p-8 pl-8" data-v-e8746d8a${_scopeId}><div class="font-black text-slate-800 dark:text-slate-200 text-sm" data-v-e8746d8a${_scopeId}>${ssrInterpolate(item.name)}</div></td><td class="p-6 md:p-8 text-center" data-v-e8746d8a${_scopeId}><div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-500/20 transition-colors" data-v-e8746d8a${_scopeId}><span class="text-xs font-black text-indigo-600 dark:text-indigo-400" data-v-e8746d8a${_scopeId}>${ssrInterpolate(item.prodis_count || 0)}</span><span class="text-[9px] font-bold text-indigo-400 dark:text-indigo-500 uppercase tracking-wider" data-v-e8746d8a${_scopeId}>Prodi</span></div></td><td class="p-6 md:p-8 pr-8" data-v-e8746d8a${_scopeId}><div class="flex justify-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity" data-v-e8746d8a${_scopeId}><button class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-blue-600 rounded-xl transition-all shadow-sm hover:shadow-md hover:border-blue-200 active:scale-95" data-v-e8746d8a${_scopeId}>`);
               _push2(ssrRenderComponent(_component_icon, {
                 icon: "fa-solid fa-pencil",
                 class: "text-[10px]"
               }, null, _parent2, _scopeId));
-              _push2(`</button><button class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-600 rounded-xl transition-all shadow-sm hover:shadow-md hover:border-rose-200 active:scale-95" data-v-d9ee9ce7${_scopeId}>`);
+              _push2(`</button><button class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-600 rounded-xl transition-all shadow-sm hover:shadow-md hover:border-rose-200 active:scale-95" data-v-e8746d8a${_scopeId}>`);
               _push2(ssrRenderComponent(_component_icon, {
                 icon: "fa-solid fa-trash",
                 class: "text-[10px]"
@@ -148,16 +179,16 @@ const _sfc_main = {
             });
             _push2(`<!--]-->`);
             if (__props.faculties.data.length === 0) {
-              _push2(`<tr data-v-d9ee9ce7${_scopeId}><td colspan="4" class="p-12 text-center" data-v-d9ee9ce7${_scopeId}><div class="flex flex-col items-center justify-center opacity-50" data-v-d9ee9ce7${_scopeId}>`);
+              _push2(`<tr data-v-e8746d8a${_scopeId}><td colspan="4" class="p-12 text-center" data-v-e8746d8a${_scopeId}><div class="flex flex-col items-center justify-center opacity-50" data-v-e8746d8a${_scopeId}>`);
               _push2(ssrRenderComponent(_component_icon, {
                 icon: "fa-solid fa-building-columns",
                 class: "text-4xl text-slate-300 dark:text-slate-600 mb-4"
               }, null, _parent2, _scopeId));
-              _push2(`<p class="text-xs font-black text-slate-400 uppercase tracking-widest italic" data-v-d9ee9ce7${_scopeId}> Data fakultas tidak ditemukan</p></div></td></tr>`);
+              _push2(`<p class="text-xs font-black text-slate-400 uppercase tracking-widest italic" data-v-e8746d8a${_scopeId}> Data fakultas tidak ditemukan</p></div></td></tr>`);
             } else {
               _push2(`<!---->`);
             }
-            _push2(`</tbody></table></div><div class="flex flex-col md:flex-row items-center justify-between gap-4 px-6 md:px-8 py-6 border-t border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-800/20 backdrop-blur-sm" data-v-d9ee9ce7${_scopeId}><div class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest italic text-center md:text-left" data-v-d9ee9ce7${_scopeId}> Data ${ssrInterpolate(__props.faculties.from)} - ${ssrInterpolate(__props.faculties.to)} dari total ${ssrInterpolate(__props.faculties.total)}</div><div class="flex flex-wrap justify-center gap-1.5" data-v-d9ee9ce7${_scopeId}><!--[-->`);
+            _push2(`</tbody></table></div><div class="flex flex-col md:flex-row items-center justify-between gap-4 px-6 md:px-8 py-6 border-t border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-800/20 backdrop-blur-sm" data-v-e8746d8a${_scopeId}><div class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest italic text-center md:text-left" data-v-e8746d8a${_scopeId}> Data ${ssrInterpolate(__props.faculties.from)} - ${ssrInterpolate(__props.faculties.to)} dari total ${ssrInterpolate(__props.faculties.total)}</div><div class="flex flex-wrap justify-center gap-1.5" data-v-e8746d8a${_scopeId}><!--[-->`);
             ssrRenderList(__props.faculties.links, (link, k) => {
               _push2(`<!--[-->`);
               if (link.url) {
@@ -172,19 +203,19 @@ const _sfc_main = {
                 _push2(`<span class="${ssrRenderClass([
                   "px-3 md:px-4 py-2 text-[10px] font-black rounded-xl border transition-all opacity-30 cursor-not-allowed",
                   "bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800"
-                ])}" data-v-d9ee9ce7${_scopeId}>${link.label ?? ""}</span>`);
+                ])}" data-v-e8746d8a${_scopeId}>${link.label ?? ""}</span>`);
               }
               _push2(`<!--]-->`);
             });
             _push2(`<!--]--></div></div></div></div>`);
             if (showModal.value) {
-              _push2(`<div class="fixed inset-0 z-50 flex items-center justify-center p-4" data-v-d9ee9ce7${_scopeId}><div class="fixed inset-0 bg-slate-900/80 backdrop-blur-md transition-opacity" data-v-d9ee9ce7${_scopeId}></div><div class="relative bg-white dark:bg-slate-900 w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-white/10" data-v-d9ee9ce7${_scopeId}><div class="p-8 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex justify-between items-center" data-v-d9ee9ce7${_scopeId}><div data-v-d9ee9ce7${_scopeId}><h3 class="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic" data-v-d9ee9ce7${_scopeId}>${ssrInterpolate(editMode.value ? "Edit Fakultas" : "Fakultas Baru")}</h3><p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1" data-v-d9ee9ce7${_scopeId}> Manajemen Unit </p></div><button class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-rose-600 transition-colors font-bold text-lg" data-v-d9ee9ce7${_scopeId}>×</button></div><form class="p-8 space-y-6" data-v-d9ee9ce7${_scopeId}><div class="space-y-2" data-v-d9ee9ce7${_scopeId}><label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1" data-v-d9ee9ce7${_scopeId}>Nama Fakultas</label><input${ssrRenderAttr("value", unref(form).name)} type="text" required placeholder="Masukkan nama fakultas (ex: Fakultas Teknik)" class="w-full px-5 py-3.5 bg-white dark:bg-slate-900 border-none rounded-2xl text-xs font-bold text-slate-900 dark:text-white ring-1 ring-slate-200 dark:ring-slate-800 focus:ring-2 focus:ring-rose-500 transition-all shadow-sm" data-v-d9ee9ce7${_scopeId}>`);
+              _push2(`<div class="fixed inset-0 z-50 flex items-center justify-center p-4" data-v-e8746d8a${_scopeId}><div class="fixed inset-0 bg-slate-900/80 backdrop-blur-md transition-opacity" data-v-e8746d8a${_scopeId}></div><div class="relative bg-white dark:bg-slate-900 w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-white/10" data-v-e8746d8a${_scopeId}><div class="p-8 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex justify-between items-center" data-v-e8746d8a${_scopeId}><div data-v-e8746d8a${_scopeId}><h3 class="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic" data-v-e8746d8a${_scopeId}>${ssrInterpolate(editMode.value ? "Edit Fakultas" : "Fakultas Baru")}</h3><p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1" data-v-e8746d8a${_scopeId}> Manajemen Unit </p></div><button class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-rose-600 transition-colors font-bold text-lg" data-v-e8746d8a${_scopeId}>×</button></div><form class="p-8 space-y-6" data-v-e8746d8a${_scopeId}><div class="space-y-2" data-v-e8746d8a${_scopeId}><label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1" data-v-e8746d8a${_scopeId}>Nama Fakultas</label><input${ssrRenderAttr("value", unref(form).name)} type="text" required placeholder="Masukkan nama fakultas (ex: Fakultas Teknik)" class="w-full px-5 py-3.5 bg-white dark:bg-slate-900 border-none rounded-2xl text-xs font-bold text-slate-900 dark:text-white ring-1 ring-slate-200 dark:ring-slate-800 focus:ring-2 focus:ring-rose-500 transition-all shadow-sm" data-v-e8746d8a${_scopeId}>`);
               if (unref(form).errors.name) {
-                _push2(`<p class="text-xs text-rose-500 font-bold ml-1" data-v-d9ee9ce7${_scopeId}>${ssrInterpolate(unref(form).errors.name)}</p>`);
+                _push2(`<p class="text-xs text-rose-500 font-bold ml-1" data-v-e8746d8a${_scopeId}>${ssrInterpolate(unref(form).errors.name)}</p>`);
               } else {
                 _push2(`<!---->`);
               }
-              _push2(`</div><div class="pt-4" data-v-d9ee9ce7${_scopeId}><button type="submit"${ssrIncludeBooleanAttr(unref(form).processing) ? " disabled" : ""} class="w-full py-4 bg-slate-900 dark:bg-rose-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl shadow-slate-900/10 dark:shadow-rose-600/20 transition-all hover:bg-rose-600 dark:hover:bg-rose-500 hover:-translate-y-0.5 active:scale-95 disabled:opacity-50" data-v-d9ee9ce7${_scopeId}>${ssrInterpolate(unref(form).processing ? "Menyimpan..." : editMode.value ? "Simpan Perubahan" : "Simpan Data")}</button></div></form></div></div>`);
+              _push2(`</div><div class="pt-4" data-v-e8746d8a${_scopeId}><button type="submit"${ssrIncludeBooleanAttr(unref(form).processing) ? " disabled" : ""} class="w-full py-4 bg-slate-900 dark:bg-rose-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl shadow-slate-900/10 dark:shadow-rose-600/20 transition-all hover:bg-rose-600 dark:hover:bg-rose-500 hover:-translate-y-0.5 active:scale-95 disabled:opacity-50" data-v-e8746d8a${_scopeId}>${ssrInterpolate(unref(form).processing ? "Menyimpan..." : editMode.value ? "Simpan Perubahan" : "Simpan Data")}</button></div></form></div></div>`);
             } else {
               _push2(`<!---->`);
             }
@@ -232,8 +263,42 @@ const _sfc_main = {
                       createVNode("thead", null, [
                         createVNode("tr", { class: "bg-slate-50/80 dark:bg-slate-800/20 text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] sticky top-0 z-20 border-b border-slate-100 dark:border-slate-800/50" }, [
                           createVNode("th", { class: "p-6 md:p-8 text-center w-24" }, "No"),
-                          createVNode("th", { class: "p-6 md:p-8 pl-8" }, "Nama Fakultas"),
-                          createVNode("th", { class: "p-6 md:p-8 text-center" }, "Total Prodi"),
+                          createVNode("th", {
+                            onClick: ($event) => handleSort("name"),
+                            class: "p-6 md:p-8 pl-8 cursor-pointer hover:text-rose-500 transition-colors group select-none"
+                          }, [
+                            createVNode("div", { class: "flex items-center gap-2" }, [
+                              createTextVNode(" Nama Fakultas "),
+                              createVNode("div", { class: "flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity" }, [
+                                createVNode(_component_icon, {
+                                  icon: "fa-solid fa-caret-up",
+                                  class: [{ "text-rose-500 opacity-100": __props.filters.sort_field === "name" && __props.filters.direction === "asc" }, "-mb-1"]
+                                }, null, 8, ["class"]),
+                                createVNode(_component_icon, {
+                                  icon: "fa-solid fa-caret-down",
+                                  class: { "text-rose-500 opacity-100": __props.filters.sort_field === "name" && __props.filters.direction === "desc" }
+                                }, null, 8, ["class"])
+                              ])
+                            ])
+                          ], 8, ["onClick"]),
+                          createVNode("th", {
+                            onClick: ($event) => handleSort("prodis_count"),
+                            class: "p-6 md:p-8 text-center cursor-pointer hover:text-rose-500 transition-colors group select-none"
+                          }, [
+                            createVNode("div", { class: "flex items-center justify-center gap-2" }, [
+                              createTextVNode(" Total Prodi "),
+                              createVNode("div", { class: "flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity" }, [
+                                createVNode(_component_icon, {
+                                  icon: "fa-solid fa-caret-up",
+                                  class: [{ "text-rose-500 opacity-100": __props.filters.sort_field === "prodis_count" && __props.filters.direction === "asc" }, "-mb-1"]
+                                }, null, 8, ["class"]),
+                                createVNode(_component_icon, {
+                                  icon: "fa-solid fa-caret-down",
+                                  class: { "text-rose-500 opacity-100": __props.filters.sort_field === "prodis_count" && __props.filters.direction === "desc" }
+                                }, null, 8, ["class"])
+                              ])
+                            ])
+                          ], 8, ["onClick"]),
                           createVNode("th", { class: "p-6 md:p-8 pr-8 text-center w-24" }, "Aksi")
                         ])
                       ]),
@@ -386,7 +451,7 @@ _sfc_main.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("resources/js/Pages/Admin/Faculty/Index.vue");
   return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
 };
-const Index = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-d9ee9ce7"]]);
+const Index = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-e8746d8a"]]);
 export {
   Index as default
 };

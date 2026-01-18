@@ -15,15 +15,22 @@ const props = defineProps({
     stageBreakdown: Array,
 });
 
-/* --- STATE & LOGIKA PENCARIAN --- */
+/* --- STATE & LOGIKA PENCARIAN & SORTING --- */
 const isSearching = ref(false);
 const search = ref(props.filters.search || '');
 const perPage = ref(props.filters.per_page || 10);
+const sortField = ref(props.filters.sort_field || 'created_at');
+const sortDirection = ref(props.filters.direction || 'desc');
 
-const updateFilters = debounce((value) => {
+const reloadData = debounce(() => {
     isSearching.value = true;
     router.get(route('admin.assignments.index'),
-        { search: value, per_page: perPage.value },
+        {
+            search: search.value,
+            per_page: perPage.value,
+            sort_field: sortField.value,
+            direction: sortDirection.value
+        },
         {
             preserveState: true,
             replace: true,
@@ -32,17 +39,18 @@ const updateFilters = debounce((value) => {
     );
 }, 500);
 
-watch(perPage, (value) => {
-    router.get(route('admin.assignments.index'),
-        { search: search.value, per_page: value },
-        {
-            preserveState: true,
-            replace: true,
-        }
-    );
-});
+const handleSort = (field) => {
+    if (sortField.value === field) {
+        sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortField.value = field;
+        sortDirection.value = 'asc';
+    }
+    reloadData();
+};
 
-watch(search, (newValue) => updateFilters(newValue));
+watch(perPage, () => reloadData());
+watch(search, () => reloadData());
 
 /* --- FORM PENUGASAN --- */
 const showModal = ref(false);
@@ -171,11 +179,54 @@ const deleteData = (id) => {
                         <thead>
                             <tr
                                 class="bg-slate-50/80 dark:bg-slate-800/20 text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] sticky top-0 z-20 border-b border-slate-100 dark:border-slate-800/50">
-                                <th class="p-6 md:p-8">No</th>
-                                <th class="p-6 md:p-8 pl-8">Unit Kerja & Kategori</th>
-                                <th class="p-6 md:p-8">Metadata AMI</th>
-                                <th class="p-6 md:p-8">Auditor</th>
-                                <th class="p-6 md:p-8 text-center">Current Progress</th>
+                                <th @click="handleSort('created_at')" class="p-6 md:p-8">
+                                    No
+                                </th>
+                                <th @click="handleSort('assignable_name')"
+                                    class="p-6 md:p-8 pl-8 cursor-pointer hover:text-rose-500 transition-colors group select-none">
+                                    <div class="flex items-center gap-2">
+                                        Unit Kerja & Kategori
+                                        <div
+                                            class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                            <icon icon="fa-solid fa-caret-up"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'assignable_name' && filters.direction === 'asc' }"
+                                                class="-mb-1" />
+                                            <icon icon="fa-solid fa-caret-down"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'assignable_name' && filters.direction === 'desc' }" />
+                                        </div>
+                                    </div>
+                                </th>
+                                <th @click="handleSort('standard_name')"
+                                    class="p-6 md:p-8 text-center cursor-pointer hover:text-rose-500 transition-colors group select-none">
+                                    <div class="flex items-center justify-center gap-2">
+                                        Metadata AMI
+                                        <div
+                                            class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                            <icon icon="fa-solid fa-caret-up"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'standard_name' && filters.direction === 'asc' }"
+                                                class="-mb-1" />
+                                            <icon icon="fa-solid fa-caret-down"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'standard_name' && filters.direction === 'desc' }" />
+                                        </div>
+                                    </div>
+                                </th>
+                                <th @click="handleSort('auditor_name')"
+                                    class="p-6 md:p-8 text-center cursor-pointer hover:text-rose-500 transition-colors group select-none">
+                                    <div class="flex items-center justify-center gap-2">
+                                        Auditor
+                                        <div
+                                            class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                            <icon icon="fa-solid fa-caret-up"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'auditor_name' && filters.direction === 'asc' }"
+                                                class="-mb-1" />
+                                            <icon icon="fa-solid fa-caret-down"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'auditor_name' && filters.direction === 'desc' }" />
+                                        </div>
+                                    </div>
+                                </th>
+                                <th class="p-6 md:p-8 text-center">
+                                    Current Progress
+                                </th>
                                 <th class="p-6 md:p-8 pr-8 text-right">Actions</th>
                             </tr>
                         </thead>

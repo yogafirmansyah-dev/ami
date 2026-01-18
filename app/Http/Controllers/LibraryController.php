@@ -15,13 +15,13 @@ class LibraryController extends Controller
             ->when($request->search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%");
             })
-            ->latest()
+            ->sort($request->sort_field ?? 'name', $request->direction ?? 'asc')
             ->paginate(12)
             ->withQueryString();
 
         return inertia('Library/Index', [
             'documents' => $documents,
-            'filters' => $request->only(['search'])
+            'filters' => $request->only(['search', 'sort_field', 'direction'])
         ]);
     }
 

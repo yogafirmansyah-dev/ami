@@ -18,12 +18,31 @@ const updateFilters = () => {
     isSearching.value = true;
     router.get(route('auditee.assignments.index'), {
         search: search.value,
-        status: status.value
+        status: status.value,
+        sort_field: props.filters.sort_field,
+        direction: props.filters.direction
     }, {
         preserveState: true,
         replace: true,
         preserveScroll: true,
         onFinish: () => isSearching.value = false
+    });
+};
+
+/* --- SORTING --- */
+const handleSort = (field) => {
+    const currentSort = props.filters.sort_field;
+    const currentDir = props.filters.direction || 'asc';
+    const nextDir = currentSort === field && currentDir === 'asc' ? 'desc' : 'asc';
+
+    router.get(route('auditee.assignments.index'), {
+        search: search.value,
+        status: status.value,
+        sort_field: field,
+        direction: nextDir
+    }, {
+        preserveState: true,
+        preserveScroll: true,
     });
 };
 
@@ -179,12 +198,48 @@ const stats = computed(() => {
                                 <th
                                     class="px-10 py-8 text-center text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
                                     No</th>
-                                <th
-                                    class="px-10 py-8 text-left text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                                    Standar Mutu & Periode</th>
-                                <th
-                                    class="px-10 py-8 text-left text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                                    Ketua Tim Auditor</th>
+                                <th @click="handleSort('standard_name')"
+                                    class="px-10 py-8 text-left text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] cursor-pointer hover:text-rose-500 transition-colors group select-none">
+                                    <div class="flex items-center justify-between gap-2">
+                                        Standar Mutu & Periode
+                                        <div
+                                            class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                            <icon icon="fa-solid fa-caret-up"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'standard_name' && filters.direction === 'asc' }"
+                                                class="-mb-1" />
+                                            <icon icon="fa-solid fa-caret-down"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'standard_name' && filters.direction === 'desc' }" />
+                                        </div>
+                                    </div>
+                                </th>
+                                <th @click="handleSort('assignable_name')"
+                                    class="px-10 py-8 text-left text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] cursor-pointer hover:text-rose-500 transition-colors group select-none">
+                                    <div class="flex items-center justify-between gap-2">
+                                        Unit Kerja & Kategori
+                                        <div
+                                            class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                            <icon icon="fa-solid fa-caret-up"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'assignable_name' && filters.direction === 'asc' }"
+                                                class="-mb-1" />
+                                            <icon icon="fa-solid fa-caret-down"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'assignable_name' && filters.direction === 'desc' }" />
+                                        </div>
+                                    </div>
+                                </th>
+                                <th @click="handleSort('auditor_name')"
+                                    class="px-10 py-8 text-left text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] cursor-pointer hover:text-rose-500 transition-colors group select-none">
+                                    <div class="flex items-center justify-between gap-2">
+                                        Auditor
+                                        <div
+                                            class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                            <icon icon="fa-solid fa-caret-up"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'auditor_name' && filters.direction === 'asc' }"
+                                                class="-mb-1" />
+                                            <icon icon="fa-solid fa-caret-down"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'auditor_name' && filters.direction === 'desc' }" />
+                                        </div>
+                                    </div>
+                                </th>
                                 <th
                                     class="px-10 py-8 text-center text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
                                     Status Tahapan</th>
@@ -211,9 +266,35 @@ const stats = computed(() => {
                                         {{ item.standard?.name }}
                                     </h4>
                                     <span
-                                        class="inline-flex items-center px-2.5 py-1 rounded-md bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-[8px] font-black text-slate-500 uppercase tracking-widest shadow-sm">
+                                        class="inline-flex items-center px-2.5 py-1 rounded-md bg-rose-400 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-[8px] font-black text-slate-500 uppercase tracking-widest shadow-sm">
                                         {{ item.period?.name }}
                                     </span>
+                                </td>
+                                <td class="px-10 py-8">
+                                    <div class="flex items-center gap-4">
+                                        <div :class="[
+                                            'w-12 h-12 rounded-xl flex items-center justify-center font-black text-base shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)] border border-white/20 dark:border-white/5 transition-transform group-hover:scale-105 duration-500',
+                                            item.assignable_type.includes('Prodi') ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600' : 'bg-rose-50 dark:bg-rose-500/10 text-rose-600'
+                                        ]">
+                                            {{ item.assignable?.name?.charAt(0) }}
+                                        </div>
+                                        <div>
+                                            <div
+                                                class="font-black text-slate-800 dark:text-slate-200 uppercase text-xs tracking-tight italic leading-none mb-1.5">
+                                                {{ item.assignable?.name }}</div>
+                                            <div class="flex items-center gap-2">
+                                                <span :class="[
+                                                    'text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border shadow-sm',
+                                                    item.assignable_type.includes('Prodi')
+                                                        ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 border-indigo-100 dark:border-indigo-500/20'
+                                                        : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 border-emerald-100 dark:border-emerald-500/20'
+                                                ]">
+                                                    {{ item.assignable_type.includes('Prodi') ? 'Program Studi' :
+                                                        'Fakultas' }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td class="px-10 py-8">
                                     <div v-if="item.auditor" class="flex items-center gap-4">
@@ -224,7 +305,7 @@ const stats = computed(() => {
                                         <div>
                                             <p class="text-xs font-bold text-slate-700 dark:text-slate-200">{{
                                                 item.auditor.name
-                                            }}</p>
+                                                }}</p>
                                             <p class="text-[9px] text-slate-400 font-medium">Penilai Utama</p>
                                         </div>
                                     </div>
@@ -243,7 +324,7 @@ const stats = computed(() => {
                                         <div class="flex justify-between items-end mb-2">
                                             <span class="text-[9px] font-bold text-slate-400">Terisi</span>
                                             <span class="text-xs font-black text-rose-600">{{ getProgress(item)
-                                            }}%</span>
+                                                }}%</span>
                                         </div>
                                         <div
                                             class="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
@@ -289,7 +370,7 @@ const stats = computed(() => {
                     <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                         Menampilkan <span class="text-slate-900 dark:text-white">{{ assignments.from }}-{{
                             assignments.to
-                        }}</span> dari {{ assignments.total }}
+                            }}</span> dari {{ assignments.total }}
                     </p>
                     <div class="flex gap-2">
                         <template v-for="(link, k) in assignments.links" :key="k">

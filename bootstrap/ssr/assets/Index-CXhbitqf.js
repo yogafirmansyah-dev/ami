@@ -2,7 +2,7 @@ import { computed, mergeProps, withCtx, createVNode, resolveDynamicComponent, cr
 import { ssrRenderComponent, ssrRenderVNode, ssrInterpolate } from "vue/server-renderer";
 import { usePage } from "@inertiajs/vue3";
 import { A as AppLayout } from "./AppLayout-BXpqpYTS.js";
-import _sfc_main$1 from "./AdminDashboard-BzlUdn9S.js";
+import _sfc_main$1 from "./AdminDashboard-rtgHxXlo.js";
 import _sfc_main$2 from "./AuditorDashboard-BraegAPu.js";
 import _sfc_main$3 from "./AuditeeDashboard-DiTxZSfw.js";
 import "@vueuse/core";

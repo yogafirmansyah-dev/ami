@@ -10,7 +10,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Assignment extends Model
 {
-    use Filterable, HasAuditHistory;
+    use Filterable, HasAuditHistory {
+        Filterable::scopeSort as traitSort;
+    }
     protected $fillable = [
         'period_id',
         'master_standard_id',
@@ -87,6 +89,38 @@ class Assignment extends Model
                 ->orWhereHas('period', fn($per) => $per->where('name', 'like', "%{$search}%"))
                 ->orWhere('current_stage', 'like', "%{$search}%");
         });
+    }
+
+    public function scopeSort($query, $field, $direction)
+    {
+        if ($field === 'standard_name') {
+            return $query->join('master_standards', 'assignments.master_standard_id', '=', 'master_standards.id')
+                ->select('assignments.*')
+                ->orderBy('master_standards.name', $direction);
+        }
+
+        if ($field === 'auditor_name') {
+            return $query->join('users', 'assignments.auditor_id', '=', 'users.id')
+                ->select('assignments.*')
+                ->orderBy('users.name', $direction);
+        }
+
+        if ($field === 'assignable_name') {
+            return $query
+                ->leftJoin('prodis', function ($join) {
+                    $join->on('assignments.assignable_id', '=', 'prodis.id')
+                        ->where('assignments.assignable_type', '=', Prodi::class);
+                })
+                ->leftJoin('faculties', function ($join) {
+                    $join->on('assignments.assignable_id', '=', 'faculties.id')
+                        ->where('assignments.assignable_type', '=', Faculty::class);
+                })
+                ->select('assignments.*')
+                ->orderByRaw('COALESCE(prodis.name, faculties.name) ' . $direction);
+        }
+
+        // Jika bukan standard_name, gunakan logika default dari Trait
+        return $this->traitSort($query, $field, $direction);
     }
 
     public static function stageBreakdown()

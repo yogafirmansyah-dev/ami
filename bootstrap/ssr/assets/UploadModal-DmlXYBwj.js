@@ -1,5 +1,5 @@
 import { computed, resolveComponent, mergeProps, unref, useSSRContext, ref, watchEffect } from "vue";
-import { ssrRenderAttrs, ssrRenderList, ssrRenderClass, ssrInterpolate, ssrRenderAttr, ssrRenderComponent, ssrIncludeBooleanAttr, ssrLooseContain, ssrLooseEqual } from "vue/server-renderer";
+import { ssrRenderAttrs, ssrRenderComponent, ssrRenderList, ssrRenderClass, ssrInterpolate, ssrRenderAttr, ssrIncludeBooleanAttr, ssrLooseContain, ssrLooseEqual } from "vue/server-renderer";
 import { Link } from "@inertiajs/vue3";
 import { _ as _export_sfc } from "./_plugin-vue_export-helper-1tPrXgE0.js";
 import { Pie } from "vue-chartjs";
@@ -10,7 +10,9 @@ const _sfc_main$4 = {
   props: {
     assignment: Object,
     indicators: Object,
-    role: String
+    role: String,
+    filters: Object
+    // Added filters prop
   },
   emits: ["open-upload", "open-assessment", "open-history"],
   setup(__props, { emit: __emit }) {
@@ -40,14 +42,41 @@ const _sfc_main$4 = {
     };
     return (_ctx, _push, _parent, _attrs) => {
       const _component_icon = resolveComponent("icon");
-      _push(`<div${ssrRenderAttrs(mergeProps({ class: "space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500" }, _attrs))} data-v-7e2ca435><div class="bg-white/60 dark:bg-slate-900 backdrop-blur-3xl rounded-[2.5rem] border border-white/40 dark:border-white/5 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md" data-v-7e2ca435><div class="overflow-x-auto custom-scrollbar" data-v-7e2ca435><table class="w-full text-left border-collapse min-w-[1100px] xl:min-w-full" data-v-7e2ca435><thead data-v-7e2ca435><tr class="bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-md text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] sticky top-0 z-20 border-b border-slate-200/50 dark:border-slate-800" data-v-7e2ca435><th class="p-6 text-center min-w-20" data-v-7e2ca435>No</th><th class="p-6 text-center min-w-24" data-v-7e2ca435>Kode</th><th class="p-6 min-w-[350px]" data-v-7e2ca435>Indikator &amp; Kriteria</th><th class="p-6 min-w-[250px]" data-v-7e2ca435>Bukti yang Diperiksa</th><th class="p-6 text-center w-32" data-v-7e2ca435>Bukti</th><th class="p-6 text-center w-40" data-v-7e2ca435>Hasil Audit</th><th class="p-6 min-w-[300px]" data-v-7e2ca435>Catatan &amp; Rekomendasi</th><th class="p-6 text-center w-40 sticky right-0 bg-slate-50/80 dark:bg-slate-900/90 backdrop-blur-md z-30 shadow-none" data-v-7e2ca435> Aksi</th></tr></thead><tbody class="divide-y divide-slate-100/50 dark:divide-slate-800/50" data-v-7e2ca435><!--[-->`);
+      _push(`<div${ssrRenderAttrs(mergeProps({ class: "space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500" }, _attrs))} data-v-5b1a3b8f><div class="bg-white/60 dark:bg-slate-900 backdrop-blur-3xl rounded-[2.5rem] border border-white/40 dark:border-white/5 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md" data-v-5b1a3b8f><div class="overflow-x-auto custom-scrollbar" data-v-5b1a3b8f><table class="w-full text-left border-collapse min-w-[1100px] xl:min-w-full" data-v-5b1a3b8f><thead data-v-5b1a3b8f><tr class="bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-md text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] sticky top-0 z-20 border-b border-slate-200/50 dark:border-slate-800" data-v-5b1a3b8f><th class="p-6 text-center min-w-20" data-v-5b1a3b8f>No</th><th class="p-6 text-center min-w-24 cursor-pointer hover:text-sky-500 transition-colors group select-none" data-v-5b1a3b8f><div class="flex items-center justify-center gap-1" data-v-5b1a3b8f> Kode <div class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity" data-v-5b1a3b8f>`);
+      _push(ssrRenderComponent(_component_icon, {
+        icon: "fa-solid fa-caret-up",
+        class: [{ "text-sky-500 opacity-100": __props.filters?.sort_field === "snapshot_code" && __props.filters?.direction === "asc" }, "-mb-1"]
+      }, null, _parent));
+      _push(ssrRenderComponent(_component_icon, {
+        icon: "fa-solid fa-caret-down",
+        class: { "text-sky-500 opacity-100": __props.filters?.sort_field === "snapshot_code" && __props.filters?.direction === "desc" }
+      }, null, _parent));
+      _push(`</div></div></th><th class="p-6 min-w-[350px] cursor-pointer hover:text-sky-500 transition-colors group select-none" data-v-5b1a3b8f><div class="flex items-center justify-center gap-1" data-v-5b1a3b8f> Indikator &amp; Kriteria <div class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity" data-v-5b1a3b8f>`);
+      _push(ssrRenderComponent(_component_icon, {
+        icon: "fa-solid fa-caret-up",
+        class: [{ "text-sky-500 opacity-100": __props.filters?.sort_field === "snapshot_requirement" && __props.filters?.direction === "asc" }, "-mb-1"]
+      }, null, _parent));
+      _push(ssrRenderComponent(_component_icon, {
+        icon: "fa-solid fa-caret-down",
+        class: { "text-sky-500 opacity-100": __props.filters?.sort_field === "snapshot_requirement" && __props.filters?.direction === "desc" }
+      }, null, _parent));
+      _push(`</div></div></th><th class="p-6 min-w-[250px]" data-v-5b1a3b8f>Bukti yang Diperiksa</th><th class="p-6 text-center w-32" data-v-5b1a3b8f>Bukti</th><th class="p-6 text-center w-40 cursor-pointer hover:text-sky-500 transition-colors group select-none" data-v-5b1a3b8f><div class="flex items-center justify-center gap-1" data-v-5b1a3b8f> Hasil Audit <div class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity" data-v-5b1a3b8f>`);
+      _push(ssrRenderComponent(_component_icon, {
+        icon: "fa-solid fa-caret-up",
+        class: [{ "text-sky-500 opacity-100": __props.filters?.sort_field === "score" && __props.filters?.direction === "asc" }, "-mb-1"]
+      }, null, _parent));
+      _push(ssrRenderComponent(_component_icon, {
+        icon: "fa-solid fa-caret-down",
+        class: { "text-sky-500 opacity-100": __props.filters?.sort_field === "score" && __props.filters?.direction === "desc" }
+      }, null, _parent));
+      _push(`</div></div></th><th class="p-6 min-w-[300px]" data-v-5b1a3b8f>Catatan &amp; Rekomendasi</th><th class="p-6 text-center w-40 sticky right-0 bg-slate-50/80 dark:bg-slate-900/90 backdrop-blur-md z-30 shadow-none" data-v-5b1a3b8f> Aksi</th></tr></thead><tbody class="divide-y divide-slate-100/50 dark:divide-slate-800/50" data-v-5b1a3b8f><!--[-->`);
       ssrRenderList(__props.indicators.data, (item, index) => {
-        _push(`<tr class="group hover:bg-slate-50/80 dark:hover:bg-slate-800/20 transition-all duration-200 align-top" data-v-7e2ca435><td class="p-6 text-center" data-v-7e2ca435><span class="${ssrRenderClass([
+        _push(`<tr class="group hover:bg-slate-50/80 dark:hover:bg-slate-800/20 transition-all duration-200 align-top" data-v-5b1a3b8f><td class="p-6 text-center" data-v-5b1a3b8f><span class="${ssrRenderClass([
           "font-mono text-xs font-black px-2.5 py-1 rounded-lg border",
           __props.role === "auditor" ? "text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20" : "text-sky-500 bg-sky-50 dark:bg-sky-500/10 border-sky-100 dark:border-sky-500/20"
-        ])}" data-v-7e2ca435>${ssrInterpolate(__props.indicators.from + index)}</span></td><td class="p-6 text-center" data-v-7e2ca435><span class="text-xs font-black text-slate-700 dark:text-slate-300 font-mono tracking-tighter bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg" data-v-7e2ca435>${ssrInterpolate(item.snapshot_code)}</span></td><td class="p-6" data-v-7e2ca435><p class="font-bold text-slate-800 dark:text-slate-200 text-sm italic leading-relaxed mb-2" data-v-7e2ca435>${ssrInterpolate(item.snapshot_requirement)}</p><div class="flex items-center gap-2" data-v-7e2ca435><span class="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600" data-v-7e2ca435></span><span class="text-[9px] font-black uppercase text-slate-400 tracking-wider" data-v-7e2ca435>Kriteria Standar</span></div></td><td class="p-6" data-v-7e2ca435><div class="p-5 bg-slate-50 dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-800/50 group-hover:border-slate-200 dark:group-hover:border-slate-700 transition-colors" data-v-7e2ca435><p class="text-xs text-slate-600 dark:text-slate-400 font-medium italic leading-relaxed" data-v-7e2ca435>${ssrInterpolate(item.snapshot_evidence_needed)}</p>`);
+        ])}" data-v-5b1a3b8f>${ssrInterpolate(__props.indicators.from + index)}</span></td><td class="p-6 text-center" data-v-5b1a3b8f><span class="text-xs font-black text-slate-700 dark:text-slate-300 font-mono tracking-tighter bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg" data-v-5b1a3b8f>${ssrInterpolate(item.snapshot_code)}</span></td><td class="p-6" data-v-5b1a3b8f><p class="font-bold text-slate-800 dark:text-slate-200 text-sm italic leading-relaxed mb-2" data-v-5b1a3b8f>${ssrInterpolate(item.snapshot_requirement)}</p><div class="flex items-center gap-2" data-v-5b1a3b8f><span class="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600" data-v-5b1a3b8f></span><span class="text-[9px] font-black uppercase text-slate-400 tracking-wider" data-v-5b1a3b8f>Kriteria Standar</span></div></td><td class="p-6" data-v-5b1a3b8f><div class="p-5 bg-slate-50 dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-800/50 group-hover:border-slate-200 dark:group-hover:border-slate-700 transition-colors" data-v-5b1a3b8f><p class="text-xs text-slate-600 dark:text-slate-400 font-medium italic leading-relaxed" data-v-5b1a3b8f>${ssrInterpolate(item.snapshot_evidence_needed)}</p>`);
         if (item.snapshot_template_path) {
-          _push(`<div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700/50" data-v-7e2ca435><a${ssrRenderAttr("href", _ctx.route("admin.indicators.show-assignment-template", item.id))} target="_blank" class="inline-flex items-center gap-2 text-[9px] font-black uppercase text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 transition-colors tracking-wider" data-v-7e2ca435>`);
+          _push(`<div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700/50" data-v-5b1a3b8f><a${ssrRenderAttr("href", _ctx.route("admin.indicators.show-assignment-template", item.id))} target="_blank" class="inline-flex items-center gap-2 text-[9px] font-black uppercase text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 transition-colors tracking-wider" data-v-5b1a3b8f>`);
           _push(ssrRenderComponent(_component_icon, {
             icon: "fa-solid fa-file-arrow-down",
             class: "w-3.5 h-3.5"
@@ -56,9 +85,9 @@ const _sfc_main$4 = {
         } else {
           _push(`<!---->`);
         }
-        _push(`</div></td><td class="p-6 text-center text-xs" data-v-7e2ca435><div class="flex flex-col gap-2 items-center justify-center pt-2" data-v-7e2ca435>`);
+        _push(`</div></td><td class="p-6 text-center text-xs" data-v-5b1a3b8f><div class="flex flex-col gap-2 items-center justify-center pt-2" data-v-5b1a3b8f>`);
         if (item.evidence_path) {
-          _push(`<a${ssrRenderAttr("href", _ctx.route("files.evidence.show", item.id))} target="_blank" class="w-full py-2.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl font-black text-[9px] border border-emerald-100 dark:border-emerald-500/20 hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500 hover:shadow-lg hover:shadow-emerald-500/20 transition-all uppercase tracking-wider flex items-center justify-center gap-1 group/btn" data-v-7e2ca435>`);
+          _push(`<a${ssrRenderAttr("href", _ctx.route("files.evidence.show", item.id))} target="_blank" class="w-full py-2.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl font-black text-[9px] border border-emerald-100 dark:border-emerald-500/20 hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500 hover:shadow-lg hover:shadow-emerald-500/20 transition-all uppercase tracking-wider flex items-center justify-center gap-1 group/btn" data-v-5b1a3b8f>`);
           _push(ssrRenderComponent(_component_icon, {
             icon: "fa-solid fa-file",
             class: "w-3 h-3 group-hover/btn:scale-110 transition-transform"
@@ -68,7 +97,7 @@ const _sfc_main$4 = {
           _push(`<!---->`);
         }
         if (item.evidence_url) {
-          _push(`<a${ssrRenderAttr("href", item.evidence_url)} target="_blank" class="w-full py-2.5 bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded-xl font-black text-[9px] border border-violet-100 dark:border-violet-500/20 hover:bg-violet-500 hover:text-white dark:hover:bg-violet-500 hover:shadow-lg hover:shadow-violet-500/20 transition-all uppercase tracking-wider flex items-center justify-center gap-1 group/btn" data-v-7e2ca435>`);
+          _push(`<a${ssrRenderAttr("href", item.evidence_url)} target="_blank" class="w-full py-2.5 bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded-xl font-black text-[9px] border border-violet-100 dark:border-violet-500/20 hover:bg-violet-500 hover:text-white dark:hover:bg-violet-500 hover:shadow-lg hover:shadow-violet-500/20 transition-all uppercase tracking-wider flex items-center justify-center gap-1 group/btn" data-v-5b1a3b8f>`);
           _push(ssrRenderComponent(_component_icon, {
             icon: "fa-solid fa-link",
             class: "w-3 h-3 group-hover/btn:scale-110 transition-transform"
@@ -78,30 +107,30 @@ const _sfc_main$4 = {
           _push(`<!---->`);
         }
         if (!item.evidence_path && !item.evidence_url) {
-          _push(`<span class="text-slate-300 dark:text-slate-600 font-black uppercase text-[8px] tracking-[0.2em] py-2" data-v-7e2ca435>KOSONG</span>`);
+          _push(`<span class="text-slate-300 dark:text-slate-600 font-black uppercase text-[8px] tracking-[0.2em] py-2" data-v-5b1a3b8f>KOSONG</span>`);
         } else {
           _push(`<!---->`);
         }
-        _push(`</div></td><td class="p-6 text-center" data-v-7e2ca435><div class="flex flex-col items-center gap-3" data-v-7e2ca435><div class="${ssrRenderClass(["w-14 h-14 flex items-center justify-center rounded-[1.2rem] font-black text-xl border transition-all duration-300 transform group-hover:scale-110 group-hover:-rotate-3", getScoreColor(item.score)])}" data-v-7e2ca435>${ssrInterpolate(item.score ?? "-")}</div>`);
+        _push(`</div></td><td class="p-6 text-center" data-v-5b1a3b8f><div class="flex flex-col items-center gap-3" data-v-5b1a3b8f><div class="${ssrRenderClass(["w-14 h-14 flex items-center justify-center rounded-[1.2rem] font-black text-xl border transition-all duration-300 transform group-hover:scale-110 group-hover:-rotate-3", getScoreColor(item.score)])}" data-v-5b1a3b8f>${ssrInterpolate(item.score ?? "-")}</div>`);
         if (item.finding_type) {
-          _push(`<span class="${ssrRenderClass(["px-3 py-1 rounded-lg text-[9px] font-black border tracking-widest uppercase shadow-sm", getFindingBadge(item.finding_type)])}" data-v-7e2ca435>${ssrInterpolate(item.finding_type)}</span>`);
+          _push(`<span class="${ssrRenderClass(["px-3 py-1 rounded-lg text-[9px] font-black border tracking-widest uppercase shadow-sm", getFindingBadge(item.finding_type)])}" data-v-5b1a3b8f>${ssrInterpolate(item.finding_type)}</span>`);
         } else {
           _push(`<!---->`);
         }
-        _push(`</div></td><td class="p-6" data-v-7e2ca435><div class="space-y-3" data-v-7e2ca435>`);
+        _push(`</div></td><td class="p-6" data-v-5b1a3b8f><div class="space-y-3" data-v-5b1a3b8f>`);
         if (item.auditor_note) {
-          _push(`<div class="p-4 bg-amber-50/50 dark:bg-amber-900/10 border-l-[3px] border-amber-400 rounded-r-2xl hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors" data-v-7e2ca435><p class="text-[8px] font-black text-amber-500 uppercase mb-1.5 tracking-widest flex items-center gap-1.5" data-v-7e2ca435> ⚠️ Temuan </p><p class="text-xs text-slate-700 dark:text-slate-300 font-medium italic leading-relaxed" data-v-7e2ca435> &quot;${ssrInterpolate(item.auditor_note)}&quot;</p></div>`);
+          _push(`<div class="p-4 bg-amber-50/50 dark:bg-amber-900/10 border-l-[3px] border-amber-400 rounded-r-2xl hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors" data-v-5b1a3b8f><p class="text-[8px] font-black text-amber-500 uppercase mb-1.5 tracking-widest flex items-center gap-1.5" data-v-5b1a3b8f> ⚠️ Temuan </p><p class="text-xs text-slate-700 dark:text-slate-300 font-medium italic leading-relaxed" data-v-5b1a3b8f> &quot;${ssrInterpolate(item.auditor_note)}&quot;</p></div>`);
         } else {
           _push(`<!---->`);
         }
         if (item.recommendation) {
-          _push(`<div class="p-4 bg-emerald-50/50 dark:bg-emerald-900/10 border-l-[3px] border-emerald-400 rounded-r-2xl hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" data-v-7e2ca435><p class="text-[8px] font-black text-emerald-500 uppercase mb-1.5 tracking-widest flex items-center gap-1.5" data-v-7e2ca435> 💡 Saran </p><p class="text-xs text-slate-700 dark:text-slate-300 font-medium italic leading-relaxed" data-v-7e2ca435>${ssrInterpolate(item.recommendation)}</p></div>`);
+          _push(`<div class="p-4 bg-emerald-50/50 dark:bg-emerald-900/10 border-l-[3px] border-emerald-400 rounded-r-2xl hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" data-v-5b1a3b8f><p class="text-[8px] font-black text-emerald-500 uppercase mb-1.5 tracking-widest flex items-center gap-1.5" data-v-5b1a3b8f> 💡 Saran </p><p class="text-xs text-slate-700 dark:text-slate-300 font-medium italic leading-relaxed" data-v-5b1a3b8f>${ssrInterpolate(item.recommendation)}</p></div>`);
         } else {
           _push(`<!---->`);
         }
-        _push(`</div></td><td class="p-6 text-center align-middle sticky right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md z-10 group-hover:bg-slate-50/90 dark:group-hover:bg-slate-800/90 transition-colors shadow-[-10px_0_20px_-10px_rgba(0,0,0,0.05)]" data-v-7e2ca435><div class="flex flex-row justify-center items-center gap-3 relative z-20" data-v-7e2ca435>`);
+        _push(`</div></td><td class="p-6 text-center align-middle sticky right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md z-10 group-hover:bg-slate-50/90 dark:group-hover:bg-slate-800/90 transition-colors shadow-[-10px_0_20px_-10px_rgba(0,0,0,0.05)]" data-v-5b1a3b8f><div class="flex flex-row justify-center items-center gap-3 relative z-20" data-v-5b1a3b8f>`);
         if (canUpload.value) {
-          _push(`<button class="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-sky-400 to-sky-600 text-white rounded-xl shadow-lg shadow-sky-500/20 hover:shadow-sky-500/40 hover:scale-110 active:scale-95 transition-all" title="Upload Bukti" data-v-7e2ca435>`);
+          _push(`<button class="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-sky-400 to-sky-600 text-white rounded-xl shadow-lg shadow-sky-500/20 hover:shadow-sky-500/40 hover:scale-110 active:scale-95 transition-all" title="Upload Bukti" data-v-5b1a3b8f>`);
           _push(ssrRenderComponent(_component_icon, {
             icon: "fa-solid fa-cloud-arrow-up",
             class: "text-sm"
@@ -111,7 +140,7 @@ const _sfc_main$4 = {
           _push(`<!---->`);
         }
         if (canScore.value) {
-          _push(`<button class="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900 dark:from-white dark:to-slate-200 text-white dark:text-slate-900 rounded-xl shadow-lg hover:shadow-xl hover:scale-110 active:scale-95 transition-all" title="Penilaian" data-v-7e2ca435>`);
+          _push(`<button class="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900 dark:from-white dark:to-slate-200 text-white dark:text-slate-900 rounded-xl shadow-lg hover:shadow-xl hover:scale-110 active:scale-95 transition-all" title="Penilaian" data-v-5b1a3b8f>`);
           _push(ssrRenderComponent(_component_icon, {
             icon: "fa-solid fa-pen-to-square",
             class: "text-sm"
@@ -120,14 +149,14 @@ const _sfc_main$4 = {
         } else {
           _push(`<!---->`);
         }
-        _push(`<button class="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 rounded-xl hover:shadow-md hover:border-rose-200 dark:hover:border-rose-500/30 hover:scale-110 active:scale-95 transition-all" title="Riwayat" data-v-7e2ca435>`);
+        _push(`<button class="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 rounded-xl hover:shadow-md hover:border-rose-200 dark:hover:border-rose-500/30 hover:scale-110 active:scale-95 transition-all" title="Riwayat" data-v-5b1a3b8f>`);
         _push(ssrRenderComponent(_component_icon, {
           icon: "fa-solid fa-clock-rotate-left",
           class: "text-sm"
         }, null, _parent));
         _push(`</button></div></td></tr>`);
       });
-      _push(`<!--]--></tbody></table></div><div class="flex flex-col md:flex-row items-center justify-between gap-4 px-6 md:px-8 py-6 border-t border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-800/20 backdrop-blur-sm" data-v-7e2ca435><div class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest italic text-center md:text-left flex items-center gap-2" data-v-7e2ca435><span class="${ssrRenderClass(["w-2 h-2 rounded-full animate-pulse", __props.role === "auditor" ? "bg-emerald-500" : "bg-sky-500"])}" data-v-7e2ca435></span> Data ${ssrInterpolate(__props.indicators.from)} - ${ssrInterpolate(__props.indicators.to)} dari total ${ssrInterpolate(__props.indicators.total)}</div><div class="flex flex-wrap justify-center gap-2" data-v-7e2ca435><!--[-->`);
+      _push(`<!--]--></tbody></table></div><div class="flex flex-col md:flex-row items-center justify-between gap-4 px-6 md:px-8 py-6 border-t border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-800/20 backdrop-blur-sm" data-v-5b1a3b8f><div class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest italic text-center md:text-left flex items-center gap-2" data-v-5b1a3b8f><span class="${ssrRenderClass(["w-2 h-2 rounded-full animate-pulse", __props.role === "auditor" ? "bg-emerald-500" : "bg-sky-500"])}" data-v-5b1a3b8f></span> Data ${ssrInterpolate(__props.indicators.from)} - ${ssrInterpolate(__props.indicators.to)} dari total ${ssrInterpolate(__props.indicators.total)}</div><div class="flex flex-wrap justify-center gap-2" data-v-5b1a3b8f><!--[-->`);
       ssrRenderList(__props.indicators.links, (link, k) => {
         _push(`<!--[-->`);
         if (link.url) {
@@ -142,7 +171,7 @@ const _sfc_main$4 = {
           _push(`<span class="${ssrRenderClass([
             "px-3 md:px-4 py-2 text-[10px] font-black rounded-xl border transition-all opacity-30 cursor-not-allowed",
             "bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800"
-          ])}" data-v-7e2ca435>${link.label ?? ""}</span>`);
+          ])}" data-v-5b1a3b8f>${link.label ?? ""}</span>`);
         }
         _push(`<!--]-->`);
       });
@@ -156,7 +185,7 @@ _sfc_main$4.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("resources/js/Components/Assignment/ScoringView.vue");
   return _sfc_setup$4 ? _sfc_setup$4(props, ctx) : void 0;
 };
-const ScoringView = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-7e2ca435"]]);
+const ScoringView = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-5b1a3b8f"]]);
 const _sfc_main$3 = {
   __name: "StatisticsView",
   __ssrInlineRender: true,

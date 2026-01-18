@@ -28,6 +28,14 @@ watch(perPage, (value) => {
     });
 });
 
+/* --- SORTING --- */
+const handleSort = (field) => {
+    const currentSort = props.filters.sort_field;
+    const currentDir = props.filters.direction || 'asc';
+    const nextDir = currentSort === field && currentDir === 'asc' ? 'desc' : 'asc';
+    router.get(window.location.href, { ...props.filters, sort_field: field, direction: nextDir }, { preserveState: true, replace: true });
+};
+
 /* --- LOGIKA MODAL & FORM --- */
 const showModal = ref(false);
 const editMode = ref(false);
@@ -143,7 +151,20 @@ const deleteData = (id) => {
                             <tr
                                 class="bg-slate-50/80 dark:bg-slate-800/20 text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] sticky top-0 z-20 border-b border-slate-100 dark:border-slate-800/50">
                                 <th class="p-6 md:p-8 pl-8 w-24">No</th>
-                                <th class="p-6 md:p-8">Nama Program Studi</th>
+                                <th @click="handleSort('name')"
+                                    class="p-6 md:p-8 cursor-pointer hover:text-rose-500 transition-colors group select-none">
+                                    <div class="flex items-center gap-2">
+                                        Nama Program Studi
+                                        <div
+                                            class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                            <icon icon="fa-solid fa-caret-up"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'name' && filters.direction === 'asc' }"
+                                                class="-mb-1" />
+                                            <icon icon="fa-solid fa-caret-down"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'name' && filters.direction === 'desc' }" />
+                                        </div>
+                                    </div>
+                                </th>
                                 <th class="p-6 md:p-8">Fakultas</th>
                                 <th class="p-6 md:p-8 text-center">Aksi</th>
                             </tr>

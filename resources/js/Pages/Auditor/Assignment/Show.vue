@@ -457,7 +457,7 @@ const canUploadBA = (type) => {
             <div class="relative min-h-[400px]">
                 <transition name="view-fade" mode="out-in">
                     <component :is="activeView" :assignment="assignment" :indicators="indicators" :role="'auditor'"
-                        :groupedDocuments="groupedDocuments" @open-assessment="openAssessment"
+                        :groupedDocuments="groupedDocuments" :filters="filters" @open-assessment="openAssessment"
                         @open-history="openHistory" @verify-rtl="handleVerifyRtl" @open-upload="openUpload" />
                 </transition>
             </div>
@@ -613,14 +613,14 @@ const canUploadBA = (type) => {
                                 <div class="flex justify-between items-start mb-2">
                                     <p class="text-[10px] font-black text-emerald-600 uppercase tracking-widest">{{
                                         log.created_at
-                                    }}</p>
+                                        }}</p>
                                     <span
                                         class="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-lg text-[8px] font-black uppercase tracking-widest">{{
                                             log.user?.role }}</span>
                                 </div>
                                 <p class="text-sm font-black text-slate-900 dark:text-white tracking-tighter">{{
                                     log.user?.name
-                                }}</p>
+                                    }}</p>
                                 <div
                                     class="mt-4 p-6 bg-slate-50 dark:bg-slate-800 rounded-[2.5rem] border border-slate-50 dark:border-slate-700 shadow-inner">
                                     <p

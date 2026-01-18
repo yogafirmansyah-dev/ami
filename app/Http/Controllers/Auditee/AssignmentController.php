@@ -13,12 +13,10 @@ class AssignmentController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $assignableType = $user->prodi_id ? Prodi::class : Faculty::class;
-        $assignableId = $user->prodi_id ?? $user->faculty_id;
+        $filters = $request->only(['search', 'status', 'per_page', 'sort_field', 'direction']);
 
-        $filters = $request->only(['search', 'status', 'per_page']);
-
-        $assignments = Assignment::with(['period', 'standard', 'auditor'])
+        $assignments = $user->relatedAssignments()
+            ->with(['period', 'standard', 'auditor'])
             ->withCount('indicators')
             ->withCount([
                 'indicators as evidence_count' => function ($query) {
@@ -27,12 +25,10 @@ class AssignmentController extends Controller
                     });
                 }
             ])
-            ->where('assignable_type', $assignableType)
-            ->where('assignable_id', $assignableId)
             ->when($request->status === 'on_going', fn($q) => $q->where('current_stage', '!=', 'finished'))
             ->when($request->status === 'completed', fn($q) => $q->where('current_stage', 'finished'))
             ->search($request->search)
-            ->latest()
+            ->sort($request->sort_field ?? 'created_at', $request->direction ?? 'desc')
             ->paginate($request->input('per_page', 10))
             ->withQueryString();
 
@@ -64,7 +60,7 @@ class AssignmentController extends Controller
         }
 
         $indicators = $query->search($request->search, ['snapshot_code', 'snapshot_requirement'])
-            ->sort($request->sort_field ?? 'snapshot_code', $request->direction ?? 'asc')
+            ->sort($request->sort_field ?? 'snapshot_requirement', $request->direction ?? 'asc')
             ->paginate($perPage)
             ->withQueryString();
 

@@ -388,7 +388,7 @@ const handleMouseLeave = () => {
             <div class="relative min-h-[400px]">
                 <transition name="view-fade" mode="out-in">
                     <component :is="activeView" :assignment="assignment" :indicators="indicators" :role="'admin'"
-                        :groupedDocuments="groupedDocuments" @open-history="openHistory"
+                        :groupedDocuments="groupedDocuments" :filters="filters" @open-history="openHistory"
                         @open-assessment="openAssessment" @open-upload="openUpload" />
                 </transition>
             </div>

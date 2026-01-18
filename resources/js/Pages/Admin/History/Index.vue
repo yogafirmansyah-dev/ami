@@ -21,6 +21,14 @@ watch(perPage, (value) => {
     router.get(route('admin.history.index'), { search: search.value, per_page: value }, { preserveState: true, replace: true });
 });
 
+/* --- SORTING --- */
+const handleSort = (field) => {
+    const currentSort = props.filters.sort_field;
+    const currentDir = props.filters.direction || 'asc';
+    const nextDir = currentSort === field && currentDir === 'asc' ? 'desc' : 'asc';
+    router.get(window.location.href, { ...props.filters, sort_field: field, direction: nextDir }, { preserveState: true, replace: true });
+};
+
 /* --- MODAL DETAIL LOGIC --- */
 const showModal = ref(false);
 const selectedLog = ref(null);
@@ -100,9 +108,35 @@ const formatEntityName = (type) => {
                             <tr
                                 class="bg-slate-50/80 dark:bg-slate-800/20 text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] sticky top-0 z-20 border-b border-slate-100 dark:border-slate-800/50">
                                 <th class="p-6 md:p-8 pl-8 text-center">No</th>
-                                <th class="p-6 md:p-8 pl-8">Waktu</th>
+                                <th @click="handleSort('created_at')"
+                                    class="p-6 md:p-8 pl-8 cursor-pointer hover:text-rose-500 transition-colors group select-none">
+                                    <div class="flex items-center gap-2">
+                                        Waktu
+                                        <div
+                                            class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                            <icon icon="fa-solid fa-caret-up"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'created_at' && filters.direction === 'asc' }"
+                                                class="-mb-1" />
+                                            <icon icon="fa-solid fa-caret-down"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'created_at' && filters.direction === 'desc' }" />
+                                        </div>
+                                    </div>
+                                </th>
                                 <th class="p-6 md:p-8">Aktor (User)</th>
-                                <th class="p-6 md:p-8">Aksi</th>
+                                <th @click="handleSort('action')"
+                                    class="p-6 md:p-8 cursor-pointer hover:text-rose-500 transition-colors group select-none">
+                                    <div class="flex items-center gap-2">
+                                        Aksi
+                                        <div
+                                            class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                            <icon icon="fa-solid fa-caret-up"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'action' && filters.direction === 'asc' }"
+                                                class="-mb-1" />
+                                            <icon icon="fa-solid fa-caret-down"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'action' && filters.direction === 'desc' }" />
+                                        </div>
+                                    </div>
+                                </th>
                                 <th class="p-6 md:p-8">Entitas Terkait</th>
                                 <th class="p-6 md:p-8 text-center">Detail</th>
                             </tr>
@@ -132,7 +166,7 @@ const formatEntityName = (type) => {
                                                     log.user?.name || 'Unknown' }}</span>
                                             <span class="text-[9px] text-slate-400 uppercase tracking-tighter">{{
                                                 log.user?.role || '-'
-                                            }}</span>
+                                                }}</span>
                                         </div>
                                     </div>
                                 </td>

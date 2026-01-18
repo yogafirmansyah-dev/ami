@@ -16,18 +16,36 @@ const search = ref(props.filters.search);
 const perPage = ref(props.filters.per_page || 10);
 
 watch(search, debounce((value) => {
-    router.get(route('admin.periods.index'), { search: value, per_page: perPage.value }, {
+    router.get(route('admin.periods.index'), {
+        search: value,
+        per_page: perPage.value,
+        sort_field: props.filters.sort_field,
+        direction: props.filters.direction
+    }, {
         preserveState: true,
         replace: true
     });
 }, 500));
 
 watch(perPage, (value) => {
-    router.get(route('admin.periods.index'), { search: search.value, per_page: value }, {
+    router.get(route('admin.periods.index'), {
+        search: search.value,
+        per_page: value,
+        sort_field: props.filters.sort_field,
+        direction: props.filters.direction
+    }, {
         preserveState: true,
         replace: true
     });
 });
+
+/* --- SORTING --- */
+const handleSort = (field) => {
+    const currentSort = props.filters.sort_field;
+    const currentDir = props.filters.direction || 'desc';
+    const nextDir = currentSort === field && currentDir === 'asc' ? 'desc' : 'asc';
+    router.get(window.location.href, { ...props.filters, sort_field: field, direction: nextDir }, { preserveState: true, replace: true });
+};
 
 /* --- LOGIKA MODAL & FORM --- */
 const showModal = ref(false);
@@ -211,8 +229,34 @@ const getStatusTimeline = (item) => {
                             <tr
                                 class="bg-slate-50/80 dark:bg-slate-800/20 text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] sticky top-0 z-20 border-b border-slate-100 dark:border-slate-800/50">
                                 <th class="p-6 md:p-8 pl-8 text-center">No</th>
-                                <th class="p-6 md:p-8 pl-8">Nama Periode</th>
-                                <th class="p-6 md:p-8 text-center">Fase Aktif</th>
+                                <th @click="handleSort('name')"
+                                    class="p-6 md:p-8 pl-8 cursor-pointer hover:text-rose-500 transition-colors group select-none">
+                                    <div class="flex items-center gap-2">
+                                        Nama Periode
+                                        <div
+                                            class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                            <icon icon="fa-solid fa-caret-up"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'name' && filters.direction === 'asc' }"
+                                                class="-mb-1" />
+                                            <icon icon="fa-solid fa-caret-down"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'name' && filters.direction === 'desc' }" />
+                                        </div>
+                                    </div>
+                                </th>
+                                <th @click="handleSort('is_active')"
+                                    class="p-6 md:p-8 text-center cursor-pointer hover:text-rose-500 transition-colors group select-none">
+                                    <div class="flex items-center justify-center gap-2">
+                                        Fase Aktif
+                                        <div
+                                            class="flex flex-col text-[8px] opacity-30 group-hover:opacity-100 transition-opacity">
+                                            <icon icon="fa-solid fa-caret-up"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'is_active' && filters.direction === 'asc' }"
+                                                class="-mb-1" />
+                                            <icon icon="fa-solid fa-caret-down"
+                                                :class="{ 'text-rose-500 opacity-100': filters.sort_field === 'is_active' && filters.direction === 'desc' }" />
+                                        </div>
+                                    </div>
+                                </th>
                                 <th class="p-6 md:p-8 text-center">Timeline Visual</th>
                                 <th class="p-6 md:p-8 text-center min-w-28">Aksi</th>
                             </tr>
@@ -221,7 +265,10 @@ const getStatusTimeline = (item) => {
                             <tr v-for="item in periods.data" :key="item.id"
                                 class="group hover:bg-white/50 dark:hover:bg-white/[0.02] transition-colors duration-300">
                                 <td class="p-6 md:p-8 pl-8 text-center">
-                                    {{ periods.from + periods.data.indexOf(item) }}
+                                    <span
+                                        class="font-mono text-sm font-black text-rose-500 bg-rose-50 dark:bg-rose-500/10 px-2 py-1 rounded-md border border-rose-100 dark:border-rose-500/20">
+                                        {{ periods.from + periods.data.indexOf(item) }}
+                                    </span>
                                 </td>
                                 <td class="p-6 md:p-8 pl-8">
                                     <div class="font-black text-slate-800 dark:text-slate-200 uppercase tracking-tight">
