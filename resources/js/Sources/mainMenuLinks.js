@@ -39,6 +39,7 @@ export default function ({ role, permissions }) {
                 label: "Standar Mutu",
                 icon: "scroll",
                 link: "admin.standards.index",
+                activeQuery: "admin.standards.*",
                 type: "route",
                 visibleFor: hasRole('admin'),
             },
@@ -83,14 +84,29 @@ export default function ({ role, permissions }) {
                 visibleFor: true,
                 links: [
                     // Admin & Auditor selalu bisa melihat daftar penugasan
-                    { id: "adminAssignments", label: "Kelola Penugasan", link: "admin.assignments.index", type: "route", visibleFor: hasRole('admin') },
-                    { id: "auditorAssignments", label: "Tugas Auditor", link: "auditor.assignments.index", type: "route", visibleFor: hasRole('auditor') },
+                    { 
+                        id: "adminAssignments", 
+                        label: "Kelola Penugasan", 
+                        link: "admin.assignments.index", 
+                        activeQuery: "admin.assignments.*",
+                        type: "route", 
+                        visibleFor: hasRole('admin') 
+                    },
+                    { 
+                        id: "auditorAssignments", 
+                        label: "Tugas Auditor", 
+                        link: "auditor.assignments.index", 
+                        activeQuery: "auditor.assignments.*",
+                        type: "route", 
+                        visibleFor: hasRole('auditor') 
+                    },
 
                     // AUDITEE: Hanya muncul jika tahapannya adalah 'doc_audit' (Audit Dokumen)
                     {
                         id: "auditeeAssignments",
                         label: "Penilaian Audit",
                         link: "auditee.assignments.index",
+                        activeQuery: "auditee.assignments.*", // Keep active when inside assignment details
                         type: "route",
                         visibleFor: hasRole('auditee')
                     },

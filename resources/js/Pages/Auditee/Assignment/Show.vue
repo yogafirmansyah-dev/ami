@@ -400,7 +400,7 @@ const progressPercent = computed(() => {
                     <div
                         class="flex items-center bg-white dark:bg-slate-900 rounded-2xl px-3 ring-1 ring-slate-200 dark:ring-slate-800 shadow-sm hover:ring-emerald-300/50 transition-all duration-300">
                         <span
-                            class="hidden sm:inline text-[9px] font-black uppercase text-slate-400 px-2 border-r dark:border-slate-800 mr-2">Baris</span>
+                            class="hidden sm:inline text-[9px] font-black uppercase text-slate-400 px-2 border-r dark:border-slate-800 mr-2">Tampilkan</span>
                         <select v-model="perPage"
                             class="bg-transparent dark:bg-slate-900 border-none focus:ring-0 text-xs font-black text-slate-900 dark:text-white py-4 pr-8 cursor-pointer hover:text-emerald-600 transition-colors">
                             <option :value="10">10</option>
@@ -460,14 +460,14 @@ const progressPercent = computed(() => {
                                 <div class="flex justify-between items-start mb-2">
                                     <p class="text-[10px] font-black text-rose-600 uppercase tracking-widest">{{
                                         log.created_at
-                                    }}</p>
+                                        }}</p>
                                     <span
                                         class="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-lg text-[8px] font-black uppercase tracking-widest">{{
                                             log.user?.role }}</span>
                                 </div>
                                 <p class="text-sm font-black text-slate-900 dark:text-white tracking-tighter">{{
                                     log.user?.name
-                                }}</p>
+                                    }}</p>
                                 <div
                                     class="mt-4 p-6 bg-slate-50 dark:bg-slate-800 rounded-[2.5rem] border border-slate-50 dark:border-slate-700 shadow-inner">
                                     <p

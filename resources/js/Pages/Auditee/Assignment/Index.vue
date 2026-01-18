@@ -177,6 +177,9 @@ const stats = computed(() => {
                             <tr
                                 class="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
                                 <th
+                                    class="px-10 py-8 text-center text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                    No</th>
+                                <th
                                     class="px-10 py-8 text-left text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
                                     Standar Mutu & Periode</th>
                                 <th
@@ -197,6 +200,12 @@ const stats = computed(() => {
                             <tr v-for="item in assignments.data" :key="item.id"
                                 class="group hover:bg-rose-50/30 dark:hover:bg-rose-900/10 transition-colors duration-300">
                                 <td class="px-10 py-8">
+                                    <span
+                                        class="font-mono text-sm font-black text-rose-500 bg-rose-50 dark:bg-rose-500/10 px-2 py-1 rounded-md border border-rose-100 dark:border-rose-500/20">
+                                        {{ assignments.from + assignments.data.indexOf(item) }}
+                                    </span>
+                                </td>
+                                <td class="px-10 py-8">
                                     <h4
                                         class="text-sm font-black text-slate-800 dark:text-white uppercase tracking-tighter italic mb-2 group-hover:text-rose-600 transition-colors">
                                         {{ item.standard?.name }}
@@ -215,7 +224,7 @@ const stats = computed(() => {
                                         <div>
                                             <p class="text-xs font-bold text-slate-700 dark:text-slate-200">{{
                                                 item.auditor.name
-                                                }}</p>
+                                            }}</p>
                                             <p class="text-[9px] text-slate-400 font-medium">Penilai Utama</p>
                                         </div>
                                     </div>
@@ -234,7 +243,7 @@ const stats = computed(() => {
                                         <div class="flex justify-between items-end mb-2">
                                             <span class="text-[9px] font-bold text-slate-400">Terisi</span>
                                             <span class="text-xs font-black text-rose-600">{{ getProgress(item)
-                                                }}%</span>
+                                            }}%</span>
                                         </div>
                                         <div
                                             class="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
@@ -280,20 +289,21 @@ const stats = computed(() => {
                     <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                         Menampilkan <span class="text-slate-900 dark:text-white">{{ assignments.from }}-{{
                             assignments.to
-                            }}</span> dari {{ assignments.total }}
+                        }}</span> dari {{ assignments.total }}
                     </p>
                     <div class="flex gap-2">
-                        <template v-for="(link, key) in assignments.links" :key="key">
-                            <div v-if="link.url === null"
-                                class="px-4 py-2 text-[10px] font-black text-slate-300 border border-transparent rounded-lg"
-                                v-html="link.label"></div>
-                            <Link v-else :href="link.url"
-                                class="px-4 py-2 text-[10px] font-black rounded-xl border transition-all duration-200"
-                                :class="link.active
-                                    ? 'bg-rose-600 text-white border-rose-600 shadow-md transform scale-105'
-                                    : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:border-rose-400 hover:text-rose-600'"
-                                v-html="link.label">
-                            </Link>
+                        <template v-for="(link, k) in assignments.links" :key="k">
+                            <Link v-if="link.url" :href="link.url" :class="[
+                                'px-3 md:px-4 py-2 text-[10px] font-black rounded-xl border transition-all cursor-pointer',
+                                link.active
+                                    ? 'bg-slate-900 dark:bg-rose-600 text-white border-slate-900 dark:border-rose-600 shadow-lg shadow-slate-900/20'
+                                    : 'bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800 hover:border-rose-500 hover:text-rose-500'
+                            ]" v-html="link.label" />
+
+                            <span v-else :class="[
+                                'px-3 md:px-4 py-2 text-[10px] font-black rounded-xl border transition-all opacity-30 cursor-not-allowed',
+                                'bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800'
+                            ]" v-html="link.label" />
                         </template>
                     </div>
                 </div>

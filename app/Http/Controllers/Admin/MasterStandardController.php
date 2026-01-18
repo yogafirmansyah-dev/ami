@@ -19,7 +19,7 @@ class MasterStandardController extends Controller
 
         $standards = MasterStandard::withCount('indicators')
             ->search($request->search, ['name', 'code'])
-            ->orderBy('name', 'asc')
+            ->sort($request->sort_field ?? 'name', $request->direction ?? 'asc')
             ->paginate($perPage)
             ->withQueryString();
 

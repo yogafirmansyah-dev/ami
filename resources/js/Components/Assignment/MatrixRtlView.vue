@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watchEffect } from 'vue';
+import { Link } from '@inertiajs/vue3';
 
 const props = defineProps({
     indicators: Object,
@@ -235,6 +236,30 @@ const getStatusBadge = (status) => {
                     </tr>
                 </tbody>
             </table>
+        </div>
+
+        <!-- Pagination -->
+        <div v-if="indicators.links && indicators.links.length > 3"
+            class="flex flex-col md:flex-row items-center justify-between gap-4 px-8 py-6 border-t border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-800/20 backdrop-blur-sm">
+            <div
+                class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest italic text-center md:text-left">
+                Data {{ indicators.from }} - {{ indicators.to }} dari total {{ indicators.total }}
+            </div>
+            <div class="flex flex-wrap justify-center gap-1.5">
+                <template v-for="(link, k) in indicators.links" :key="k">
+                    <Link v-if="link.url" :href="link.url" :preserve-scroll="true" :class="[
+                        'px-3 md:px-4 py-2 text-[10px] font-black rounded-xl border transition-all cursor-pointer',
+                        link.active
+                            ? 'bg-slate-900 dark:bg-rose-600 text-white border-slate-900 dark:border-rose-600 shadow-lg shadow-slate-900/20'
+                            : 'bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800 hover:border-rose-500 hover:text-rose-500'
+                    ]" v-html="link.label" />
+
+                    <span v-else :class="[
+                        'px-3 md:px-4 py-2 text-[10px] font-black rounded-xl border transition-all opacity-30 cursor-not-allowed',
+                        'bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800'
+                    ]" v-html="link.label" />
+                </template>
+            </div>
         </div>
 
         <!-- Empty State -->

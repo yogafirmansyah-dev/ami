@@ -159,6 +159,7 @@ const getUnitName = (user) => {
                         <thead>
                             <tr
                                 class="bg-slate-50/80 dark:bg-slate-800/20 text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] sticky top-0 z-20 border-b border-slate-100 dark:border-slate-800/50">
+                                <th class="p-6 md:p-8 pl-8 text-center">No</th>
                                 <th class="p-6 md:p-8 pl-8">Pengguna</th>
                                 <th class="p-6 md:p-8">Role</th>
                                 <th class="p-6 md:p-8">Unit Kerja</th>
@@ -169,6 +170,12 @@ const getUnitName = (user) => {
                         <tbody class="divide-y divide-slate-50 dark:divide-slate-800/20">
                             <tr v-for="item in users.data" :key="item.id"
                                 class="group hover:bg-white/50 dark:hover:bg-white/[0.02] transition-colors duration-300">
+                                <td class="p-6 md:p-8 text-center">
+                                    <span
+                                        class="font-mono text-sm font-black text-rose-500 bg-rose-50 dark:bg-rose-500/10 px-2 py-1 rounded-md border border-rose-100 dark:border-rose-500/20">
+                                        {{ users.from + users.data.indexOf(item) }}
+                                    </span>
+                                </td>
                                 <td class="p-6 md:p-8 pl-8">
                                     <div class="flex items-center gap-4">
                                         <img :src="item.profile_photo_url"
@@ -247,13 +254,19 @@ const getUnitName = (user) => {
                         Data {{ users.from }} - {{ users.to }} dari total {{ users.total }}
                     </div>
                     <div class="flex flex-wrap justify-center gap-1.5">
-                        <Link v-for="(link, k) in users.links" :key="k" :href="link.url || '#'" :class="[
-                            'px-3 md:px-4 py-2 text-[10px] font-black rounded-xl border transition-all',
-                            link.active
-                                ? 'bg-slate-900 dark:bg-rose-600 text-white border-slate-900 dark:border-rose-600 shadow-lg shadow-slate-900/20'
-                                : 'bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800 hover:border-rose-500 hover:text-rose-500',
-                            !link.url ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
-                        ]" v-html="link.label" />
+                        <template v-for="(link, k) in users.links" :key="k">
+                            <Link v-if="link.url" :href="link.url" :class="[
+                                'px-3 md:px-4 py-2 text-[10px] font-black rounded-xl border transition-all cursor-pointer',
+                                link.active
+                                    ? 'bg-slate-900 dark:bg-rose-600 text-white border-slate-900 dark:border-rose-600 shadow-lg shadow-slate-900/20'
+                                    : 'bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800 hover:border-rose-500 hover:text-rose-500'
+                            ]" v-html="link.label" />
+
+                            <span v-else :class="[
+                                'px-3 md:px-4 py-2 text-[10px] font-black rounded-xl border transition-all opacity-30 cursor-not-allowed',
+                                'bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800'
+                            ]" v-html="link.label" />
+                        </template>
                     </div>
                 </div>
             </div>
@@ -288,7 +301,7 @@ const getUnitName = (user) => {
                             <input v-model="form.name" type="text" required
                                 class="w-full px-5 py-3.5 bg-white dark:bg-slate-900 border-none rounded-2xl text-xs font-bold text-slate-900 dark:text-white ring-1 ring-slate-200 dark:ring-slate-800 focus:ring-2 focus:ring-rose-500 transition-all shadow-sm" />
                             <p v-if="form.errors.name" class="text-xs text-rose-500 font-bold ml-1">{{ form.errors.name
-                                }}</p>
+                            }}</p>
                         </div>
                         <div class="space-y-2">
                             <label
@@ -350,7 +363,7 @@ const getUnitName = (user) => {
                                         class="w-full px-4 py-2.5 text-xs font-bold border-none ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl bg-white dark:bg-slate-900 outline-none focus:ring-2 focus:ring-rose-500">
                                         <option :value="null">Tidak Ada</option>
                                         <option v-for="prodi in prodis" :key="prodi.id" :value="prodi.id">{{ prodi.name
-                                            }}
+                                        }}
                                         </option>
                                     </select>
                                     <p v-if="form.errors.prodi_id" class="text-xs text-rose-500 font-bold ml-1">{{

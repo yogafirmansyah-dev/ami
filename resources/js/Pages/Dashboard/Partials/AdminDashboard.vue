@@ -134,6 +134,7 @@ const findingOptions = {
                 <table class="w-full text-left text-sm">
                     <thead class="bg-slate-50 dark:bg-slate-800 text-xs uppercase text-slate-400 font-bold">
                         <tr>
+                            <th class="px-6 py-4">No</th>
                             <th class="px-6 py-4">Pengguna</th>
                             <th class="px-6 py-4">Aksi</th>
                             <th class="px-6 py-4">Tahap</th>
@@ -143,6 +144,12 @@ const findingOptions = {
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                         <tr v-for="log in activities" :key="log.id"
                             class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                            <td class="px-6 py-4 font-bold text-slate-700 dark:text-slate-200">
+                                <span
+                                    class="font-mono text-sm font-black text-rose-500 bg-rose-50 dark:bg-rose-500/10 px-2 py-1 rounded-md border border-rose-100 dark:border-rose-500/20">
+                                    {{ activities.from + activities.data.indexOf(log) }}
+                                </span>
+                            </td>
                             <td class="px-6 py-4 font-bold text-slate-700 dark:text-slate-200">
                                 {{ log.user?.name || 'Tidak Diketahui' }}
                             </td>

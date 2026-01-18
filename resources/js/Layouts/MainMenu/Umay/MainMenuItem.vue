@@ -37,13 +37,21 @@ const select = (selection) => {
 
 }
 
+/*Check Active Helper*/
+const checkIsActive = (item) => {
+    if (item.activeQuery) {
+        return route().current(item.activeQuery);
+    }
+    return item.link ? route().current(item.link) : false;
+};
+
 /*Search Active Link*/
 onBeforeMount(() => {
     if (props.link["links"]) {
         for (let child of props.link["links"]) {
 
             /*Check Second Level*/
-            if (route().current(child.link) && child.link !== null && !child["links"]) {
+            if (checkIsActive(child) && !child["links"]) {
                 activeMenus.root = props.link.id
                 activeMenus.second = child.id
                 select([props.link.id, child.id])
@@ -52,7 +60,7 @@ onBeforeMount(() => {
             /*Check Third Level*/
             if (child["links"]) {
                 for (let third of child["links"]) {
-                    if (route().current(third.link) && third.link !== null) {
+                    if (checkIsActive(third)) {
                         activeMenus.root = props.link.id
                         activeMenus.second = child.id
                         activeMenus.third = third.id
@@ -65,7 +73,7 @@ onBeforeMount(() => {
     } else {
 
         /*Check First Level*/
-        if (route().current(props.link.link) && props.link.link !== null) {
+        if (checkIsActive(props.link)) {
             activeMenus.root = props.link.id
             select([props.link.id])
         }

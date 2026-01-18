@@ -97,21 +97,21 @@ const topBarConf = {
 
 const footerConf = {
     visible: false,
-    content: "<a\n" +
-        "              class=\"text-blue-600 hover:underline\"\n" +
-        "              href=\"https://tailadmin.dev/\"\n" +
-        "              target=\"_blank\"\n" +
-        "            >\n" +
-        "              TailAdmin v2\n" +
-        "              </a>\n" +
-        "            <span>by</span>\n" +
-        "            <a\n" +
-        "              class=\"text-teal-400 hover:underline\"\n" +
-        "              href=\"https://github.com/sinan-aydogan\"\n" +
-        "              target=\"_blank\"\n" +
-        "            >\n" +
-        "              Sinan AYDOĞAN\n" +
-        "            </a>"
+    // content: "<a\n" +
+    //     "              class=\"text-blue-600 hover:underline\"\n" +
+    //     "              href=\"https://tailadmin.dev/\"\n" +
+    //     "              target=\"_blank\"\n" +
+    //     "            >\n" +
+    //     "              TailAdmin v2\n" +
+    //     "              </a>\n" +
+    //     "            <span>by</span>\n" +
+    //     "            <a\n" +
+    //     "              class=\"text-teal-400 hover:underline\"\n" +
+    //     "              href=\"https://github.com/sinan-aydogan\"\n" +
+    //     "              target=\"_blank\"\n" +
+    //     "            >\n" +
+    //     "              Sinan AYDOĞAN\n" +
+    //     "            </a>"
 };
 
 /*Module Settings*/

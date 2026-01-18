@@ -64,6 +64,10 @@ const emptyStateMessage = computed(() => {
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-slate-50/50 dark:bg-slate-800/50 border-b dark:border-slate-800">
+                                <th
+                                    class="p-8 text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] text-center">
+                                    No
+                                </th>
                                 <th class="p-8 text-[10px] font-black uppercase text-slate-500 tracking-[0.2em]">Info
                                     Dokumen
                                 </th>
@@ -84,6 +88,13 @@ const emptyStateMessage = computed(() => {
                         <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                             <tr v-for="doc in documents.data" :key="doc.id"
                                 class="group hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all duration-300">
+                                <td
+                                    class="p-8 text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] text-center">
+                                    <span
+                                        class="font-mono text-sm font-black text-rose-500 bg-rose-50 dark:bg-rose-500/10 px-2 py-1 rounded-md border border-rose-100 dark:border-rose-500/20">
+                                        {{ documents.from + documents.data.indexOf(doc) }}
+                                    </span>
+                                </td>
 
                                 <td class="p-8">
                                     <div class="flex items-center gap-5">
@@ -177,23 +188,28 @@ const emptyStateMessage = computed(() => {
                     </table>
                 </div>
 
-                <div v-if="documents.data.length > 0"
-                    class="p-8 bg-slate-50/50 dark:bg-slate-800/50 border-t dark:border-slate-800 flex justify-between items-center">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">
-                        Menampilkan {{ documents.data.length }} dari {{ documents.total }} Dokumen Tersedia
-                    </p>
-                    <div class="flex gap-2">
-                        <div class="flex justify-end gap-1 mt-6">
-                            <button v-for="link in documents.links" :key="link.label" v-html="link.label"
-                                :disabled="!link.url"
-                                @click="router.get(link.url, {}, { preserveState: true, replace: true })"
-                                class="px-4 py-2 text-[10px] font-black uppercase rounded-xl border transition" :class="[
-                                    link.active
-                                        ? 'bg-slate-900 text-white'
-                                        : 'bg-white text-slate-600 hover:bg-slate-100',
-                                    !link.url && 'opacity-40 cursor-not-allowed'
-                                ]" />
-                        </div>
+                <!-- PAGINATION -->
+                <div
+                    class="flex flex-col md:flex-row items-center justify-between gap-4 px-6 md:px-8 py-6 border-t border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-800/20 backdrop-blur-sm">
+                    <div
+                        class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest italic text-center md:text-left flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Data {{ documents.from }} - {{ documents.to }} dari total {{ documents.total }}
+                    </div>
+                    <div class="flex flex-wrap justify-center gap-1.5">
+                        <template v-for="(link, k) in documents.links" :key="k">
+                            <Link v-if="link.url" :href="link.url" :class="[
+                                'px-3 md:px-4 py-2 text-[10px] font-black rounded-xl border transition-all cursor-pointer',
+                                link.active
+                                    ? 'bg-slate-900 dark:bg-rose-600 text-white border-slate-900 dark:border-rose-600 shadow-lg shadow-slate-900/20'
+                                    : 'bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800 hover:border-rose-500 hover:text-rose-500'
+                            ]" v-html="link.label" />
+
+                            <span v-else :class="[
+                                'px-3 md:px-4 py-2 text-[10px] font-black rounded-xl border transition-all opacity-30 cursor-not-allowed',
+                                'bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800'
+                            ]" v-html="link.label" />
+                        </template>
                     </div>
                 </div>
             </div>

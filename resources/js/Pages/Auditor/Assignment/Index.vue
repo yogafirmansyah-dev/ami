@@ -160,6 +160,7 @@ const getCategoryStyle = (type) => {
                         <thead>
                             <tr
                                 class="bg-slate-50/80 dark:bg-slate-800/20 text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] sticky top-0 z-20 border-b border-slate-100 dark:border-slate-800/50">
+                                <th class="p-6 md:p-8">No</th>
                                 <th class="p-6 md:p-8">Unit Audit</th>
                                 <th class="p-6 md:p-8">Referensi</th>
                                 <th class="p-6 md:p-8 text-center">Tahapan</th>
@@ -170,6 +171,12 @@ const getCategoryStyle = (type) => {
                         <tbody class="divide-y divide-slate-50 dark:divide-slate-800/20">
                             <tr v-for="item in assignments.data" :key="item.id"
                                 class="group hover:bg-white/50 dark:hover:bg-white/[0.02] transition-colors duration-300">
+                                <td class="p-6 md:p-8">
+                                    <span
+                                        class="font-mono text-sm font-black text-rose-500 bg-rose-50 dark:bg-rose-500/10 px-2 py-1 rounded-md border border-rose-100 dark:border-rose-500/20">
+                                        {{ assignments.from + assignments.data.indexOf(item) }}
+                                    </span>
+                                </td>
                                 <td class="p-6 md:p-8">
                                     <div class="flex items-center gap-5">
                                         <div
@@ -243,13 +250,19 @@ const getCategoryStyle = (type) => {
                         Data {{ assignments.from }} - {{ assignments.to }} dari total {{ assignments.total }}
                     </div>
                     <div class="flex flex-wrap justify-center gap-1.5">
-                        <Link v-for="(link, k) in assignments.links" :key="k" :href="link.url || '#'" :class="[
-                            'min-w-[32px] h-[32px] flex items-center justify-center text-[10px] font-black rounded-xl border transition-all',
-                            link.active
-                                ? 'bg-slate-900 dark:bg-emerald-600 text-white border-transparent shadow-lg shadow-emerald-600/20'
-                                : 'bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800 hover:border-emerald-500 hover:text-emerald-500',
-                            !link.url ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer hover:-translate-y-0.5'
-                        ]" v-html="link.label" />
+                        <template v-for="(link, k) in assignments.links" :key="k">
+                            <Link v-if="link.url" :href="link.url" :class="[
+                                'px-3 md:px-4 py-2 text-[10px] font-black rounded-xl border transition-all cursor-pointer',
+                                link.active
+                                    ? 'bg-slate-900 dark:bg-rose-600 text-white border-slate-900 dark:border-rose-600 shadow-lg shadow-slate-900/20'
+                                    : 'bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800 hover:border-rose-500 hover:text-rose-500'
+                            ]" v-html="link.label" />
+
+                            <span v-else :class="[
+                                'px-3 md:px-4 py-2 text-[10px] font-black rounded-xl border transition-all opacity-30 cursor-not-allowed',
+                                'bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800'
+                            ]" v-html="link.label" />
+                        </template>
                     </div>
                 </div>
             </div>

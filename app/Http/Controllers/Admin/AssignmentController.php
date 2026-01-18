@@ -35,7 +35,7 @@ class AssignmentController extends Controller
 
         $assignments = Assignment::with(['assignable', 'period', 'standard', 'auditor'])
             ->search($request->search) // Memanggil scope kustom di model
-            ->sort($request->sort_field, $request->direction) // Memanggil scope dari trait
+            ->sort($request->sort_field ?? 'created_at', $request->direction ?? 'desc') // Memanggil scope dari trait
             ->paginate($perPage)
             ->withQueryString();
 
