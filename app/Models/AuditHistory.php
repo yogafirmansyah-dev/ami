@@ -41,10 +41,25 @@ class AuditHistory extends Model
         // Bandingkan perubahan field
         foreach ($new as $key => $value) {
             $oldVal = $old[$key] ?? '-';
-            if ($oldVal == $value)
+
+            // --- PERBAIKAN DI SINI ---
+            // Cek jika data berupa Array/Object, ubah jadi string JSON agar tidak error
+            if (is_array($oldVal) || is_object($oldVal)) {
+                $oldVal = json_encode($oldVal, JSON_UNESCAPED_UNICODE);
+            }
+            if (is_array($value) || is_object($value)) {
+                $value = json_encode($value, JSON_UNESCAPED_UNICODE);
+            }
+            // -------------------------
+
+            // Skip jika nilainya sama (bandingkan setelah dikonversi ke string/angka)
+            if ($oldVal == $value) {
                 continue;
+            }
 
             $label = str_replace('_', ' ', ucfirst($key));
+
+            // Format HTML
             $lines[] = "<div><strong>{$label}</strong>: <span class='text-rose-400'>{$oldVal}</span> → <span class='text-emerald-500'>{$value}</span></div>";
         }
 
