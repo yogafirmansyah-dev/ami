@@ -123,7 +123,7 @@ class Assignment extends Model
         return $this->traitSort($query, $field, $direction);
     }
 
-    public static function stageBreakdown()
+    public static function stageBreakdown(?Period $period = null)
     {
         $counts = self::query()
             ->select('current_stage')
@@ -132,10 +132,21 @@ class Assignment extends Model
             ->pluck('total', 'current_stage');
 
         return collect(AuditStage::cases())
-            ->map(fn(AuditStage $stage) => [
-                'stage' => $stage->value,
-                'label' => $stage->label(),
-                'total' => $counts[$stage->value] ?? 0,
-            ]);
+            ->map(function (AuditStage $stage) use ($counts, $period) {
+                $startField = $stage->value . '_start';
+                $endField = $stage->value . '_end';
+
+                $startDate = $period && isset($period->$startField) ? \Carbon\Carbon::parse($period->$startField) : null;
+                $endDate = $period && isset($period->$endField) ? \Carbon\Carbon::parse($period->$endField) : null;
+
+                return [
+                    'stage' => $stage->value,
+                    'label' => $stage->label(),
+                    'total' => $counts[$stage->value] ?? 0,
+                    'start_date' => $startDate ? $startDate->translatedFormat('d M Y') : null,
+                    'end_date' => $endDate ? $endDate->translatedFormat('d M Y') : null,
+                    'is_past' => $endDate ? $endDate->isPast() : false,
+                ];
+            });
     }
 }

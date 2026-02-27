@@ -79,13 +79,18 @@ Route::middleware([
 
         /*Resource Routes*/
         Route::resources([
-            'settings-user' => \App\Http\Controllers\Settings\UserController::class,
+            'settings-user' => UserController::class,
             'settings-role' => \App\Http\Controllers\Settings\RoleController::class,
             'settings-permission' => \App\Http\Controllers\Settings\PermissionController::class
         ]);
 
+        /*Import/Export Routes for Users*/
+        Route::get('settings-user/action/export', [UserController::class, 'export'])->name('settings-user.export');
+        Route::get('settings-user/action/template', [UserController::class, 'downloadTemplate'])->name('settings-user.template');
+        Route::post('settings-user/action/import', [UserController::class, 'import'])->name('settings-user.import');
+
         /*Search Routes for Resource Routes*/
-        Route::post('settings-user', [\App\Http\Controllers\Settings\UserController::class, 'index'])->name('settings-user.search');
+        Route::post('settings-user', [UserController::class, 'index'])->name('settings-user.search');
         Route::post('settings-role', [\App\Http\Controllers\Settings\RoleController::class, 'index'])->name('settings-role.search');
         Route::post('settings-permission', [\App\Http\Controllers\Settings\PermissionController::class, 'index'])->name('settings-permission.search');
 
@@ -158,9 +163,6 @@ Route::middleware([
     Route::get('collapsible', function () {
         return Inertia::render('Samples/Components/Collapsible');
     })->name('collapsible');
-    Route::get('content-box', function () {
-        return Inertia::render('Samples/Component/ContentBox');
-    })->name('content-box');
     Route::get('dropdown', function () {
         return Inertia::render('Samples/Components/Dropdown');
     })->name('dropdown');
@@ -265,6 +267,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
         // Master Periode & Standar
         Route::resource('periods', PeriodController::class)->except(['show', 'edit', 'create']);
+        Route::post('standards/import', [MasterStandardController::class, 'import'])->name('standards.import');
+        Route::get('standards/export', [MasterStandardController::class, 'export'])->name('standards.export');
+        Route::get('standards/template', [MasterStandardController::class, 'downloadTemplate'])->name('standards.template');
         Route::resource('standards', MasterStandardController::class)->except(['show', 'edit', 'create']);
 
         Route::prefix('standards/{standard}')->name('standards.')->group(function () {
@@ -335,7 +340,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/preview/evidence/{indicator}', [FilePreviewController::class, 'previewEvidence'])->name('preview.evidence');
         Route::get('/preview/document/{document}', [FilePreviewController::class, 'previewDocument'])->name('preview.document');
 
-        // Export Laporan PDF
+        // Export Laporan PDF & DOCX
         Route::get('/export/pdf/{assignment}', [ReportExportController::class, 'exportPdf'])->name('export.pdf');
+        Route::get('/export/docx/{assignment}', [ReportExportController::class, 'exportDocx'])->name('export.docx');
+        Route::get('/export/docx-finding/{assignment}', [ReportExportController::class, 'exportFindingDocx'])->name('export.docx.finding');
     });
 });

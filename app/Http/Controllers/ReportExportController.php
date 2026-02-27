@@ -40,4 +40,42 @@ class ReportExportController extends Controller
         $fileName = 'Laporan_AMI_' . str_replace(' ', '_', $assignment->target_name) . '.pdf';
         return $pdf->download($fileName);
     }
+
+    /**
+     * Export Daftar Tilik (Checklist AMI) ke DOCX
+     */
+    public function exportDocx($id, \App\Services\ChecklistExportService $exportService)
+    {
+        $assignment = Assignment::with([
+            'standard',
+            'auditor',
+            'assignable',
+            'indicators'
+        ])->findOrFail($id);
+
+        $filePath = $exportService->generateDocx($assignment);
+
+        $fileName = 'Daftar_Tilik_' . str_replace(' ', '_', $assignment->target_name) . '.docx';
+
+        return response()->download($filePath, $fileName)->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Export Temuan Audit AMI (Form AMI-02) ke DOCX
+     */
+    public function exportFindingDocx($id, \App\Services\FindingExportService $exportService)
+    {
+        $assignment = Assignment::with([
+            'standard',
+            'auditor',
+            'assignable',
+        ])->findOrFail($id);
+
+        // Generate temuan audit
+        $filePath = $exportService->generateDocx($assignment);
+
+        // Download docx dan pastikan terhapus otomatis setelah di-send
+        $fileName = 'Temuan_Audit_' . str_replace(' ', '_', $assignment->target_name) . '.docx';
+        return response()->download($filePath, $fileName)->deleteFileAfterSend(true);
+    }
 }

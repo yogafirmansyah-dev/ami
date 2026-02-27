@@ -1,8 +1,10 @@
 <script setup>
 import { ref, watch, computed } from 'vue';
-import { router, useForm, Link, Head, usePage } from '@inertiajs/vue3';
+import { router, Link, Head, usePage } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import AssignmentFormModal from './AssignmentFormModal.vue';
 import debounce from 'lodash/debounce';
+import TModal from '@/Components/Modal/TModal.vue';
 
 const props = defineProps({
     assignments: Object,
@@ -54,33 +56,9 @@ watch(search, () => reloadData());
 
 /* --- FORM PENUGASAN --- */
 const showModal = ref(false);
-const form = useForm({
-    period_id: '',
-    master_standard_id: '',
-    auditor_id: '',
-    assignable_type: 'prodi',
-    assignable_id: '',
-});
-
-const submit = () => {
-    form.post(route('admin.assignments.store'), {
-        onSuccess: () => {
-            showModal.value = false;
-            form.reset();
-        },
-        onError: () => {
-            usePage().props.flash.toastr = {
-                type: 'error',
-                content: 'Terdapat kesalahan validasi, mohon cek kembali form anda.',
-                position: 'top-right'
-            };
-        }
-    });
-};
 
 const closeModal = () => {
     showModal.value = false;
-    form.reset();
 };
 
 /* --- UI HELPERS --- */
@@ -101,9 +79,24 @@ const getStageConfig = (stage) => {
     return configs[stage] || { label: stage.toUpperCase(), color: 'text-slate-400 bg-slate-50 dark:bg-slate-800 border-slate-100 dark:border-slate-700' };
 };
 
-const deleteData = (id) => {
-    if (confirm('Menghapus penugasan akan menghapus seluruh data snapshot indikator di dalamnya. Lanjutkan?')) {
-        router.delete(route('admin.assignments.destroy', id));
+/* --- DELETE KUSTOM MODAL --- */
+const showDeleteModal = ref(false);
+const itemToDelete = ref(null);
+
+const confirmDeleteAction = (id) => {
+    itemToDelete.value = id;
+    showDeleteModal.value = true;
+};
+
+const executeDelete = () => {
+    if (itemToDelete.value) {
+        router.delete(route('admin.assignments.destroy', itemToDelete.value), {
+            preserveScroll: true,
+            onSuccess: () => {
+                showDeleteModal.value = false;
+                itemToDelete.value = null;
+            }
+        });
     }
 };
 </script>
@@ -147,7 +140,13 @@ const deleteData = (id) => {
                             </div>
                         </span>
                         <input v-model="search" type="text" placeholder="Cari unit, auditor, atau standar..."
-                            class="w-full pl-11 pr-4 py-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400/50 font-bold text-xs rounded-2xl border-none outline-none focus:outline-none ring-1 ring-slate-200 dark:ring-slate-800 dark:focus:ring-rose-500/50 focus:ring-4 focus:ring-rose-500/50 shadow-sm focus:shadow-md transition-[ring,background-color,box-shadow] duration-300 ease-out focus:bg-slate-50 dark:focus:bg-slate-800/80" />
+                            class="w-full pl-11 pr-10 py-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400/50 font-bold text-xs rounded-2xl border-none outline-none focus:outline-none ring-1 ring-slate-200 dark:ring-slate-800 dark:focus:ring-rose-500/50 focus:ring-4 focus:ring-rose-500/50 shadow-sm focus:shadow-md transition-[ring,background-color,box-shadow] duration-300 ease-out focus:bg-slate-50 dark:focus:bg-slate-800/80" />
+
+                        <!-- Clear Search Button -->
+                        <button v-if="search" @click="search = ''"
+                            class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-rose-500 transition-colors">
+                            <icon icon="fa-solid fa-times-circle" class="w-4 h-4"></icon>
+                        </button>
                     </div>
 
                     <div
@@ -225,12 +224,73 @@ const deleteData = (id) => {
                                     </div>
                                 </th>
                                 <th class="p-6 md:p-8 text-center">
-                                    Current Progress
+                                    Progres Saat Ini
                                 </th>
-                                <th class="p-6 md:p-8 pr-8 text-right">Actions</th>
+                                <th class="p-6 md:p-8 pr-8 text-right">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-50 dark:divide-slate-800/20">
+                        <tbody v-if="isSearching" class="divide-y divide-slate-50 dark:divide-slate-800/20">
+                            <!-- SKELETON LOADER -->
+                            <tr v-for="i in 5" :key="'skeleton-' + i"
+                                class="animate-pulse bg-white/30 dark:bg-slate-900/10">
+                                <td class="p-6 md:p-8">
+                                    <div class="h-6 w-8 bg-slate-200 dark:bg-slate-700/50 rounded-md"></div>
+                                </td>
+                                <td class="p-6 md:p-8 pl-8">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 bg-slate-200 dark:bg-slate-700/50 rounded-xl"></div>
+                                        <div class="space-y-2">
+                                            <div class="h-4 w-32 bg-slate-200 dark:bg-slate-700/50 rounded"></div>
+                                            <div class="h-3 w-16 bg-slate-200 dark:bg-slate-700/50 rounded"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="p-6 md:p-8">
+                                    <div class="h-4 w-24 mx-auto bg-slate-200 dark:bg-slate-700/50 rounded"></div>
+                                </td>
+                                <td class="p-6 md:p-8 flex justify-center items-center">
+                                    <div class="h-8 w-24 bg-slate-200 dark:bg-slate-700/50 rounded-lg"></div>
+                                </td>
+                                <td class="p-6 md:p-8">
+                                    <div class="h-4 w-32 mx-auto bg-slate-200 dark:bg-slate-700/50 rounded"></div>
+                                </td>
+                                <td class="p-6 md:p-8">
+                                    <div class="h-8 w-16 ml-auto bg-slate-200 dark:bg-slate-700/50 rounded-lg"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tbody v-else-if="assignments.data.length === 0"
+                            class="divide-y divide-slate-50 dark:divide-slate-800/20">
+                            <!-- EMPTY STATE -->
+                            <tr>
+                                <td colspan="6" class="p-16 text-center">
+                                    <div
+                                        class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500">
+                                        <div
+                                            class="w-24 h-24 mb-6 rounded-full bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center border border-slate-100 dark:border-slate-800 shadow-inner">
+                                            <icon icon="fa-solid fa-folder-open"
+                                                class="text-4xl text-slate-300 dark:text-slate-600" />
+                                        </div>
+                                        <h3
+                                            class="text-lg font-black text-slate-700 dark:text-slate-300 mb-2 uppercase tracking-widest">
+                                            Belum Ada Penugasan</h3>
+                                        <p class="text-xs max-w-sm text-center leading-relaxed font-bold">
+                                            Data penugasan belum dibuat atau pencarian Anda tidak cocok dengan data
+                                            manapun.
+                                        </p>
+                                        <button v-if="search" @click="search = ''"
+                                            class="mt-8 px-6 py-3 bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 text-xs font-black tracking-widest uppercase rounded-xl transition hover:bg-rose-100 dark:hover:bg-rose-500/20 active:scale-95 shadow-sm">
+                                            Bersihkan Pencarian
+                                        </button>
+                                        <button v-else @click="showModal = true"
+                                            class="mt-8 px-6 py-3 bg-slate-900 text-white dark:bg-rose-600 text-xs font-black uppercase tracking-widest rounded-xl transition shadow-lg active:scale-95 hover:shadow-xl hover:bg-slate-800 dark:hover:bg-rose-500">
+                                            Buat Penugasan Baru
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tbody v-else class="divide-y divide-slate-50 dark:divide-slate-800/20">
                             <tr v-for="item in assignments.data" :key="item.id"
                                 class="group hover:bg-white/50 dark:hover:bg-white/[0.02] transition-colors duration-300">
                                 <td class="p-6 md:p-8">
@@ -285,9 +345,11 @@ const deleteData = (id) => {
                                         </div>
                                         <span class="tracking-tight">{{ item.auditor.name }}</span>
                                     </div>
-                                    <span v-else
-                                        class="text-[9px] font-black text-slate-300 dark:text-slate-700 uppercase tracking-widest animate-pulse">Belum
-                                        Diplot</span>
+                                    <div v-else
+                                        class="inline-flex items-center gap-1 text-[9px] font-black text-amber-500 bg-amber-50 dark:bg-amber-500/10 px-2 py-1 rounded-md border border-amber-200 dark:border-amber-500/20 uppercase tracking-widest animate-pulse">
+                                        <icon icon="fa-solid fa-exclamation-triangle" class="text-[8px]"></icon>
+                                        Belum Diplot
+                                    </div>
                                 </td>
 
                                 <td class="p-6 md:p-8">
@@ -311,11 +373,11 @@ const deleteData = (id) => {
 
                                 <td class="p-6 md:p-8 pr-8 text-right">
                                     <div class="flex justify-end items-center gap-2">
-                                        <Link :href="route('admin.assignments.show', item.id)"
+                                        <Link :href="route('admin.assignments.show', item.id)" title="Detail Penugasan"
                                             class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-600 dark:hover:text-rose-500 rounded-xl transition-all shadow-sm hover:shadow-md hover:border-rose-200 dark:hover:border-rose-900/50 active:scale-95">
                                             <icon icon="fa-solid fa-arrow-right" class="text-[10px]" />
                                         </Link>
-                                        <button @click="deleteData(item.id)"
+                                        <button @click="confirmDeleteAction(item.id)" title="Hapus Penugasan"
                                             class="w-8 h-8 flex items-center justify-center text-slate-300 dark:text-slate-700 hover:text-rose-600 dark:hover:text-rose-500 transition-all hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl active:scale-95">
                                             <icon icon="fa-solid fa-trash" class="text-[10px]" />
                                         </button>
@@ -352,103 +414,36 @@ const deleteData = (id) => {
             </div>
         </div>
 
-        <transition name="modal">
-            <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-6">
-                <div class="fixed inset-0 bg-slate-900/80 dark:bg-slate-950/90 backdrop-blur-md transition-opacity"
-                    @click="closeModal"></div>
+        <AssignmentFormModal v-model:show="showModal" @closed="closeModal" :periods="periods" :standards="standards"
+            :auditors="auditors" :prodis="prodis" :faculties="faculties" />
 
-                <div
-                    class="relative bg-white dark:bg-slate-900 w-full max-w-2xl rounded-[4rem] shadow-2xl overflow-hidden border border-white/10 animate-in zoom-in duration-300">
+        <!-- Delete Confirmation Modal -->
+        <TModal v-model="showDeleteModal" :radius="5" :closeButton="false">
+            <template #content>
+                <div class="text-center p-4">
                     <div
-                        class="p-12 border-b border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-                        <h3
-                            class="text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tighter italic leading-none">
-                            Inisialisasi AMI
-                        </h3>
-                        <p class="text-[10px] font-bold text-rose-500 uppercase tracking-[0.3em] mt-4 italic">
-                            Buat Penugasan & Snapshot Data Baru
-                        </p>
+                        class="w-20 h-20 rounded-full bg-rose-50 dark:bg-rose-500/10 text-rose-500 mx-auto flex items-center justify-center mb-6 shadow-inner">
+                        <icon icon="fa-solid fa-trash-can" class="text-3xl animate-bounce" />
                     </div>
-
-                    <form @submit.prevent="submit" class="p-12 space-y-10 bg-white dark:bg-slate-900">
-                        <div class="grid grid-cols-2 gap-8">
-                            <div class="space-y-3">
-                                <label
-                                    class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Periode
-                                    AMI</label>
-                                <select name="period_id" v-model="form.period_id"
-                                    class="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl text-xs font-bold text-slate-900 dark:text-white shadow-inner focus:ring-2 focus:ring-rose-500/20">
-                                    <option value="" disabled>Pilih Periode</option>
-                                    <option v-for="p in periods" :key="p.id" :value="p.id">{{ p.name }}</option>
-                                </select>
-                                <p v-if="form.errors.period_id" class="text-xs text-rose-500 font-bold ml-1">{{
-                                    form.errors.period_id }}</p>
-                            </div>
-                            <div class="space-y-3">
-                                <label
-                                    class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Standard
-                                    Mutu</label>
-                                <select name="master_standard_id" v-model="form.master_standard_id"
-                                    class="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl text-xs font-bold text-slate-900 dark:text-white shadow-inner focus:ring-2 focus:ring-rose-500/20">
-                                    <option value="" disabled>Pilih Instrumen</option>
-                                    <option v-for="s in standards" :key="s.id" :value="s.id">{{ s.name }}</option>
-                                </select>
-                                <p v-if="form.errors.master_standard_id" class="text-xs text-rose-500 font-bold ml-1">{{
-                                    form.errors.master_standard_id }}</p>
-                            </div>
-                        </div>
-
-                        <div class="space-y-3">
-                            <label
-                                class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Kategori
-                                Unit</label>
-                            <div class="flex p-1.5 bg-slate-100 dark:bg-slate-800 rounded-3xl">
-                                <button type="button" @click="form.assignable_type = 'prodi'"
-                                    :class="form.assignable_type === 'prodi' ? 'bg-white dark:bg-slate-700 text-rose-600 shadow-sm' : 'text-slate-400 dark:text-slate-500'"
-                                    class="flex-1 py-4 text-[10px] font-black uppercase rounded-2xl transition-all duration-300">Program
-                                    Studi</button>
-                                <button type="button" @click="form.assignable_type = 'faculty'"
-                                    :class="form.assignable_type === 'faculty' ? 'bg-white dark:bg-slate-700 text-rose-600 shadow-sm' : 'text-slate-400 dark:text-slate-500'"
-                                    class="flex-1 py-4 text-[10px] font-black uppercase rounded-2xl transition-all duration-300">Fakultas</button>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-8">
-                            <div class="space-y-3">
-                                <label
-                                    class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Target
-                                    Unit</label>
-                                <select name="assignable_id" v-model="form.assignable_id"
-                                    class="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl text-xs font-bold text-slate-900 dark:text-white shadow-inner focus:ring-2 focus:ring-rose-500/20">
-                                    <option value="" disabled>Unit Kerja</option>
-                                    <option v-for="item in (form.assignable_type === 'prodi' ? prodis : faculties)"
-                                        :key="item.id" :value="item.id">{{ item.name }}</option>
-                                </select>
-                                <p v-if="form.errors.assignable_id" class="text-xs text-rose-500 font-bold ml-1">{{
-                                    form.errors.assignable_id }}</p>
-                            </div>
-                            <div class="space-y-3">
-                                <label
-                                    class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Lead
-                                    Auditor</label>
-                                <select name="auditor_id" v-model="form.auditor_id"
-                                    class="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl text-xs font-bold text-slate-900 dark:text-white shadow-inner focus:ring-2 focus:ring-rose-500/20">
-                                    <option value="" disabled>Pilih Auditor</option>
-                                    <option v-for="a in auditors" :key="a.id" :value="a.id">{{ a.name }}</option>
-                                </select>
-                                <p v-if="form.errors.auditor_id" class="text-xs text-rose-500 font-bold ml-1">{{
-                                    form.errors.auditor_id }}</p>
-                            </div>
-                        </div>
-
-                        <button type="submit" :disabled="form.processing"
-                            class="w-full py-6 bg-slate-900 dark:bg-rose-600 text-white text-xs font-black uppercase tracking-[0.3em] rounded-[2.5rem] shadow-2xl hover:bg-rose-600 dark:hover:bg-rose-500 transition-all active:scale-95 disabled:opacity-50">
-                            {{ form.processing ? 'Membuat Snapshots...' : 'Inisialisasi Siklus AMI Baru' }}
+                    <h3 class="text-2xl font-black text-slate-900 dark:text-white mb-3 tracking-tighter italic">
+                        Konfirmasi Hapus</h3>
+                    <p class="text-xs font-bold text-slate-500 dark:text-slate-400 mb-8 max-w-xs mx-auto">
+                        Menghapus penugasan akan menghapus seluruh data snapshot indikator di dalamnya secara permanen.
+                        Apakah Anda yakin?
+                    </p>
+                    <div class="flex justify-center gap-3">
+                        <button @click="showDeleteModal = false"
+                            class="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 rounded-xl transition active:scale-95">
+                            Batal
                         </button>
-                    </form>
+                        <button @click="executeDelete"
+                            class="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white bg-rose-500 hover:bg-rose-600 rounded-xl transition shadow-lg shadow-rose-500/30 active:scale-95">
+                            Ya, Hapus
+                        </button>
+                    </div>
                 </div>
-            </div>
-        </transition>
+            </template>
+        </TModal>
     </AppLayout>
 </template>
 

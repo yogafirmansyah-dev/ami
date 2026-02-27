@@ -3,6 +3,7 @@ import { ref, watch } from 'vue';
 import { router, useForm, Head, usePage, Link } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import debounce from 'lodash/debounce';
+import TModal from '@/Components/Modal/TModal.vue';
 
 
 
@@ -12,10 +13,12 @@ const props = defineProps({
 });
 
 /* --- LOGIKA PENCARIAN & PAGINATION --- */
+const isSearching = ref(false);
 const search = ref(props.filters.search);
 const perPage = ref(props.filters.per_page || 10);
 
 watch(search, debounce((value) => {
+    isSearching.value = true;
     router.get(route('admin.periods.index'), {
         search: value,
         per_page: perPage.value,
@@ -23,7 +26,8 @@ watch(search, debounce((value) => {
         direction: props.filters.direction
     }, {
         preserveState: true,
-        replace: true
+        replace: true,
+        onFinish: () => isSearching.value = false
     });
 }, 500));
 
@@ -122,10 +126,23 @@ const submit = () => {
     }
 };
 
-const deleteData = (id) => {
-    if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
-        router.delete(route('admin.periods.destroy', id), {
-            preserveScroll: true
+/* --- DELETE KUSTOM MODAL --- */
+const showDeleteModal = ref(false);
+const itemToDelete = ref(null);
+
+const confirmDeleteAction = (id) => {
+    itemToDelete.value = id;
+    showDeleteModal.value = true;
+};
+
+const executeDelete = () => {
+    if (itemToDelete.value) {
+        router.delete(route('admin.periods.destroy', itemToDelete.value), {
+            preserveScroll: true,
+            onSuccess: () => {
+                showDeleteModal.value = false;
+                itemToDelete.value = null;
+            }
         });
     }
 };
@@ -195,11 +212,20 @@ const getStatusTimeline = (item) => {
                 <div class="flex items-stretch gap-3 w-full max-w-2xl">
                     <div class="relative flex-1 group">
                         <span class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                            <icon icon="fa-solid fa-magnifying-glass"
+                            <icon v-if="!isSearching" icon="fa-solid fa-magnifying-glass"
                                 class="text-slate-400 text-xs group-focus-within:text-rose-500 transition-colors" />
+                            <div v-else
+                                class="h-4 w-4 border-2 border-rose-500 border-t-transparent rounded-full animate-spin">
+                            </div>
                         </span>
                         <input v-model="search" type="text" placeholder="Cari periode..."
-                            class="w-full pl-11 pr-4 py-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400/50 font-bold text-xs rounded-2xl border-none outline-none focus:outline-none ring-1 ring-slate-200 dark:ring-slate-800 dark:focus:ring-rose-500/50 focus:ring-4 focus:ring-rose-500/50 shadow-sm focus:shadow-md transition-[ring,background-color,box-shadow] duration-300 ease-out focus:bg-slate-50 dark:focus:bg-slate-800/80" />
+                            class="w-full pl-11 pr-10 py-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400/50 font-bold text-xs rounded-2xl border-none outline-none focus:outline-none ring-1 ring-slate-200 dark:ring-slate-800 dark:focus:ring-rose-500/50 focus:ring-4 focus:ring-rose-500/50 shadow-sm focus:shadow-md transition-[ring,background-color,box-shadow] duration-300 ease-out focus:bg-slate-50 dark:focus:bg-slate-800/80" />
+
+                        <!-- Clear Search Button -->
+                        <button v-if="search" @click="search = ''"
+                            class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-rose-500 transition-colors">
+                            <icon icon="fa-solid fa-times-circle" class="w-4 h-4"></icon>
+                        </button>
                     </div>
 
                     <div
@@ -261,7 +287,66 @@ const getStatusTimeline = (item) => {
                                 <th class="p-6 md:p-8 text-center min-w-28">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-50 dark:divide-slate-800/20">
+                        <tbody v-if="isSearching" class="divide-y divide-slate-50 dark:divide-slate-800/20">
+                            <!-- SKELETON LOADER -->
+                            <tr v-for="i in 5" :key="'skeleton-' + i"
+                                class="animate-pulse bg-white/30 dark:bg-slate-900/10">
+                                <td class="p-6 md:p-8 pl-8 text-center">
+                                    <div class="h-6 w-8 mx-auto bg-slate-200 dark:bg-slate-700/50 rounded-md"></div>
+                                </td>
+                                <td class="p-6 md:p-8 pl-8">
+                                    <div class="h-5 w-48 bg-slate-200 dark:bg-slate-700/50 rounded mt-1 mb-2"></div>
+                                    <div class="h-3 w-24 bg-slate-200 dark:bg-slate-700/50 rounded"></div>
+                                </td>
+                                <td class="p-6 md:p-8 text-center">
+                                    <div class="h-6 w-24 mx-auto bg-slate-200 dark:bg-slate-700/50 rounded-lg"></div>
+                                </td>
+                                <td class="p-6 md:p-8">
+                                    <div
+                                        class="h-10 w-full max-w-md mx-auto bg-slate-200 dark:bg-slate-700/50 rounded-lg">
+                                    </div>
+                                </td>
+                                <td class="p-6 md:p-8 text-center">
+                                    <div class="flex justify-center gap-2">
+                                        <div class="h-8 w-8 bg-slate-200 dark:bg-slate-700/50 rounded-xl"></div>
+                                        <div class="h-8 w-8 bg-slate-200 dark:bg-slate-700/50 rounded-xl"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tbody v-else-if="periods.data.length === 0"
+                            class="divide-y divide-slate-50 dark:divide-slate-800/20">
+                            <!-- EMPTY STATE -->
+                            <tr>
+                                <td colspan="5" class="p-16 text-center">
+                                    <div
+                                        class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500">
+                                        <div
+                                            class="w-24 h-24 mb-6 rounded-full bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center border border-slate-100 dark:border-slate-800 shadow-inner">
+                                            <icon icon="fa-solid fa-clock-rotate-left"
+                                                class="text-4xl text-slate-300 dark:text-slate-600" />
+                                        </div>
+                                        <h3
+                                            class="text-lg font-black text-slate-700 dark:text-slate-300 mb-2 uppercase tracking-widest">
+                                            Belum Ada Periode</h3>
+                                        <p class="text-xs max-w-sm text-center leading-relaxed font-bold">
+                                            Sistem belum mencatat data periode/siklus AMI apa pun atau pencarian Anda
+                                            tidak
+                                            memiliki kecocokan data.
+                                        </p>
+                                        <button v-if="search" @click="search = ''"
+                                            class="mt-8 px-6 py-3 bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 text-xs font-black tracking-widest uppercase rounded-xl transition hover:bg-rose-100 dark:hover:bg-rose-500/20 active:scale-95 shadow-sm">
+                                            Bersihkan Pencarian
+                                        </button>
+                                        <button v-else @click="openCreateModal"
+                                            class="mt-8 px-6 py-3 bg-slate-900 text-white dark:bg-rose-600 text-xs font-black uppercase tracking-widest rounded-xl transition shadow-lg active:scale-95 hover:shadow-xl hover:bg-slate-800 dark:hover:bg-rose-500">
+                                            Tambahkan Siklus Baru
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tbody v-else class="divide-y divide-slate-50 dark:divide-slate-800/20">
                             <tr v-for="item in periods.data" :key="item.id"
                                 class="group hover:bg-white/50 dark:hover:bg-white/[0.02] transition-colors duration-300">
                                 <td class="p-6 md:p-8 pl-8 text-center">
@@ -329,20 +414,10 @@ const getStatusTimeline = (item) => {
                                             class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-blue-600 rounded-xl transition-all shadow-sm hover:shadow-md hover:border-blue-200 active:scale-95">
                                             <icon icon="fa-solid fa-pencil" class="text-[10px]" />
                                         </button>
-                                        <button @click="deleteData(item.id)"
+                                        <button @click="confirmDeleteAction(item.id)"
                                             class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-600 rounded-xl transition-all shadow-sm hover:shadow-md hover:border-rose-200 active:scale-95">
                                             <icon icon="fa-solid fa-trash" class="text-[10px]" />
                                         </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr v-if="periods.data.length === 0">
-                                <td colspan="4" class="p-12 text-center">
-                                    <div class="flex flex-col items-center justify-center opacity-50">
-                                        <icon icon="fa-solid fa-clock-rotate-left"
-                                            class="text-4xl text-slate-300 dark:text-slate-600 mb-4" />
-                                        <p class="text-xs font-black text-slate-400 uppercase tracking-widest italic">
-                                            Data periode tidak ditemukan</p>
                                     </div>
                                 </td>
                             </tr>
@@ -492,6 +567,35 @@ const getStatusTimeline = (item) => {
             </div>
 
         </div>
+
+        <!-- Delete Confirmation Modal -->
+        <TModal v-model="showDeleteModal" :radius="5" :closeButton="false">
+            <template #content>
+                <div class="text-center p-4">
+                    <div
+                        class="w-20 h-20 rounded-full bg-rose-50 dark:bg-rose-500/10 text-rose-500 mx-auto flex items-center justify-center mb-6 shadow-inner">
+                        <icon icon="fa-solid fa-trash-can" class="text-3xl animate-bounce" />
+                    </div>
+                    <h3 class="text-2xl font-black text-slate-900 dark:text-white mb-3 tracking-tighter italic">
+                        Konfirmasi Hapus</h3>
+                    <p class="text-xs font-bold text-slate-500 dark:text-slate-400 mb-8 max-w-xs mx-auto">
+                        Tindakan ini akan menghapus siklus periode ini secara permanen. Rincian timeline dan data yang
+                        terhubung mungkin akan dihapus. Lanjutkan?
+                    </p>
+                    <div class="flex justify-center gap-3">
+                        <button @click="showDeleteModal = false"
+                            class="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 rounded-xl transition active:scale-95">
+                            Batal
+                        </button>
+                        <button @click="executeDelete"
+                            class="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white bg-rose-500 hover:bg-rose-600 rounded-xl transition shadow-lg shadow-rose-500/30 active:scale-95">
+                            Ya, Hapus
+                        </button>
+                    </div>
+                </div>
+            </template>
+        </TModal>
+
     </AppLayout>
 </template>
 

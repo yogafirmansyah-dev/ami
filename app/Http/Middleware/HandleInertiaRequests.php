@@ -58,6 +58,7 @@ final class HandleInertiaRequests extends Middleware
         return [
             'message' => fn() => Session::get('message'),
             'toastr' => fn() => Session::get('toastr'),
+            'import_errors' => fn() => Session::get('import_errors'),
         ];
     }
 

@@ -24,42 +24,76 @@ const getStageColor = (stage) => {
     <div class="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
 
         <!-- Hero Section -->
-        <div class="relative bg-gradient-to-r from-indigo-900 to-indigo-800 rounded-3xl p-8 overflow-hidden shadow-2xl">
+        <div
+            class="relative bg-gradient-to-r from-indigo-900 to-indigo-800 rounded-[2.5rem] p-10 overflow-hidden shadow-2xl border border-white/10 group">
             <div
-                class="absolute top-0 right-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2">
+                class="absolute top-0 right-0 w-80 h-80 bg-indigo-500/20 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3 group-hover:bg-indigo-500/30 transition-colors duration-1000">
             </div>
             <div class="relative z-10 text-white">
-                <h2 class="text-3xl font-black tracking-tight mb-2">Portal Auditee</h2>
-                <p class="text-indigo-200">Pantau progres audit unit kerja dan temuan Anda.</p>
+                <div class="flex items-center gap-3 mb-6 opacity-80">
+                    <span class="w-8 h-[2px] bg-indigo-400"></span>
+                    <h3 class="text-xs font-bold uppercase tracking-[0.2em] italic">Auditee Portal</h3>
+                </div>
+                <h2
+                    class="text-4xl md:text-5xl font-black tracking-tighter mb-4 italic leading-none bg-clip-text bg-gradient-to-r from-indigo-300 to-indigo-100">
+                    Portal <span class="text-transparent">Auditee</span>
+                </h2>
+                <p class="text-indigo-200">Pantau progres evaluasi audit unit kerja dan temuan Anda secara real-time.
+                </p>
             </div>
         </div>
 
         <!-- Stats Grid -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div
-                class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Audit Aktif</p>
-                <div class="flex items-center justify-between">
-                    <p class="text-3xl font-black text-slate-800 dark:text-white">{{ stats.active_assignments || 0 }}
-                    </p>
-                    <icon icon="fa-solid fa-folder-open" class="text-2xl text-indigo-400 opacity-80" />
+                class="bg-white/60 dark:bg-slate-900/60 backdrop-blur-3xl p-8 rounded-[2rem] border border-white/40 dark:border-slate-800 shadow-sm flex items-center justify-between hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden relative group">
+                <div
+                    class="absolute -right-6 -top-6 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/20 transition-colors">
+                </div>
+                <div class="relative z-10">
+                    <p
+                        class="text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] mb-2">
+                        Audit Aktif</p>
+                    <p class="text-4xl font-black text-slate-800 dark:text-white mt-1 italic tracking-tighter">{{
+                        stats.active_assignments || 0 }}</p>
+                </div>
+                <div
+                    class="p-5 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform relative z-10">
+                    <icon icon="fa-solid fa-folder-open" class="text-2xl" />
                 </div>
             </div>
             <div
-                class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Total Indikator</p>
-                <div class="flex items-center justify-between">
-                    <p class="text-3xl font-black text-slate-800 dark:text-white">{{ stats.total_indicators || 0 }}</p>
-                    <icon icon="fa-solid fa-list-ol" class="text-2xl text-indigo-400 opacity-80" />
+                class="bg-white/60 dark:bg-slate-900/60 backdrop-blur-3xl p-8 rounded-[2rem] border border-white/40 dark:border-slate-800 shadow-sm flex items-center justify-between hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden relative group">
+                <div
+                    class="absolute -right-6 -top-6 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl group-hover:bg-rose-500/20 transition-colors">
+                </div>
+                <div class="relative z-10">
+                    <p
+                        class="text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] mb-2">
+                        Total Indikator</p>
+                    <p class="text-4xl font-black text-slate-800 dark:text-white mt-1 italic tracking-tighter">{{
+                        stats.total_indicators || 0 }}</p>
+                </div>
+                <div
+                    class="p-5 rounded-2xl bg-rose-50 dark:bg-rose-500/10 text-rose-500 shadow-lg shadow-rose-500/20 group-hover:scale-110 transition-transform relative z-10">
+                    <icon icon="fa-solid fa-list-ol" class="text-2xl" />
                 </div>
             </div>
             <div
-                class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Bukti Terunggah</p>
-                <div class="flex items-center justify-between">
-                    <p class="text-3xl font-black text-slate-800 dark:text-white">{{ stats.completed_evidence || 0 }}
-                    </p>
-                    <icon icon="fa-solid fa-file-arrow-up" class="text-2xl text-indigo-400 opacity-80" />
+                class="bg-white/60 dark:bg-slate-900/60 backdrop-blur-3xl p-8 rounded-[2rem] border border-white/40 dark:border-slate-800 shadow-sm flex items-center justify-between hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden relative group">
+                <div
+                    class="absolute -right-6 -top-6 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-colors">
+                </div>
+                <div class="relative z-10">
+                    <p
+                        class="text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] mb-2">
+                        Bukti Terunggah</p>
+                    <p class="text-4xl font-black text-slate-800 dark:text-white mt-1 italic tracking-tighter">{{
+                        stats.completed_evidence || 0 }}</p>
+                </div>
+                <div
+                    class="p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform relative z-10">
+                    <icon icon="fa-solid fa-file-arrow-up" class="text-2xl" />
                 </div>
             </div>
         </div>
@@ -71,68 +105,84 @@ const getStageColor = (stage) => {
             </h3>
 
             <div v-if="myAssignments.length === 0"
-                class="bg-white dark:bg-slate-900 border border-dashed border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center">
-                <icon icon="fa-solid fa-bell-slash" class="text-4xl text-slate-300 mb-4" />
-                <h4 class="text-slate-800 dark:text-white font-bold">Tidak Ada Audit Aktif</h4>
-                <p class="text-sm text-slate-500 mt-2">Unit kerja Anda saat ini tidak dijadwalkan untuk audit.</p>
+                class="bg-white/60 dark:bg-slate-900/60 backdrop-blur-3xl rounded-[2.5rem] border border-white/40 dark:border-slate-800 shadow-sm p-16 text-center">
+                <div
+                    class="w-24 h-24 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner ring-1 ring-slate-200 dark:ring-slate-700">
+                    <icon icon="fa-solid fa-bell-slash" class="text-4xl text-slate-400 animate-pulse" />
+                </div>
+                <h4 class="text-lg font-black text-slate-800 dark:text-white mb-2">Tidak Ada Audit Aktif</h4>
+                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium max-w-sm mx-auto">Unit kerja Anda saat
+                    ini tidak dijadwalkan untuk proses audit.</p>
             </div>
 
             <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Link v-for="item in myAssignments" :key="item.id" :href="route('auditee.assignments.show', item.id)"
-                    class="group bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
+                    class="group bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[2.5rem] border border-white/60 dark:border-slate-800 shadow-sm hover:shadow-[0_20px_40px_-15px_rgba(99,102,241,0.3)] hover:-translate-y-2 transition-all duration-500 overflow-hidden relative flex flex-col justify-between">
 
-                    <div class="flex justify-between items-start mb-6 relative z-10">
-                        <span
-                            :class="['text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-wider', getStageColor(item.current_stage)]">
-                            {{ item.current_stage?.replace('_', ' ') }}
-                        </span>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                            {{ item.period_name }}
-                        </span>
-                    </div>
-
-                    <div class="mb-8 relative z-10">
-                        <h4
-                            class="font-black text-2xl text-slate-800 dark:text-white leading-tight mb-2 group-hover:text-indigo-500 transition-colors">
-                            {{ item.target_name }}
-                        </h4>
-                        <div class="flex items-center gap-2">
+                    <div class="p-8">
+                        <div class="flex justify-between items-start mb-6 relative z-10">
                             <span
-                                class="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[9px] font-bold text-slate-500 uppercase">
-                                {{ item.target_type }}
+                                :class="['px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] shadow-sm', getStageColor(item.current_stage)]">
+                                {{ item.current_stage?.replace('_', ' ') }}
                             </span>
-                            <span class="text-sm text-slate-400 font-medium truncate">{{ item.standard_name }}</span>
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                {{ item.period_name }}
+                            </span>
                         </div>
-                    </div>
 
-                    <!-- Progress Section -->
-                    <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 mb-6 relative z-10">
-                        <div class="flex justify-between items-end mb-2">
-                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wide">Kesiapan</span>
-                            <span class="text-xs font-black text-indigo-500">{{ Math.round(item.upload_progress)
-                                }}%</span>
+                        <div class="mb-8 relative z-10">
+                            <h4
+                                class="font-black text-2xl text-slate-800 dark:text-white leading-tight mb-3 group-hover:text-indigo-500 transition-colors italic">
+                                {{ item.target_name }}
+                            </h4>
+                            <div class="flex items-center gap-3">
+                                <span
+                                    class="px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800/50 text-[9px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 dark:border-slate-700">
+                                    {{ item.target_type }}
+                                </span>
+                                <span class="text-sm text-slate-500 dark:text-slate-400 font-medium truncate">{{
+                                    item.standard_name }}</span>
+                            </div>
                         </div>
-                        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
-                            <div class="bg-indigo-500 h-full rounded-full transition-all duration-1000"
-                                :style="{ width: item.upload_progress + '%' }"></div>
-                        </div>
-                        <div class="flex justify-between mt-2 text-[10px] text-slate-400 font-bold uppercase">
-                            <span>{{ item.uploaded_indicators }} Diunggah</span>
-                            <span>Target: {{ item.total_indicators }}</span>
+
+                        <!-- Progress Section -->
+                        <div
+                            class="bg-slate-50/50 dark:bg-slate-800/30 rounded-3xl p-6 mb-6 relative z-10 border border-slate-100 dark:border-slate-800">
+                            <div class="flex justify-between items-end mb-3">
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kesiapan
+                                    Dokumen</span>
+                                <span class="text-sm font-black text-indigo-500 italic">{{
+                                    Math.round(item.upload_progress) }}%</span>
+                            </div>
+                            <div
+                                class="w-full bg-slate-200/50 dark:bg-slate-700/50 rounded-full h-2.5 overflow-hidden shadow-inner relative">
+                                <div class="bg-gradient-to-r from-indigo-400 to-indigo-600 h-full rounded-full transition-all duration-1000 relative"
+                                    :style="{ width: item.upload_progress + '%' }">
+                                    <div
+                                        class="absolute right-0 top-0 w-3 h-full bg-white/50 blur-[2px] shadow-[0_0_10px_rgba(255,255,255,0.8)]">
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                class="flex justify-between mt-3 text-[9px] text-slate-400 font-black uppercase tracking-widest">
+                                <span>{{ item.uploaded_indicators }} Diunggah</span>
+                                <span>Target: {{ item.total_indicators }}</span>
+                            </div>
                         </div>
                     </div>
 
                     <div
-                        class="flex items-center justify-between relative z-10 pt-4 border-t border-slate-100 dark:border-slate-800">
+                        class="px-8 py-5 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center group-hover:bg-indigo-50/30 dark:group-hover:bg-indigo-500/5 transition-colors">
                         <div class="flex flex-col">
-                            <span class="text-[9px] font-bold text-slate-400 uppercase">Auditor</span>
-                            <span class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ item.auditor_name
-                                }}</span>
+                            <span
+                                class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Auditor</span>
+                            <span class="text-xs font-bold text-slate-700 dark:text-slate-300 italic">{{
+                                item.auditor_name }}</span>
                         </div>
                         <span
-                            class="text-xs font-black uppercase tracking-widest text-indigo-500 group-hover:gap-2 flex items-center gap-1 transition-all">
-                            Detail
-                            <icon icon="fa-solid fa-arrow-right" />
+                            class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:gap-3 flex items-center gap-2 transition-all">
+                            Area Kerja
+                            <icon icon="fa-solid fa-arrow-right" class="text-sm" />
                         </span>
                     </div>
                 </Link>

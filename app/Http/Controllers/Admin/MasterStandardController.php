@@ -103,4 +103,51 @@ class MasterStandardController extends Controller
         Session::flash('toastr', ['type' => 'gradient-red-to-pink', 'content' => 'Standar dihapus.']);
         return back();
     }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:4096',
+        ]);
+
+        try {
+            $import = new \App\Imports\StandardsImport;
+            \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('file'));
+
+            $failures = $import->getFailures();
+
+            // Log import to Audit History
+            AuditHistory::create([
+                'user_id' => auth()->id(),
+                'historable_type' => MasterStandard::class,
+                'historable_id' => 0, // 0 for bulk operations
+                'stage' => 'master_setup',
+                'action' => 'import_standards_batch',
+                'new_values' => ['message' => 'Bulk Import Standar dan Indikator dieksekusi.'],
+            ]);
+
+            if (!empty($failures)) {
+                $errorMsgs = array_slice($failures, 0, 50);
+                Session::flash('toastr', ['type' => 'solid-yellow', 'content' => 'Beberapa data gagal direkam. Silakan periksa detailnya.']);
+                return redirect()->back()->with('import_errors', $errorMsgs);
+            }
+
+            Session::flash('toastr', ['type' => 'solid-blue', 'content' => 'Standar dan Indikator berhasil diimpor.']);
+            return redirect()->back();
+
+        } catch (\Exception $e) {
+            Session::flash('toastr', ['type' => 'solid-red', 'content' => 'Gagal mengimpor data: ' . $e->getMessage()]);
+            return redirect()->back();
+        }
+    }
+
+    public function export()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\StandardsExport(false), 'data_standar_mutu.xlsx');
+    }
+
+    public function downloadTemplate()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\StandardsExport(true), 'template_standar_mutu.xlsx');
+    }
 }

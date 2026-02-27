@@ -178,6 +178,17 @@ const canUploadBA = (type) => {
     if (type === 'end_report') return stage === 'reporting' || stage === 'finished';
     return false;
 };
+
+/* --- LOGIKA DOWNLOAD TEMPLATE BA --- */
+const downloadTemplate = () => {
+    // Buat elemen link virtual agar tidak memperlihatkan url di UI HTML 
+    const link = document.createElement('a');
+    link.href = '/doc/BERITA ACARA AMI.doc';
+    link.download = 'BERITA_ACARA_AMI.doc';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};
 </script>
 
 <template>
@@ -397,11 +408,16 @@ const canUploadBA = (type) => {
                                     {{ doc.label }}
                                 </p>
                                 <div class="flex flex-col gap-2">
-                                    <button v-if="!(doc.files?.length || doc.file) && canUploadBA(doc.type)"
-                                        @click="openDocUpload(doc)"
-                                        class="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-[9px] font-bold uppercase hover:bg-emerald-600 transition-colors">
-                                        Unggah
-                                    </button>
+                                    <template v-if="!(doc.files?.length || doc.file) && canUploadBA(doc.type)">
+                                        <button @click="openDocUpload(doc)"
+                                            class="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-[9px] font-bold uppercase hover:bg-emerald-600 transition-colors w-full">
+                                            Unggah
+                                        </button>
+                                        <button type="button" @click="downloadTemplate"
+                                            class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg text-[9px] font-bold uppercase hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors w-full text-center border border-slate-200 dark:border-slate-700 hover:border-emerald-200 dark:hover:border-emerald-800">
+                                            Unduh Template
+                                        </button>
+                                    </template>
                                     <template v-else-if="doc.files && doc.files.length > 0">
                                         <a :href="route('files.official.show', doc.files[0].id)" target="_blank"
                                             class="text-[10px] font-bold text-emerald-600 hover:underline flex items-center gap-1">
@@ -423,6 +439,21 @@ const canUploadBA = (type) => {
             </div>
 
             <!-- Search Bar & Filters -->
+            <div class="max-w-7xl mx-auto flex flex-col sm:flex-row gap-3 items-stretch justify-end mb-2">
+                <a :href="route('shared.export.docx', assignment.id)"
+                    class="group flex-1 sm:flex-none px-6 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-wider text-blue-600 hover:text-white dark:text-blue-400 transition-all bg-white hover:bg-blue-600 dark:bg-slate-900 dark:hover:bg-blue-500 active:scale-95 border border-slate-200/60 dark:border-slate-800 shadow-sm hover:shadow-md hover:shadow-blue-500/20 flex items-center justify-center">
+                    <icon icon="fa-solid fa-file-word"
+                        class="mr-2 opacity-70 transition-transform group-hover:scale-110 group-hover:opacity-100" />
+                    Daftar Tilik
+                </a>
+                <a :href="route('shared.export.docx.finding', assignment.id)"
+                    class="group flex-1 sm:flex-none px-6 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-wider text-amber-600 hover:text-white dark:text-amber-400 transition-all bg-white hover:bg-amber-600 dark:bg-slate-900 dark:hover:bg-amber-500 active:scale-95 border border-slate-200/60 dark:border-slate-800 shadow-sm hover:shadow-md hover:shadow-amber-500/20 flex items-center justify-center">
+                    <icon icon="fa-solid fa-file-signature"
+                        class="mr-2 opacity-70 transition-transform group-hover:scale-110 group-hover:opacity-100" />
+                    Form Temuan
+                </a>
+            </div>
+
             <div class="max-w-7xl mx-auto flex flex-row gap-3 items-stretch">
                 <div class="relative flex-1 group/search">
                     <div
@@ -613,14 +644,14 @@ const canUploadBA = (type) => {
                                 <div class="flex justify-between items-start mb-2">
                                     <p class="text-[10px] font-black text-emerald-600 uppercase tracking-widest">{{
                                         log.created_at
-                                        }}</p>
+                                    }}</p>
                                     <span
                                         class="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-lg text-[8px] font-black uppercase tracking-widest">{{
                                             log.user?.role }}</span>
                                 </div>
                                 <p class="text-sm font-black text-slate-900 dark:text-white tracking-tighter">{{
                                     log.user?.name
-                                    }}</p>
+                                }}</p>
                                 <div
                                     class="mt-4 p-6 bg-slate-50 dark:bg-slate-800 rounded-[2.5rem] border border-slate-50 dark:border-slate-700 shadow-inner">
                                     <p

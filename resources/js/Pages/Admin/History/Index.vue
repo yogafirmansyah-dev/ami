@@ -10,11 +10,17 @@ const props = defineProps({
 });
 
 /* --- SEARCH & FILTER LOGIC --- */
+const isSearching = ref(false);
 const search = ref(props.filters.search);
 const perPage = ref(props.filters.per_page || 10);
 
 watch(search, debounce((value) => {
-    router.get(route('admin.history.index'), { search: value, per_page: perPage.value }, { preserveState: true, replace: true });
+    isSearching.value = true;
+    router.get(route('admin.history.index'), { search: value, per_page: perPage.value }, {
+        preserveState: true,
+        replace: true,
+        onFinish: () => isSearching.value = false
+    });
 }, 500));
 
 watch(perPage, (value) => {
@@ -70,11 +76,20 @@ const formatEntityName = (type) => {
                 <div class="flex items-stretch gap-3 w-full max-w-2xl">
                     <div class="relative flex-1 group">
                         <span class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                            <icon icon="fa-solid fa-magnifying-glass"
+                            <icon v-if="!isSearching" icon="fa-solid fa-magnifying-glass"
                                 class="text-slate-400 text-xs group-focus-within:text-rose-500 transition-colors" />
+                            <div v-else
+                                class="h-4 w-4 border-2 border-rose-500 border-t-transparent rounded-full animate-spin">
+                            </div>
                         </span>
                         <input v-model="search" type="text" placeholder="Cari aktor, aksi, atau entitas..."
-                            class="w-full pl-11 pr-4 py-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400/50 font-bold text-xs rounded-2xl border-none outline-none focus:outline-none ring-1 ring-slate-200 dark:ring-slate-800 dark:focus:ring-rose-500/50 focus:ring-4 focus:ring-rose-500/50 shadow-sm focus:shadow-md transition-[ring,background-color,box-shadow] duration-300 ease-out focus:bg-slate-50 dark:focus:bg-slate-800/80" />
+                            class="w-full pl-11 pr-10 py-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400/50 font-bold text-xs rounded-2xl border-none outline-none focus:outline-none ring-1 ring-slate-200 dark:ring-slate-800 dark:focus:ring-rose-500/50 focus:ring-4 focus:ring-rose-500/50 shadow-sm focus:shadow-md transition-[ring,background-color,box-shadow] duration-300 ease-out focus:bg-slate-50 dark:focus:bg-slate-800/80" />
+
+                        <!-- Clear Search Button -->
+                        <button v-if="search" @click="search = ''"
+                            class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-rose-500 transition-colors">
+                            <icon icon="fa-solid fa-times-circle" class="w-4 h-4"></icon>
+                        </button>
                     </div>
 
                     <div
@@ -141,7 +156,68 @@ const formatEntityName = (type) => {
                                 <th class="p-6 md:p-8 text-center">Detail</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-50 dark:divide-slate-800/20">
+                        <tbody v-if="isSearching" class="divide-y divide-slate-50 dark:divide-slate-800/20">
+                            <!-- SKELETON LOADER -->
+                            <tr v-for="i in 5" :key="'skeleton-' + i"
+                                class="animate-pulse bg-white/30 dark:bg-slate-900/10">
+                                <td class="p-6 md:p-8 pl-8 text-center">
+                                    <div class="h-6 w-8 mx-auto bg-slate-200 dark:bg-slate-700/50 rounded-md"></div>
+                                </td>
+                                <td class="p-6 md:p-8 pl-8">
+                                    <div class="h-4 w-32 bg-slate-200 dark:bg-slate-700/50 rounded"></div>
+                                </td>
+                                <td class="p-6 md:p-8">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700/50"></div>
+                                        <div class="flex flex-col gap-1">
+                                            <div class="h-4 w-24 bg-slate-200 dark:bg-slate-700/50 rounded"></div>
+                                            <div class="h-3 w-16 bg-slate-200 dark:bg-slate-700/50 rounded"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="p-6 md:p-8">
+                                    <div class="h-6 w-16 bg-slate-200 dark:bg-slate-700/50 rounded-md"></div>
+                                </td>
+                                <td class="p-6 md:p-8">
+                                    <div class="flex flex-col gap-1">
+                                        <div class="h-4 w-32 bg-slate-200 dark:bg-slate-700/50 rounded"></div>
+                                        <div class="h-3 w-20 bg-slate-200 dark:bg-slate-700/50 rounded"></div>
+                                    </div>
+                                </td>
+                                <td class="p-6 md:p-8 text-center">
+                                    <div class="h-8 w-8 mx-auto bg-slate-200 dark:bg-slate-700/50 rounded-xl"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tbody v-else-if="histories.data.length === 0"
+                            class="divide-y divide-slate-50 dark:divide-slate-800/20">
+                            <!-- EMPTY STATE -->
+                            <tr>
+                                <td colspan="6" class="p-16 text-center">
+                                    <div
+                                        class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500">
+                                        <div
+                                            class="w-24 h-24 mb-6 rounded-full bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center border border-slate-100 dark:border-slate-800 shadow-inner">
+                                            <icon icon="fa-solid fa-clock-rotate-left"
+                                                class="text-4xl text-slate-300 dark:text-slate-600" />
+                                        </div>
+                                        <h3
+                                            class="text-lg font-black text-slate-700 dark:text-slate-300 mb-2 uppercase tracking-widest">
+                                            Belum Ada Riwayat</h3>
+                                        <p class="text-xs max-w-sm text-center leading-relaxed font-bold">
+                                            Log aktivitas sistem masih kosong atau pencarian Anda tidak memiliki
+                                            kecocokan
+                                            riwayat.
+                                        </p>
+                                        <button v-if="search" @click="search = ''"
+                                            class="mt-8 px-6 py-3 bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 text-xs font-black tracking-widest uppercase rounded-xl transition hover:bg-rose-100 dark:hover:bg-rose-500/20 active:scale-95 shadow-sm">
+                                            Bersihkan Pencarian
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tbody v-else class="divide-y divide-slate-50 dark:divide-slate-800/20">
                             <tr v-for="log in histories.data" :key="log.id"
                                 class="group hover:bg-white/50 dark:hover:bg-white/[0.02] transition-colors duration-300">
                                 <td class="p-6 md:p-8 text-center">
@@ -166,7 +242,7 @@ const formatEntityName = (type) => {
                                                     log.user?.name || 'Unknown' }}</span>
                                             <span class="text-[9px] text-slate-400 uppercase tracking-tighter">{{
                                                 log.user?.role || '-'
-                                                }}</span>
+                                            }}</span>
                                         </div>
                                     </div>
                                 </td>
@@ -190,16 +266,6 @@ const formatEntityName = (type) => {
                                         class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-600 rounded-xl transition-all shadow-sm hover:shadow-md hover:border-rose-200 active:scale-95">
                                         <icon icon="fa-solid fa-eye" class="text-[10px]" />
                                     </button>
-                                </td>
-                            </tr>
-                            <tr v-if="histories.data.length === 0">
-                                <td colspan="5" class="p-12 text-center">
-                                    <div class="flex flex-col items-center justify-center opacity-50">
-                                        <icon icon="fa-solid fa-clock-rotate-left"
-                                            class="text-4xl text-slate-300 dark:text-slate-600 mb-4" />
-                                        <p class="text-xs font-black text-slate-400 uppercase tracking-widest italic">
-                                            Belum ada log aktivitas terekam</p>
-                                    </div>
                                 </td>
                             </tr>
                         </tbody>

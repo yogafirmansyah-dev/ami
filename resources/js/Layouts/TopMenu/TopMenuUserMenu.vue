@@ -22,8 +22,9 @@
         </template>
 
         <template #default>
-            <div class="top-menu-dropdown-content-wrapper-transparent min-w-[15rem] bg-white">
-                <div class="p-4 border-b dark:bg-slate-800/50">
+            <div
+                class="top-menu-dropdown-content-wrapper-transparent min-w-[15rem] bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl backdrop-saturate-150 border border-white/50 dark:border-slate-700/50 shadow-2xl">
+                <div class="p-4 border-b dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-800/50">
                     <p class="text-xs text-slate-500 italic">Login sebagai:</p>
                     <p class="text-sm font-bold text-slate-700 dark:text-slate-200">
                         {{ $page.props.user_extra.unit_name }}

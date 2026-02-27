@@ -1,0 +1,96 @@
+import { mergeProps, withCtx, unref, createTextVNode, toDisplayString, createVNode, useSSRContext } from "vue";
+import { ssrRenderComponent, ssrInterpolate } from "vue/server-renderer";
+import { Link } from "@inertiajs/vue3";
+import { T as TLogin } from "./TLogin-Bl0yPbEw.js";
+import { T as TLogo } from "./TLogo-BWZcVjQx.js";
+import { useI18n } from "vue-i18n";
+import { a as authTranslates } from "./displayLanguage-Bjc1nzNS.js";
+import "./windowSizeCalculator-EVN4qZjG.js";
+import "./_plugin-vue_export-helper-1tPrXgE0.js";
+import "@vuelidate/core";
+import "@vuelidate/validators";
+import "./darkMode-BsM-iRm5.js";
+import "pinia";
+import "./authScreenDesigns-Bu_GjJbX.js";
+import "./TInputGroup-D2FkHKt4.js";
+import "./TInputText-CyR_XUuU.js";
+import "@vueuse/core";
+import "./TDropdown-BaNvbUUI.js";
+import "./TTooltip-DEROIMmS.js";
+import "./TInputCheckBox-C-d63rT9.js";
+import "./TCheckIcon-CWPVq9Ck.js";
+import "@fortawesome/fontawesome-svg-core";
+import "@fortawesome/free-solid-svg-icons";
+const _sfc_main = {
+  __name: "Login",
+  __ssrInlineRender: true,
+  props: {
+    canResetPassword: Boolean,
+    status: String
+  },
+  setup(__props) {
+    const { t } = useI18n({
+      inheritLocale: true,
+      messages: authTranslates
+    });
+    return (_ctx, _push, _parent, _attrs) => {
+      _push(ssrRenderComponent(TLogin, mergeProps({
+        canResetPassword: __props.canResetPassword,
+        status: __props.status
+      }, _attrs), {
+        logo: withCtx((_, _push2, _parent2, _scopeId) => {
+          if (_push2) {
+            _push2(ssrRenderComponent(unref(Link), { href: "/" }, {
+              default: withCtx((_2, _push3, _parent3, _scopeId2) => {
+                if (_push3) {
+                  _push3(`<div class="flex flex-col justify-center items-center w-full"${_scopeId2}>`);
+                  _push3(ssrRenderComponent(TLogo, { class: "w-12 h-12" }, null, _parent3, _scopeId2));
+                  _push3(`<span class="text-3xl"${_scopeId2}>AMI</span></div>`);
+                } else {
+                  return [
+                    createVNode("div", { class: "flex flex-col justify-center items-center w-full" }, [
+                      createVNode(TLogo, { class: "w-12 h-12" }),
+                      createVNode("span", { class: "text-3xl" }, "AMI")
+                    ])
+                  ];
+                }
+              }),
+              _: 1
+            }, _parent2, _scopeId));
+          } else {
+            return [
+              createVNode(unref(Link), { href: "/" }, {
+                default: withCtx(() => [
+                  createVNode("div", { class: "flex flex-col justify-center items-center w-full" }, [
+                    createVNode(TLogo, { class: "w-12 h-12" }),
+                    createVNode("span", { class: "text-3xl" }, "AMI")
+                  ])
+                ]),
+                _: 1
+              })
+            ];
+          }
+        }),
+        greeting: withCtx((_, _push2, _parent2, _scopeId) => {
+          if (_push2) {
+            _push2(`${ssrInterpolate(unref(t)("loginGreeting"))}`);
+          } else {
+            return [
+              createTextVNode(toDisplayString(unref(t)("loginGreeting")), 1)
+            ];
+          }
+        }),
+        _: 1
+      }, _parent));
+    };
+  }
+};
+const _sfc_setup = _sfc_main.setup;
+_sfc_main.setup = (props, ctx) => {
+  const ssrContext = useSSRContext();
+  (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("resources/js/Pages/Samples/Examples/Auth/Login.vue");
+  return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
+};
+export {
+  _sfc_main as default
+};

@@ -139,7 +139,7 @@ const handleMouseLeave = () => {
                 <div
                     class="flex items-center gap-1.5 p-1.5 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 bg-white/50 dark:bg-slate-900/50 backdrop-blur-3xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.1)] w-full lg:w-auto">
                     <button @click="moveStage('prev')" :disabled="isTransitioning"
-                        class="group flex-1 lg:flex-none px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider text-slate-300 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-all bg-transparent hover:bg-white/80 dark:hover:bg-slate-800 active:scale-95 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 disabled:opacity-30">
+                        class="group flex-1 lg:flex-none px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider text-slate-300 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-all bg-transparent hover:bg-white/80 dark:hover:bg-slate-800 active:scale-95 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 disabled:opacity-30 flex items-center justify-center">
                         <icon icon="fa-solid fa-arrow-left"
                             class="mr-1.5 transition-transform group-hover:-translate-x-0.5" />
                         Kembali
@@ -183,8 +183,15 @@ const handleMouseLeave = () => {
                                             transform: 'translate(-50%, -100%)'
                                         }" class="z-[10000] pointer-events-none">
                                             <div
-                                                class="bg-slate-900/95 dark:bg-rose-600/95 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-xl border border-white/10 relative">
-                                                Tahap: {{ stageStats[activeIndex].label }}
+                                                class="bg-slate-900/95 dark:bg-rose-600/95 backdrop-blur-md text-white px-3 py-2 rounded-xl border border-white/10 relative text-center flex flex-col items-center">
+                                                <div
+                                                    class="text-[10px] font-black uppercase tracking-widest leading-tight">
+                                                    Tahap: {{ stageStats[activeIndex].label }}</div>
+                                                <div v-if="stageStats[activeIndex].start_date || stageStats[activeIndex].end_date"
+                                                    class="text-[8px] font-bold text-slate-300 dark:text-rose-200 mt-1 uppercase tracking-widest bg-white/10 px-2 py-0.5 rounded-md">
+                                                    {{ stageStats[activeIndex].start_date || '?' }} - {{
+                                                        stageStats[activeIndex].end_date || '?' }}
+                                                </div>
                                                 <div
                                                     class="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-slate-900/95 dark:border-t-rose-600/95">
                                                 </div>
@@ -206,19 +213,20 @@ const handleMouseLeave = () => {
                                     <icon v-if="stageStats.findIndex(x => x.stage === assignment.current_stage) > index"
                                         icon="fa-solid fa-check" class="text-xs" />
                                     <span v-else class="text-xs italic">{{ index + 1 }}</span>
-                                    <div
-                                        class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent -translate-x-full group-hover/step:translate-x-full transition-transform duration-1000">
-                                    </div>
 
                                 </div>
 
                                 <!-- Label Bawah -->
-                                <span :class="[
-                                    'hidden md:block text-xs font-black uppercase tracking-tighter text-center max-w-[70px] leading-tight transition-all duration-300 transform group-hover/step:scale-105',
-                                    assignment.current_stage === s.stage ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400 dark:text-slate-600'
-                                ]">
-                                    {{ s.label }}
-                                </span>
+                                <div
+                                    class="hidden md:flex flex-col items-center gap-1 transition-all duration-300 transform group-hover/step:scale-105 group-hover/step:-translate-y-0.5 mt-2">
+                                    <span :class="[
+                                        'text-xs font-black uppercase tracking-tighter text-center max-w-[80px] leading-tight',
+                                        assignment.current_stage === s.stage ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400 dark:text-slate-600'
+                                    ]">
+                                        {{ s.label }}
+                                    </span>
+
+                                </div>
                             </div>
 
                             <!-- Garis Penghubung -->
@@ -358,6 +366,21 @@ const handleMouseLeave = () => {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div class="max-w-7xl mx-auto flex flex-col sm:flex-row gap-3 items-stretch justify-end mb-2">
+                <a :href="route('shared.export.docx', assignment.id)"
+                    class="group flex-1 sm:flex-none px-6 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-wider text-blue-600 hover:text-white dark:text-blue-400 transition-all bg-white hover:bg-blue-600 dark:bg-slate-900 dark:hover:bg-blue-500 active:scale-95 border border-slate-200/60 dark:border-slate-800 shadow-sm hover:shadow-md hover:shadow-blue-500/20 flex items-center justify-center">
+                    <icon icon="fa-solid fa-file-word"
+                        class="mr-2 opacity-70 transition-transform group-hover:scale-110 group-hover:opacity-100" />
+                    Daftar Tilik
+                </a>
+                <a :href="route('shared.export.docx.finding', assignment.id)"
+                    class="group flex-1 sm:flex-none px-6 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-wider text-amber-600 hover:text-white dark:text-amber-400 transition-all bg-white hover:bg-amber-600 dark:bg-slate-900 dark:hover:bg-amber-500 active:scale-95 border border-slate-200/60 dark:border-slate-800 shadow-sm hover:shadow-md hover:shadow-amber-500/20 flex items-center justify-center">
+                    <icon icon="fa-solid fa-file-signature"
+                        class="mr-2 opacity-70 transition-transform group-hover:scale-110 group-hover:opacity-100" />
+                    Form Temuan
+                </a>
             </div>
 
             <div class="max-w-7xl mx-auto flex flex-row gap-3 items-stretch">

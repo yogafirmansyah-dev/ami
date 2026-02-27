@@ -29,7 +29,7 @@ class UserController extends Controller
 
         return Inertia::render('Admin/User/Index', [
             'users' => $user,
-            'prodis' => Prodi::all(['id', 'name']),
+            'prodis' => Prodi::all(['id', 'name', 'faculty_id']),
             'faculties' => Faculty::all(['id', 'name']),
             'roles' => ['admin', 'auditor', 'auditee'],
             'filters' => $filters
@@ -48,7 +48,11 @@ class UserController extends Controller
             ],
             'prodi_id' => [
                 'nullable',
-                'exists:prodis,id',
+                Rule::exists('prodis', 'id')->where(function ($query) use ($request) {
+                    if ($request->filled('faculty_id')) {
+                        $query->where('faculty_id', $request->faculty_id);
+                    }
+                }),
                 Rule::requiredIf($request->role === UserRole::AUDITEE->value && !$request->faculty_id)
             ],
             'faculty_id' => [
@@ -91,7 +95,11 @@ class UserController extends Controller
             ],
             'prodi_id' => [
                 'nullable',
-                'exists:prodis,id',
+                Rule::exists('prodis', 'id')->where(function ($query) use ($request) {
+                    if ($request->filled('faculty_id')) {
+                        $query->where('faculty_id', $request->faculty_id);
+                    }
+                }),
                 Rule::requiredIf($request->role === UserRole::AUDITEE->value && !$request->faculty_id)
             ],
             'faculty_id' => [
@@ -190,5 +198,59 @@ class UserController extends Controller
         ]);
 
         return back();
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:4096',
+        ]);
+
+        try {
+            $import = new \App\Imports\UsersImport;
+            \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('file'));
+
+            if ($import->failures()->isNotEmpty()) {
+                $errorMsgs = [];
+                foreach ($import->failures() as $failure) {
+                    $row = $failure->row();
+                    $error = $failure->errors()[0] ?? 'Kesalahan tidak diketahui';
+
+                    // Supaya pesannya rapi dan bisa dikelompokkan:
+                    $errorMsgs[] = "Baris {$row}: {$error}";
+                }
+
+                // Mencegah array error yang kelewat besar menyesakkan session
+                $errorMsgs = array_slice($errorMsgs, 0, 50);
+
+                Session::flash('toastr', ['type' => 'solid-yellow', 'content' => 'Beberapa data gagal diimpor. Silakan periksa detailnya.']);
+                return redirect()->back()->with('import_errors', $errorMsgs);
+            }
+
+            Session::flash('toastr', ['type' => 'solid-blue', 'content' => 'Seluruh data pengguna berhasil diimpor tanpa error.']);
+            return redirect()->back();
+
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            // Jaga-jaga jika ada exception yang terlempar secara tidak sengaja
+            $failures = $e->failures();
+            $errorMsgs = [];
+            foreach ($failures as $failure) {
+                $errorMsgs[] = "Baris {$failure->row()}: {$failure->errors()[0]}";
+            }
+            return redirect()->back()->with('import_errors', array_slice($errorMsgs, 0, 50));
+        } catch (\Exception $e) {
+            Session::flash('toastr', ['type' => 'solid-red', 'content' => 'Gagal mengimpor data: ' . $e->getMessage()]);
+            return redirect()->back();
+        }
+    }
+
+    public function export()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\UsersExport(false), 'users_export.xlsx');
+    }
+
+    public function downloadTemplate()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\UsersExport(true), 'users_template.xlsx');
     }
 }

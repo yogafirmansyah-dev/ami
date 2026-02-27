@@ -80,7 +80,7 @@ watch(breakpoints.value, (newValue) => {
 </script>
 
 <template>
-    <div class="abay-main-menu bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-r border-white/20 dark:border-slate-800 h-screen transition-all duration-300 z-50 flex flex-col items-center py-4"
+    <div class="abay-main-menu bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl backdrop-saturate-150 border-r border-white/50 dark:border-white/5 shadow-[8px_0_30px_rgba(0,0,0,0.05)] dark:shadow-none h-screen transition-all duration-300 z-50 flex flex-col items-center py-4"
         :class="{
             'w-20': menuStatus === 'opened',
             'hidden': menuStatus === 'hidden',
@@ -171,7 +171,7 @@ watch(breakpoints.value, (newValue) => {
     <!-- Sub Links -->
 
     <div v-if="activeMainLink[0]"
-        class="absolute z-10 flex h-full flex-col px-4 -mb-4 w-56 bg-slate-50/90 dark:bg-slate-900/95 backdrop-blur-xl border-r border-white/20 dark:border-slate-800 text-slate-600 dark:text-slate-300"
+        class="absolute z-10 flex h-full flex-col px-4 -mb-4 w-56 bg-white/60 dark:bg-slate-900/60 backdrop-blur-3xl backdrop-saturate-150 border-r border-white/50 dark:border-white/5 shadow-2xl dark:shadow-none text-slate-600 dark:text-slate-300"
         :class="[
             showSubMenu ? 'left-28' : '-left-56',
             'transition-all duration-700'
@@ -236,7 +236,7 @@ watch(breakpoints.value, (newValue) => {
 
                     <!--Third Menu-->
                     <div v-if="activeMainLink[2] === subLink.id"
-                        class="absolute z-50 top-10 -left-0 flex flex-col p-2 space-y-2 w-full rounded-md bg-white bg-slate-700 bg-opacity-[.97]">
+                        class="absolute z-50 top-10 -left-0 flex flex-col p-2 space-y-2 w-full rounded-md bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border border-white/50 dark:border-white/10 shadow-xl">
                         <template v-for="thirdLink in subLink.links" :key="thirdLink">
 
                             <div class="p-1 rounded-md" :class="[

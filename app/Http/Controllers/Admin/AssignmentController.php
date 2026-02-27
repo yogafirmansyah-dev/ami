@@ -7,8 +7,8 @@ use App\Enums\AuditStage;
 use App\Http\Controllers\Controller;
 use App\Models\{Assignment, AssignmentIndicator, AuditHistory, Faculty, Prodi, Period, MasterStandard, User};
 use App\Services\AssignmentService;
+use App\Http\Requests\StoreAssignmentRequest;
 use Carbon\Carbon;
-use Gate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -34,6 +34,7 @@ class AssignmentController extends Controller
         $perPage = $request->input('per_page', 10);
 
         $assignments = Assignment::with(['assignable', 'period', 'standard', 'auditor'])
+            ->withCount(['indicators', 'scoredIndicators']) // Tambahkan baris ini
             ->search($request->search) // Memanggil scope kustom di model
             ->sort($request->sort_field ?? 'standard_name', $request->direction ?? 'asc') // Memanggil scope dari trait
             ->paginate($perPage)
@@ -46,68 +47,33 @@ class AssignmentController extends Controller
             'prodis' => Prodi::all(['id', 'name']),
             'faculties' => Faculty::all(['id', 'name']),
             'periods' => Period::where('is_active', true)->get(['id', 'name']),
-            'standards' => MasterStandard::all(['id', 'name']),
+            'standards' => MasterStandard::all(['id', 'name', 'target_type']),
             'auditors' => User::where('role', 'auditor')->get(['id', 'name'])
         ]);
     }
 
     /**
-     * Membuat penugasan & Snapshot Indikator via Service
+     * Membuat penugasan & Snapshot Indikator via Service (Simplified via Form Request)
      */
-    public function store(Request $request)
+    public function store(StoreAssignmentRequest $request)
     {
-        $validated = $request->validate([
-            'period_id' => 'required|exists:periods,id',
-            'master_standard_id' => 'required|exists:master_standards,id',
-            'assignable_type' => 'required|in:prodi,faculty', // Alias untuk mempermudah UI
-            'assignable_id' => [
-                'required',
-                'integer',
-                // Validasi apakah ID ada di tabel yang benar
-                function ($attribute, $value, $fail) use ($request) {
-                    $table = $request->assignable_type === 'prodi' ? 'prodis' : 'faculties';
-                    if (!\DB::table($table)->where('id', $value)->exists()) {
-                        $fail("Unit yang dipilih tidak valid.");
-                    }
-                },
-                // Validasi Unik
-                Rule::unique('assignments')->where(function ($q) use ($request) {
-                    return $q->where('period_id', $request->period_id)
-                        ->where('assignable_type', $request->assignable_type === 'prodi'
-                            ? Prodi::class
-                            : Faculty::class)
-                        ->where('assignable_id', $request->assignable_id)
-                        ->where('auditor_id', $request->auditor_id)
-                        ->where('master_standard_id', $request->master_standard_id);
-                })
-            ],
-            'auditor_id' => 'required|exists:users,id',
-        ]);
-
         // Cek apakah Standar cocok dengan Target Unit
-        $standard = MasterStandard::findOrFail($validated['master_standard_id']);
-        if ($standard->target_type->value !== $validated['assignable_type']) {
+        $standard = MasterStandard::findOrFail($request->master_standard_id);
+        if ($standard->target_type->value !== $request->assignable_type) {
             session()->flash('error', 'Standar ini tidak cocok untuk tipe unit yang dipilih.');
             return back();
         }
 
-        $assignableTypeMap = [
-            'prodi' => Prodi::class,
-            'faculty' => Faculty::class,
-        ];
-
-        $validated['assignable_type'] = $assignableTypeMap[$validated['assignable_type']];
-
-
-        $assignment = DB::transaction(function () use ($validated) {
-            return $this->assignmentService->createAssignment($validated);
+        $assignment = DB::transaction(function () use ($request) {
+            // Kita dapatkan data yang sudah dimapping dari method bantuan di FormRequest
+            return $this->assignmentService->createAssignment($request->mappedData());
         });
-
 
         Session::flash('toastr', [
             'type' => 'gradient-green-to-emerald',
             'content' => 'Penugasan AMI berhasil dibuat.'
         ]);
+
         return redirect()->route('admin.assignments.show', $assignment->id);
     }
 
@@ -144,20 +110,32 @@ class AssignmentController extends Controller
             ];
         });
 
+        // Agregasi di tingkat database untuk optimasi performa berlipat dibanding logika hitung koleksi
+        $findingStatsData = DB::table('assignment_indicators')
+            ->select('finding_type', DB::raw('count(*) as total'))
+            ->where('assignment_id', $assignment->id)
+            ->groupBy('finding_type')
+            ->pluck('total', 'finding_type');
+
+        // Kalkulasi Total untuk Persentase
+        $totalAssessed = collect($findingStatsData)->sum(); // Jumlah yang sudah mendapatkan nilai/finding_type
+        $totalAllIndicators = $assignment->indicators()->count();
+
+        $findingStats = [
+            'ks' => $findingStatsData['KS'] ?? 0,
+            'kts' => $findingStatsData['KTS'] ?? 0,
+            'ob' => $findingStatsData['OB'] ?? 0,
+            'unassessed' => $totalAllIndicators - $totalAssessed,
+            'total_indicators' => $totalAllIndicators,
+        ];
+
         return Inertia::render('Admin/Assignment/Show', [
             'assignment' => $assignment,
             'groupedDocuments' => $groupedDocuments,
             'indicators' => $indicators,
             'filters' => $filters,
-            // Tambahkan statistik untuk progress bar di UI
-            'stageStats' => Assignment::stageBreakdown(),
-            'findingStats' => [
-                'ks' => $assignment->indicators()->where('finding_type', 'KS')->count(),
-                'kts' => $assignment->indicators()->where('finding_type', 'KTS')->count(),
-                'ob' => $assignment->indicators()->where('finding_type', 'OB')->count(),
-                'unassessed' => $assignment->indicators()->whereNull('finding_type')->count(),
-                'total_indicators' => $assignment->indicators()->count(),
-            ]
+            'stageStats' => Assignment::stageBreakdown($assignment->period),
+            'findingStats' => $findingStats,
         ]);
     }
 

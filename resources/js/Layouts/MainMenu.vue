@@ -1,9 +1,9 @@
 <script setup>
 /*Functions*/
-import {computed, onMounted, shallowRef} from "vue";
+import { computed, onMounted, shallowRef } from "vue";
 
 /*Sources*/
-import {appConf, mainMenuConf} from "@/config";
+import { appConf, mainMenuConf } from "@/config";
 const props = defineProps({
     design: {
         type: String,
@@ -22,8 +22,8 @@ const menuDesigns = {
 }
 
 /*Validation*/
-const menuDesign = computed(()=>{
-    if(menuDesigns.hasOwnProperty(props.design) && props.design !== ""){
+const menuDesign = computed(() => {
+    if (menuDesigns.hasOwnProperty(props.design) && props.design !== "") {
         return menuDesigns[props.design];
     }
     return menuDesigns[appConf.mainMenuDesign];
@@ -31,13 +31,13 @@ const menuDesign = computed(()=>{
 
 const mainMenu = shallowRef();
 
-onMounted(async ()=>{
+onMounted(async () => {
     /* @vite-ignore */
     await import(`./MainMenu/${menuDesign.value}/MainMenu.vue`)
-        .then((module)=>{
+        .then((module) => {
             mainMenu.value = module.default;
         })
-        .catch((e)=>{
+        .catch((e) => {
             console.error(e);
         })
 })

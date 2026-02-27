@@ -64,7 +64,7 @@ const findingOptions = {
 
         <!-- Welcome Hero -->
         <div
-            class="relative bg-white dark:bg-gradient-to-r dark:from-slate-900 dark:to-slate-800 rounded-3xl p-8 overflow-hidden shadow-xl dark:shadow-2xl border border-slate-100 dark:border-none">
+            class="relative bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl backdrop-saturate-150 rounded-3xl p-8 overflow-hidden shadow-xl dark:shadow-none border border-white/50 dark:border-white/5">
             <div
                 class="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 dark:bg-indigo-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2">
             </div>
@@ -82,8 +82,8 @@ const findingOptions = {
                 { label: 'Audit Aktif', val: stats.active_assignments, icon: 'fa-bolt', color: 'text-rose-400' },
                 { label: 'Selesai', val: stats.completed_assignments, icon: 'fa-flag-checkered', color: 'text-emerald-400' }
             ]" :key="idx"
-                class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-3">
+                class="bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl backdrop-saturate-150 p-6 rounded-2xl border border-white/50 dark:border-white/5 shadow-sm hover:shadow-md transition-shadow group">
+                <div class="flex items-center gap-3 relative z-10">
                     <div class="p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
                         <icon :icon="`fa-solid ${item.icon}`" :class="item.color" />
                     </div>
@@ -99,7 +99,7 @@ const findingOptions = {
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Left: Stages Doughnut -->
             <div
-                class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                class="bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl backdrop-saturate-150 p-6 rounded-3xl border border-white/50 dark:border-white/5 shadow-sm">
                 <h3 class="text-sm font-bold uppercase text-slate-500 mb-6 tracking-widest">Tahapan Audit</h3>
                 <div class="h-64 relative">
                     <Doughnut v-if="stageData.datasets[0].data.some(val => val > 0)" :data="stageData"
@@ -112,7 +112,7 @@ const findingOptions = {
 
             <!-- Right: Findings Bar -->
             <div
-                class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                class="bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl backdrop-saturate-150 p-6 rounded-3xl border border-white/50 dark:border-white/5 shadow-sm">
                 <h3 class="text-sm font-bold uppercase text-slate-500 mb-6 tracking-widest">Sebaran Temuan</h3>
                 <div class="h-64 relative">
                     <Bar v-if="findingData.datasets[0].data.some(val => val > 0)" :data="findingData"
@@ -126,8 +126,8 @@ const findingOptions = {
 
         <!-- Recent Activity Table -->
         <div
-            class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
-            <div class="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
+            class="bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl backdrop-saturate-150 rounded-3xl border border-white/50 dark:border-white/5 shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-white/50 dark:border-white/5 bg-slate-50/20 dark:bg-slate-800/20">
                 <h3 class="text-sm font-bold uppercase text-slate-500 tracking-widest">Aktivitas Terbaru</h3>
             </div>
             <div class="overflow-x-auto">
@@ -167,8 +167,22 @@ const findingOptions = {
                             </td>
                         </tr>
                         <tr v-if="!activities?.length">
-                            <td colspan="4" class="px-6 py-8 text-center text-slate-400 italic">Tidak ada aktivitas
-                                terbaru.</td>
+                            <td colspan="5" class="p-16 text-center">
+                                <div
+                                    class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500">
+                                    <div
+                                        class="w-20 h-20 mb-4 rounded-full bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center border border-slate-100 dark:border-slate-800 shadow-inner">
+                                        <icon icon="fa-solid fa-clock-rotate-left"
+                                            class="text-3xl text-slate-300 dark:text-slate-600" />
+                                    </div>
+                                    <h3
+                                        class="text-[10px] font-black text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-widest">
+                                        Belum Ada Aktivitas</h3>
+                                    <p class="text-[10px] max-w-sm text-center leading-relaxed font-bold">
+                                        Saat ini log riwayat Anda kosong atau belum ada kegiatan tercatat.
+                                    </p>
+                                </div>
+                            </td>
                         </tr>
                     </tbody>
                 </table>

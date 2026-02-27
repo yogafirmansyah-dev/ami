@@ -47,7 +47,11 @@ const handleSort = (field) => {
 };
 
 /* --- DYNAMIC STYLING --- */
-const getScoreColor = (score) => {
+const getScoreColor = (type, score) => {
+    if (type === 'KS') return 'bg-gradient-to-br from-emerald-400 to-emerald-600 text-white border-emerald-500 shadow-lg shadow-emerald-500/30';
+    if (type === 'OB') return 'bg-gradient-to-br from-amber-400 to-amber-600 text-white border-amber-500 shadow-lg shadow-amber-500/30';
+    if (type === 'KTS') return 'bg-gradient-to-br from-rose-500 to-rose-700 text-white border-rose-600 shadow-lg shadow-rose-500/30';
+
     if (!score) return 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700';
     return score >= 3
         ? 'bg-gradient-to-br from-emerald-400 to-emerald-600 text-white border-emerald-500 shadow-lg shadow-emerald-500/30'
@@ -200,7 +204,7 @@ const getFindingBadge = (type) => {
                             <td class="p-6 text-center">
                                 <div class="flex flex-col items-center gap-3">
                                     <div
-                                        :class="['w-14 h-14 flex items-center justify-center rounded-[1.2rem] font-black text-xl border transition-all duration-300 transform group-hover:scale-110 group-hover:-rotate-3', getScoreColor(item.score)]">
+                                        :class="['w-14 h-14 flex items-center justify-center rounded-[1.2rem] font-black text-xl border transition-all duration-300 transform group-hover:scale-110', getScoreColor(item.finding_type, item.score)]">
                                         {{ item.score ?? '-' }}
                                     </div>
                                     <span v-if="item.finding_type"
