@@ -63,13 +63,13 @@ const closeModal = () => {
 
 /* --- UI HELPERS --- */
 const getAuditorProgress = (item) => {
-    if (!item.indicators_count) return 0;
-    return Math.round((item.scored_indicators_count / item.indicators_count) * 100);
+    if (!item.indicators_count || item.indicators_count === 0) return 0;
+    return Math.round(((item.scored_indicators_count || 0) / item.indicators_count) * 100);
 };
 
 const getAuditeeProgress = (item) => {
-    if (!item.indicators_count) return 0;
-    return Math.round((item.filled_indicators_count / item.indicators_count) * 100);
+    if (!item.indicators_count || item.indicators_count === 0) return 0;
+    return Math.round(((item.filled_indicators_count || 0) / item.indicators_count) * 100);
 };
 
 const getStageConfig = (stage) => {
@@ -374,7 +374,7 @@ const executeDelete = () => {
                                                 <span>Pengisian</span>
                                                 <span class="text-indigo-600 dark:text-indigo-400">{{
                                                     getAuditeeProgress(item)
-                                                    }}%</span>
+                                                }}%</span>
                                             </div>
                                             <div
                                                 class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden p-[1px]">
@@ -390,7 +390,7 @@ const executeDelete = () => {
                                                 <span>Penilaian</span>
                                                 <span class="text-rose-600 dark:text-rose-400">{{
                                                     getAuditorProgress(item)
-                                                    }}%</span>
+                                                }}%</span>
                                             </div>
                                             <div
                                                 class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden p-[1px]">
