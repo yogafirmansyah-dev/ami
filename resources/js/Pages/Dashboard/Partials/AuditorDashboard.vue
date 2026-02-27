@@ -71,7 +71,7 @@ const getStageColor = (stage) => {
                         class="text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] mb-2">
                         Menunggu Review</p>
                     <p class="text-4xl font-black text-rose-500 mt-1 italic tracking-tighter">{{ stats.pending_reviews
-                        }}</p>
+                    }}</p>
                 </div>
                 <div
                     class="p-5 rounded-2xl bg-rose-50 dark:bg-rose-500/10 text-rose-500 shadow-lg shadow-rose-500/20 group-hover:scale-110 transition-transform relative z-10">
@@ -147,24 +147,31 @@ const getStageColor = (stage) => {
                                 class="text-xs text-slate-500 dark:text-slate-400 font-medium mb-8 line-clamp-2 leading-relaxed">
                                 {{ item.standard_name }}</p>
 
-                            <div
-                                class="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800 p-4 rounded-2xl">
-                                <span>Kemajuan Evaluasi</span>
-                                <span class="text-emerald-600 dark:text-emerald-400">{{ item.progress }}%</span>
+                            <!-- Progress Auditee -->
+                            <div class="mb-4">
+                                <div
+                                    class="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800 p-3 rounded-t-2xl border-b-0">
+                                    <span>Tingkat Pengisian</span>
+                                    <span class="text-indigo-600 dark:text-indigo-400">{{ item.auditee_progress
+                                        }}%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 overflow-hidden p-[1px]">
+                                    <div class="bg-indigo-500 h-full transition-all duration-1000 shadow-[0_0_8px_rgba(99,102,241,0.4)]"
+                                        :style="{ width: item.auditee_progress + '%' }"></div>
+                                </div>
                             </div>
 
-                            <div class="mt-4 flex gap-3">
+                            <!-- Progress Auditor -->
+                            <div class="mb-4">
                                 <div
-                                    class="flex-1 text-center p-3 rounded-2xl bg-emerald-50/80 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20">
-                                    <span
-                                        class="block text-[9px] uppercase font-black tracking-widest mb-1">Dinilai</span>
-                                    <span class="text-lg font-black italic">{{ item.scored_indicators_count }}</span>
+                                    class="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800 p-3 rounded-b-0 border-b-0">
+                                    <span>Kemajuan Penilaian</span>
+                                    <span class="text-emerald-600 dark:text-emerald-400">{{ item.progress }}%</span>
                                 </div>
                                 <div
-                                    class="flex-1 text-center p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-slate-700">
-                                    <span class="block text-[9px] uppercase font-black tracking-widest mb-1">Total
-                                        Item</span>
-                                    <span class="text-lg font-black italic">{{ item.indicators_count }}</span>
+                                    class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 overflow-hidden p-[1px] rounded-b-2xl">
+                                    <div class="bg-emerald-500 h-full transition-all duration-1000 shadow-[0_0_8px_rgba(16,185,129,0.4)]"
+                                        :style="{ width: item.progress + '%' }"></div>
                                 </div>
                             </div>
                         </div>

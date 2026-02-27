@@ -56,7 +56,7 @@ const _sfc_main = {
           }, {
             default: withCtx((_, _push2, _parent2, _scopeId) => {
               if (_push2) {
-                _push2(`<div class="p-8"${_scopeId}><div class="flex justify-between items-start mb-6 relative z-10"${_scopeId}><span class="${ssrRenderClass(["px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] shadow-sm", getStageColor(item.current_stage)])}"${_scopeId}>${ssrInterpolate(item.current_stage?.replace("_", " "))}</span><span class="text-[10px] font-black text-slate-400 uppercase tracking-widest"${_scopeId}>${ssrInterpolate(item.period_name)}</span></div><div class="mb-8 relative z-10"${_scopeId}><h4 class="font-black text-2xl text-slate-800 dark:text-white leading-tight mb-3 group-hover:text-indigo-500 transition-colors italic"${_scopeId}>${ssrInterpolate(item.target_name)}</h4><div class="flex items-center gap-3"${_scopeId}><span class="px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800/50 text-[9px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 dark:border-slate-700"${_scopeId}>${ssrInterpolate(item.target_type)}</span><span class="text-sm text-slate-500 dark:text-slate-400 font-medium truncate"${_scopeId}>${ssrInterpolate(item.standard_name)}</span></div></div><div class="bg-slate-50/50 dark:bg-slate-800/30 rounded-3xl p-6 mb-6 relative z-10 border border-slate-100 dark:border-slate-800"${_scopeId}><div class="flex justify-between items-end mb-3"${_scopeId}><span class="text-[10px] font-black text-slate-400 uppercase tracking-widest"${_scopeId}>Kesiapan Dokumen</span><span class="text-sm font-black text-indigo-500 italic"${_scopeId}>${ssrInterpolate(Math.round(item.upload_progress))}%</span></div><div class="w-full bg-slate-200/50 dark:bg-slate-700/50 rounded-full h-2.5 overflow-hidden shadow-inner relative"${_scopeId}><div class="bg-gradient-to-r from-indigo-400 to-indigo-600 h-full rounded-full transition-all duration-1000 relative" style="${ssrRenderStyle({ width: item.upload_progress + "%" })}"${_scopeId}><div class="absolute right-0 top-0 w-3 h-full bg-white/50 blur-[2px] shadow-[0_0_10px_rgba(255,255,255,0.8)]"${_scopeId}></div></div></div><div class="flex justify-between mt-3 text-[9px] text-slate-400 font-black uppercase tracking-widest"${_scopeId}><span${_scopeId}>${ssrInterpolate(item.uploaded_indicators)} Diunggah</span><span${_scopeId}>Target: ${ssrInterpolate(item.total_indicators)}</span></div></div></div><div class="px-8 py-5 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center group-hover:bg-indigo-50/30 dark:group-hover:bg-indigo-500/5 transition-colors"${_scopeId}><div class="flex flex-col"${_scopeId}><span class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5"${_scopeId}>Auditor</span><span class="text-xs font-bold text-slate-700 dark:text-slate-300 italic"${_scopeId}>${ssrInterpolate(item.auditor_name)}</span></div><span class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:gap-3 flex items-center gap-2 transition-all"${_scopeId}> Area Kerja `);
+                _push2(`<div class="p-8"${_scopeId}><div class="flex justify-between items-start mb-6 relative z-10"${_scopeId}><span class="${ssrRenderClass(["px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] shadow-sm", getStageColor(item.current_stage)])}"${_scopeId}>${ssrInterpolate(item.current_stage?.replace("_", " "))}</span><span class="text-[10px] font-black text-slate-400 uppercase tracking-widest"${_scopeId}>${ssrInterpolate(item.period_name)}</span></div><div class="mb-8 relative z-10"${_scopeId}><h4 class="font-black text-2xl text-slate-800 dark:text-white leading-tight mb-3 group-hover:text-indigo-500 transition-colors italic"${_scopeId}>${ssrInterpolate(item.target_name)}</h4><div class="flex items-center gap-3"${_scopeId}><span class="px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800/50 text-[9px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 dark:border-slate-700"${_scopeId}>${ssrInterpolate(item.target_type)}</span><span class="text-sm text-slate-500 dark:text-slate-400 font-medium truncate"${_scopeId}>${ssrInterpolate(item.standard_name)}</span></div></div><div class="bg-slate-50/50 dark:bg-slate-800/30 rounded-3xl p-6 mb-6 relative z-10 border border-slate-100 dark:border-slate-800 space-y-4"${_scopeId}><div${_scopeId}><div class="flex justify-between items-end mb-2"${_scopeId}><span class="text-[10px] font-black text-slate-400 uppercase tracking-widest"${_scopeId}>Kesiapan Dokumen</span><span class="text-xs font-black text-indigo-500 italic"${_scopeId}>${ssrInterpolate(Math.round(item.upload_progress))}%</span></div><div class="w-full bg-slate-200/50 dark:bg-slate-700/50 rounded-full h-1.5 overflow-hidden shadow-inner relative"${_scopeId}><div class="bg-gradient-to-r from-indigo-400 to-indigo-600 h-full rounded-full transition-all duration-1000 relative" style="${ssrRenderStyle({ width: item.upload_progress + "%" })}"${_scopeId}><div class="absolute right-0 top-0 w-3 h-full bg-white/50 blur-[2px] shadow-[0_0_10px_rgba(255,255,255,0.8)]"${_scopeId}></div></div></div></div><div${_scopeId}><div class="flex justify-between items-end mb-2"${_scopeId}><span class="text-[10px] font-black text-slate-400 uppercase tracking-widest"${_scopeId}>Progres Penilaian</span><span class="text-xs font-black text-rose-500 italic"${_scopeId}>${ssrInterpolate(Math.round(item.score_progress))}%</span></div><div class="w-full bg-slate-200/50 dark:bg-slate-700/50 rounded-full h-1.5 overflow-hidden shadow-inner relative"${_scopeId}><div class="bg-gradient-to-r from-rose-400 to-rose-600 h-full rounded-full transition-all duration-1000 relative" style="${ssrRenderStyle({ width: item.score_progress + "%" })}"${_scopeId}><div class="absolute right-0 top-0 w-3 h-full bg-white/50 blur-[2px] shadow-[0_0_10px_rgba(255,255,255,0.8)]"${_scopeId}></div></div></div></div></div></div><div class="px-8 py-5 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center group-hover:bg-indigo-50/30 dark:group-hover:bg-indigo-500/5 transition-colors"${_scopeId}><div class="flex flex-col"${_scopeId}><span class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5"${_scopeId}>Auditor</span><span class="text-xs font-bold text-slate-700 dark:text-slate-300 italic"${_scopeId}>${ssrInterpolate(item.auditor_name)}</span></div><span class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:gap-3 flex items-center gap-2 transition-all"${_scopeId}> Area Kerja `);
                 _push2(ssrRenderComponent(_component_icon, {
                   icon: "fa-solid fa-arrow-right",
                   class: "text-sm"
@@ -78,22 +78,34 @@ const _sfc_main = {
                         createVNode("span", { class: "text-sm text-slate-500 dark:text-slate-400 font-medium truncate" }, toDisplayString(item.standard_name), 1)
                       ])
                     ]),
-                    createVNode("div", { class: "bg-slate-50/50 dark:bg-slate-800/30 rounded-3xl p-6 mb-6 relative z-10 border border-slate-100 dark:border-slate-800" }, [
-                      createVNode("div", { class: "flex justify-between items-end mb-3" }, [
-                        createVNode("span", { class: "text-[10px] font-black text-slate-400 uppercase tracking-widest" }, "Kesiapan Dokumen"),
-                        createVNode("span", { class: "text-sm font-black text-indigo-500 italic" }, toDisplayString(Math.round(item.upload_progress)) + "%", 1)
+                    createVNode("div", { class: "bg-slate-50/50 dark:bg-slate-800/30 rounded-3xl p-6 mb-6 relative z-10 border border-slate-100 dark:border-slate-800 space-y-4" }, [
+                      createVNode("div", null, [
+                        createVNode("div", { class: "flex justify-between items-end mb-2" }, [
+                          createVNode("span", { class: "text-[10px] font-black text-slate-400 uppercase tracking-widest" }, "Kesiapan Dokumen"),
+                          createVNode("span", { class: "text-xs font-black text-indigo-500 italic" }, toDisplayString(Math.round(item.upload_progress)) + "%", 1)
+                        ]),
+                        createVNode("div", { class: "w-full bg-slate-200/50 dark:bg-slate-700/50 rounded-full h-1.5 overflow-hidden shadow-inner relative" }, [
+                          createVNode("div", {
+                            class: "bg-gradient-to-r from-indigo-400 to-indigo-600 h-full rounded-full transition-all duration-1000 relative",
+                            style: { width: item.upload_progress + "%" }
+                          }, [
+                            createVNode("div", { class: "absolute right-0 top-0 w-3 h-full bg-white/50 blur-[2px] shadow-[0_0_10px_rgba(255,255,255,0.8)]" })
+                          ], 4)
+                        ])
                       ]),
-                      createVNode("div", { class: "w-full bg-slate-200/50 dark:bg-slate-700/50 rounded-full h-2.5 overflow-hidden shadow-inner relative" }, [
-                        createVNode("div", {
-                          class: "bg-gradient-to-r from-indigo-400 to-indigo-600 h-full rounded-full transition-all duration-1000 relative",
-                          style: { width: item.upload_progress + "%" }
-                        }, [
-                          createVNode("div", { class: "absolute right-0 top-0 w-3 h-full bg-white/50 blur-[2px] shadow-[0_0_10px_rgba(255,255,255,0.8)]" })
-                        ], 4)
-                      ]),
-                      createVNode("div", { class: "flex justify-between mt-3 text-[9px] text-slate-400 font-black uppercase tracking-widest" }, [
-                        createVNode("span", null, toDisplayString(item.uploaded_indicators) + " Diunggah", 1),
-                        createVNode("span", null, "Target: " + toDisplayString(item.total_indicators), 1)
+                      createVNode("div", null, [
+                        createVNode("div", { class: "flex justify-between items-end mb-2" }, [
+                          createVNode("span", { class: "text-[10px] font-black text-slate-400 uppercase tracking-widest" }, "Progres Penilaian"),
+                          createVNode("span", { class: "text-xs font-black text-rose-500 italic" }, toDisplayString(Math.round(item.score_progress)) + "%", 1)
+                        ]),
+                        createVNode("div", { class: "w-full bg-slate-200/50 dark:bg-slate-700/50 rounded-full h-1.5 overflow-hidden shadow-inner relative" }, [
+                          createVNode("div", {
+                            class: "bg-gradient-to-r from-rose-400 to-rose-600 h-full rounded-full transition-all duration-1000 relative",
+                            style: { width: item.score_progress + "%" }
+                          }, [
+                            createVNode("div", { class: "absolute right-0 top-0 w-3 h-full bg-white/50 blur-[2px] shadow-[0_0_10px_rgba(255,255,255,0.8)]" })
+                          ], 4)
+                        ])
                       ])
                     ])
                   ]),

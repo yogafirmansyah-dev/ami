@@ -17,13 +17,10 @@ class AssignmentController extends Controller
 
         $assignments = $user->relatedAssignments()
             ->with(['period', 'standard', 'auditor'])
-            ->withCount('indicators')
             ->withCount([
-                'indicators as evidence_count' => function ($query) {
-                    $query->where(function ($q) {
-                        $q->whereNotNull('evidence_path')->orWhereNotNull('evidence_url');
-                    });
-                }
+                'indicators',
+                'scoredIndicators',
+                'filledIndicators'
             ])
             ->when($request->status === 'on_going', fn($q) => $q->where('current_stage', '!=', 'finished'))
             ->when($request->status === 'completed', fn($q) => $q->where('current_stage', 'finished'))

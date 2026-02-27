@@ -62,9 +62,14 @@ const closeModal = () => {
 };
 
 /* --- UI HELPERS --- */
-const getProgress = (item) => {
+const getAuditorProgress = (item) => {
     if (!item.indicators_count) return 0;
     return Math.round((item.scored_indicators_count / item.indicators_count) * 100);
+};
+
+const getAuditeeProgress = (item) => {
+    if (!item.indicators_count) return 0;
+    return Math.round((item.filled_indicators_count / item.indicators_count) * 100);
 };
 
 const getStageConfig = (stage) => {
@@ -353,20 +358,45 @@ const executeDelete = () => {
                                 </td>
 
                                 <td class="p-6 md:p-8">
-                                    <div class="max-w-[140px] mx-auto space-y-2">
-                                        <div class="flex justify-between items-center text-[8px] font-black uppercase">
+                                    <div class="max-w-[140px] mx-auto space-y-3">
+                                        <!-- Stage Indicator -->
+                                        <div class="flex justify-center text-[8px] font-black uppercase mb-2">
                                             <span
-                                                :class="['px-2.5 py-1 rounded-md border border-transparent italic shadow-sm transition-all', getStageConfig(item.current_stage).color]">
+                                                :class="['px-3 py-1 rounded-md border border-transparent italic shadow-sm transition-all', getStageConfig(item.current_stage).color]">
                                                 {{ getStageConfig(item.current_stage).label }}
                                             </span>
-                                            <span
-                                                class="text-slate-700 dark:text-slate-300 italic tracking-tighter font-black">{{
-                                                    getProgress(item) }}%</span>
                                         </div>
-                                        <div
-                                            class="w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full overflow-hidden p-[1px]">
-                                            <div class="bg-slate-900 dark:bg-rose-600 h-full rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(244,63,94,0.4)]"
-                                                :style="{ width: getProgress(item) + '%' }"></div>
+
+                                        <!-- Auditee Progress -->
+                                        <div class="space-y-1">
+                                            <div
+                                                class="flex justify-between items-center text-[8px] font-black uppercase text-slate-500">
+                                                <span>Pengisian</span>
+                                                <span class="text-indigo-600 dark:text-indigo-400">{{
+                                                    getAuditeeProgress(item)
+                                                    }}%</span>
+                                            </div>
+                                            <div
+                                                class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden p-[1px]">
+                                                <div class="bg-indigo-500 h-full rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(99,102,241,0.4)]"
+                                                    :style="{ width: getAuditeeProgress(item) + '%' }"></div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Auditor Progress -->
+                                        <div class="space-y-1">
+                                            <div
+                                                class="flex justify-between items-center text-[8px] font-black uppercase text-slate-500">
+                                                <span>Penilaian</span>
+                                                <span class="text-rose-600 dark:text-rose-400">{{
+                                                    getAuditorProgress(item)
+                                                    }}%</span>
+                                            </div>
+                                            <div
+                                                class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden p-[1px]">
+                                                <div class="bg-rose-500 h-full rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(244,63,94,0.4)]"
+                                                    :style="{ width: getAuditorProgress(item) + '%' }"></div>
+                                            </div>
                                         </div>
                                     </div>
                                 </td>

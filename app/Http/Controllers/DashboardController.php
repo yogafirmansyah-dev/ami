@@ -67,9 +67,8 @@ class DashboardController extends Controller
                 ->where('auditor_id', $user->id)
                 ->withCount([
                     'indicators',
-                    'indicators as scored_indicators_count' => function ($query) {
-                        $query->whereNotNull('score');
-                    }
+                    'scoredIndicators',
+                    'filledIndicators'
                 ])
                 ->latest()
                 ->get()
@@ -83,8 +82,12 @@ class DashboardController extends Controller
                         'current_stage' => $item->current_stage,
                         'indicators_count' => $item->indicators_count,
                         'scored_indicators_count' => $item->scored_indicators_count,
+                        'filled_indicators_count' => $item->filled_indicators_count,
                         'progress' => $item->indicators_count > 0
                             ? round(($item->scored_indicators_count / $item->indicators_count) * 100)
+                            : 0,
+                        'auditee_progress' => $item->indicators_count > 0
+                            ? round(($item->filled_indicators_count / $item->indicators_count) * 100)
                             : 0
                     ];
                 })
@@ -110,8 +113,8 @@ class DashboardController extends Controller
             })
             ->withCount([
                 'indicators',
-                'indicators as uploaded_count' => fn($q) => $q->whereNotNull('evidence_path'),
-                'indicators as scored_count' => fn($q) => $q->whereNotNull('score')
+                'filledIndicators',
+                'scoredIndicators'
             ])
             ->latest()
             ->get()
@@ -125,10 +128,10 @@ class DashboardController extends Controller
                     'current_stage' => $item->current_stage,
                     'auditor_name' => $item->auditor?->name ?? 'Belum Ditentukan',
                     'total_indicators' => $item->indicators_count,
-                    'uploaded_indicators' => $item->uploaded_count,
+                    'uploaded_indicators' => $item->filled_indicators_count,
                     // Progres di sisi Auditee fokus pada dua hal: Upload & Penilaian
-                    'upload_progress' => $item->indicators_count > 0 ? round(($item->uploaded_count / $item->indicators_count) * 100) : 0,
-                    'score_progress' => $item->indicators_count > 0 ? round(($item->scored_count / $item->indicators_count) * 100) : 0,
+                    'upload_progress' => $item->indicators_count > 0 ? round(($item->filled_indicators_count / $item->indicators_count) * 100) : 0,
+                    'score_progress' => $item->indicators_count > 0 ? round(($item->scored_indicators_count / $item->indicators_count) * 100) : 0,
                 ];
             });
 

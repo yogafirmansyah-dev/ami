@@ -94,9 +94,14 @@ const stats = computed(() => {
 });
 
 /* --- UI HELPERS --- */
-const getProgress = (item) => {
+const getAuditorProgress = (item) => {
     if (!item.indicators_count) return 0;
     return Math.round((item.scored_indicators_count / item.indicators_count) * 100);
+};
+
+const getAuditeeProgress = (item) => {
+    if (!item.indicators_count) return 0;
+    return Math.round((item.filled_indicators_count / item.indicators_count) * 100);
 };
 
 const getStageConfig = (stage) => {
@@ -262,18 +267,37 @@ const getCategoryStyle = (type) => {
                                     </span>
                                 </td>
                                 <td class="p-6 md:p-8">
-                                    <div class="flex flex-col gap-2 w-full max-w-[140px]">
-                                        <div class="flex justify-between text-[8px] font-black uppercase">
-                                            <span
-                                                class="text-emerald-600 dark:text-emerald-400 italic tracking-widest">{{
-                                                    getProgress(item) }}%</span>
-                                            <span class="text-slate-300 dark:text-slate-600 tracking-tighter">{{
-                                                item.scored_indicators_count }}/{{ item.indicators_count }}</span>
+                                    <div class="max-w-[140px] mx-auto space-y-3">
+                                        <!-- Auditee Progress -->
+                                        <div class="space-y-1">
+                                            <div
+                                                class="flex justify-between items-center text-[8px] font-black uppercase text-slate-500">
+                                                <span>Pengisian</span>
+                                                <span class="text-indigo-600 dark:text-indigo-400">{{
+                                                    getAuditeeProgress(item)
+                                                    }}%</span>
+                                            </div>
+                                            <div
+                                                class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden p-[1px]">
+                                                <div class="bg-indigo-500 h-full rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(99,102,241,0.4)]"
+                                                    :style="{ width: getAuditeeProgress(item) + '%' }"></div>
+                                            </div>
                                         </div>
-                                        <div
-                                            class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden p-[1px] shadow-inner">
-                                            <div class="bg-gradient-to-r from-emerald-500 to-emerald-400 h-full rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(16,185,129,0.4)]"
-                                                :style="{ width: getProgress(item) + '%' }"></div>
+
+                                        <!-- Auditor Progress -->
+                                        <div class="space-y-1">
+                                            <div
+                                                class="flex justify-between items-center text-[8px] font-black uppercase text-slate-500">
+                                                <span>Penilaian</span>
+                                                <span class="text-emerald-600 dark:text-emerald-400">{{
+                                                    getAuditorProgress(item)
+                                                    }}%</span>
+                                            </div>
+                                            <div
+                                                class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden p-[1px]">
+                                                <div class="bg-emerald-500 h-full rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(16,185,129,0.4)]"
+                                                    :style="{ width: getAuditorProgress(item) + '%' }"></div>
+                                            </div>
                                         </div>
                                     </div>
                                 </td>

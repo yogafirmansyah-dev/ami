@@ -58,6 +58,20 @@ class Assignment extends Model
         return $this->belongsTo(User::class, 'auditor_id');
     }
 
+    public function scoredIndicators()
+    {
+        return $this->hasMany(AssignmentIndicator::class)->whereNotNull('finding_type');
+    }
+
+    public function filledIndicators()
+    {
+        return $this->hasMany(AssignmentIndicator::class)
+            ->where(function ($query) {
+                $query->whereNotNull('evidence_path')
+                    ->orWhereNotNull('evidence_url');
+            });
+    }
+
     public function indicators()
     {
         return $this->hasMany(AssignmentIndicator::class);

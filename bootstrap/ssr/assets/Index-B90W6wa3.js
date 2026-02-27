@@ -3,8 +3,8 @@ import { ssrRenderComponent, ssrRenderVNode, ssrInterpolate } from "vue/server-r
 import { usePage } from "@inertiajs/vue3";
 import { A as AppLayout } from "./AppLayout-CbW7EXnn.js";
 import _sfc_main$1 from "./AdminDashboard-BlLKC_c9.js";
-import _sfc_main$2 from "./AuditorDashboard-BvOekBhK.js";
-import _sfc_main$3 from "./AuditeeDashboard-l_iEL7Dy.js";
+import _sfc_main$2 from "./AuditorDashboard-CF6Eo0V3.js";
+import _sfc_main$3 from "./AuditeeDashboard--jW3pPlU.js";
 import "@vueuse/core";
 import "vue-i18n";
 import "./displayLanguage-Bjc1nzNS.js";

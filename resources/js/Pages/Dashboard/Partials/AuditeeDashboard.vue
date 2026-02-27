@@ -147,26 +147,45 @@ const getStageColor = (stage) => {
 
                         <!-- Progress Section -->
                         <div
-                            class="bg-slate-50/50 dark:bg-slate-800/30 rounded-3xl p-6 mb-6 relative z-10 border border-slate-100 dark:border-slate-800">
-                            <div class="flex justify-between items-end mb-3">
-                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kesiapan
-                                    Dokumen</span>
-                                <span class="text-sm font-black text-indigo-500 italic">{{
-                                    Math.round(item.upload_progress) }}%</span>
-                            </div>
-                            <div
-                                class="w-full bg-slate-200/50 dark:bg-slate-700/50 rounded-full h-2.5 overflow-hidden shadow-inner relative">
-                                <div class="bg-gradient-to-r from-indigo-400 to-indigo-600 h-full rounded-full transition-all duration-1000 relative"
-                                    :style="{ width: item.upload_progress + '%' }">
-                                    <div
-                                        class="absolute right-0 top-0 w-3 h-full bg-white/50 blur-[2px] shadow-[0_0_10px_rgba(255,255,255,0.8)]">
+                            class="bg-slate-50/50 dark:bg-slate-800/30 rounded-3xl p-6 mb-6 relative z-10 border border-slate-100 dark:border-slate-800 space-y-4">
+                            <!-- Auditee Progress -->
+                            <div>
+                                <div class="flex justify-between items-end mb-2">
+                                    <span
+                                        class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kesiapan
+                                        Dokumen</span>
+                                    <span class="text-xs font-black text-indigo-500 italic">{{
+                                        Math.round(item.upload_progress) }}%</span>
+                                </div>
+                                <div
+                                    class="w-full bg-slate-200/50 dark:bg-slate-700/50 rounded-full h-1.5 overflow-hidden shadow-inner relative">
+                                    <div class="bg-gradient-to-r from-indigo-400 to-indigo-600 h-full rounded-full transition-all duration-1000 relative"
+                                        :style="{ width: item.upload_progress + '%' }">
+                                        <div
+                                            class="absolute right-0 top-0 w-3 h-full bg-white/50 blur-[2px] shadow-[0_0_10px_rgba(255,255,255,0.8)]">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div
-                                class="flex justify-between mt-3 text-[9px] text-slate-400 font-black uppercase tracking-widest">
-                                <span>{{ item.uploaded_indicators }} Diunggah</span>
-                                <span>Target: {{ item.total_indicators }}</span>
+
+                            <!-- Auditor Progress -->
+                            <div>
+                                <div class="flex justify-between items-end mb-2">
+                                    <span
+                                        class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Progres
+                                        Penilaian</span>
+                                    <span class="text-xs font-black text-rose-500 italic">{{
+                                        Math.round(item.score_progress) }}%</span>
+                                </div>
+                                <div
+                                    class="w-full bg-slate-200/50 dark:bg-slate-700/50 rounded-full h-1.5 overflow-hidden shadow-inner relative">
+                                    <div class="bg-gradient-to-r from-rose-400 to-rose-600 h-full rounded-full transition-all duration-1000 relative"
+                                        :style="{ width: item.score_progress + '%' }">
+                                        <div
+                                            class="absolute right-0 top-0 w-3 h-full bg-white/50 blur-[2px] shadow-[0_0_10px_rgba(255,255,255,0.8)]">
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

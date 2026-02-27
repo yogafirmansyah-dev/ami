@@ -38,10 +38,9 @@ class AssignmentController extends Controller
 
             // 4. Logika Perhitungan Progres (Penting untuk persentase di Vue)
             ->withCount([
-                'indicators', // indicators_count
-                'indicators as scored_indicators_count' => function ($query) {
-                    $query->whereNotNull('score'); // Menghitung yang sudah dinilai
-                }
+                'indicators',
+                'scoredIndicators',
+                'filledIndicators'
             ])
 
             // 5. Search & Sort (Gunakan Scope yang ada di model)

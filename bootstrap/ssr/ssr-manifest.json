@@ -670,12 +670,12 @@
     "/build/assets/AssignmentFormModal-DBjbxzGd.css"
   ],
   "resources/js/Pages/Admin/Assignment/Index.vue": [
-    "/build/assets/Index-CbJ-1rLS.js",
-    "/build/assets/Index-6qiywGqb.css"
+    "/build/assets/Index-C4ypsgnt.js",
+    "/build/assets/Index-D79-ErQI.css"
   ],
-  "resources/js/Pages/Admin/Assignment/Index.vue?vue&type=style&index=0&scoped=94cc89b6&lang.css": [
-    "/build/assets/Index-CbJ-1rLS.js",
-    "/build/assets/Index-6qiywGqb.css"
+  "resources/js/Pages/Admin/Assignment/Index.vue?vue&type=style&index=0&scoped=39aa5816&lang.css": [
+    "/build/assets/Index-C4ypsgnt.js",
+    "/build/assets/Index-D79-ErQI.css"
   ],
   "resources/js/Pages/Admin/Assignment/Show.vue": [
     "/build/assets/Show-BMtI3rxs.js",
@@ -745,12 +745,12 @@
     "/build/assets/Index-DaUUIppX.css"
   ],
   "resources/js/Pages/Auditee/Assignment/Index.vue": [
-    "/build/assets/Index-DwUFOAUb.js",
-    "/build/assets/Index-Du461oqV.css"
+    "/build/assets/Index-BjquBcle.js",
+    "/build/assets/Index-ts1ZnueW.css"
   ],
-  "resources/js/Pages/Auditee/Assignment/Index.vue?vue&type=style&index=0&scoped=b318da29&lang.css": [
-    "/build/assets/Index-DwUFOAUb.js",
-    "/build/assets/Index-Du461oqV.css"
+  "resources/js/Pages/Auditee/Assignment/Index.vue?vue&type=style&index=0&scoped=2668f93f&lang.css": [
+    "/build/assets/Index-BjquBcle.js",
+    "/build/assets/Index-ts1ZnueW.css"
   ],
   "resources/js/Pages/Auditee/Assignment/Show.vue": [
     "/build/assets/Show-DDo5Dvw9.js",
@@ -761,12 +761,12 @@
     "/build/assets/Show-DS3jUEvk.css"
   ],
   "resources/js/Pages/Auditor/Assignment/Index.vue": [
-    "/build/assets/Index-B8ETKgDx.js",
-    "/build/assets/Index-a3BuYYyf.css"
+    "/build/assets/Index-Ckxjupw5.js",
+    "/build/assets/Index-BkaXEsV0.css"
   ],
-  "resources/js/Pages/Auditor/Assignment/Index.vue?vue&type=style&index=0&scoped=78abf455&lang.css": [
-    "/build/assets/Index-B8ETKgDx.js",
-    "/build/assets/Index-a3BuYYyf.css"
+  "resources/js/Pages/Auditor/Assignment/Index.vue?vue&type=style&index=0&scoped=992abdde&lang.css": [
+    "/build/assets/Index-Ckxjupw5.js",
+    "/build/assets/Index-BkaXEsV0.css"
   ],
   "resources/js/Pages/Auditor/Assignment/Show.vue": [
     "/build/assets/Show-BIZAPRnP.js",
@@ -810,16 +810,16 @@
     "/build/assets/Dashboard-4fQ35SYx.js"
   ],
   "resources/js/Pages/Dashboard/Index.vue": [
-    "/build/assets/Index-CSwmC_Dc.js"
+    "/build/assets/Index-B90W6wa3.js"
   ],
   "resources/js/Pages/Dashboard/Partials/AdminDashboard.vue": [
     "/build/assets/AdminDashboard-BlLKC_c9.js"
   ],
   "resources/js/Pages/Dashboard/Partials/AuditeeDashboard.vue": [
-    "/build/assets/AuditeeDashboard-l_iEL7Dy.js"
+    "/build/assets/AuditeeDashboard--jW3pPlU.js"
   ],
   "resources/js/Pages/Dashboard/Partials/AuditorDashboard.vue": [
-    "/build/assets/AuditorDashboard-BvOekBhK.js"
+    "/build/assets/AuditorDashboard-CF6Eo0V3.js"
   ],
   "resources/js/Pages/Library/Index.vue": [
     "/build/assets/Index-RkqXoHa2.js",

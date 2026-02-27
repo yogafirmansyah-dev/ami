@@ -34,7 +34,7 @@ class AssignmentController extends Controller
         $perPage = $request->input('per_page', 10);
 
         $assignments = Assignment::with(['assignable', 'period', 'standard', 'auditor'])
-            ->withCount(['indicators', 'scoredIndicators']) // Tambahkan baris ini
+            ->withCount(['indicators', 'scoredIndicators', 'filledIndicators']) // Tambahkan filledIndicators
             ->search($request->search) // Memanggil scope kustom di model
             ->sort($request->sort_field ?? 'standard_name', $request->direction ?? 'asc') // Memanggil scope dari trait
             ->paginate($perPage)

@@ -58,7 +58,7 @@ const globalStats = computed(() => {
     const data = props.assignments.data || [];
     const total = props.assignments.total || 0;
     const avgProgress = data.length > 0
-        ? Math.round(data.reduce((acc, curr) => acc + getProgress(curr), 0) / data.length)
+        ? Math.round(data.reduce((acc, curr) => acc + getAuditeeProgress(curr), 0) / data.length)
         : 0;
     const completed = data.filter(i => i.current_stage === 'finished').length;
 
@@ -66,11 +66,14 @@ const globalStats = computed(() => {
 });
 
 /* --- HELPERS --- */
-const getProgress = (item) => {
-    const total = parseInt(item.indicators_count) || 0;
-    const uploaded = parseInt(item.evidence_count) || 0;
-    if (total === 0) return 0;
-    return Math.min(Math.round((uploaded / total) * 100), 100);
+const getAuditorProgress = (item) => {
+    if (!item.indicators_count) return 0;
+    return Math.round((item.scored_indicators_count / item.indicators_count) * 100);
+};
+
+const getAuditeeProgress = (item) => {
+    if (!item.indicators_count) return 0;
+    return Math.round((item.filled_indicators_count / item.indicators_count) * 100);
 };
 
 const getStageBadge = (stage) => {
@@ -305,7 +308,7 @@ const stats = computed(() => {
                                         <div>
                                             <p class="text-xs font-bold text-slate-700 dark:text-slate-200">{{
                                                 item.auditor.name
-                                                }}</p>
+                                            }}</p>
                                             <p class="text-[9px] text-slate-400 font-medium">Penilai Utama</p>
                                         </div>
                                     </div>
@@ -320,16 +323,37 @@ const stats = computed(() => {
                                     </span>
                                 </td>
                                 <td class="px-10 py-8">
-                                    <div class="w-full max-w-[150px]">
-                                        <div class="flex justify-between items-end mb-2">
-                                            <span class="text-[9px] font-bold text-slate-400">Terisi</span>
-                                            <span class="text-xs font-black text-rose-600">{{ getProgress(item)
-                                                }}%</span>
+                                    <div class="max-w-[150px] mx-auto space-y-3">
+                                        <!-- Auditee Progress -->
+                                        <div class="space-y-1">
+                                            <div
+                                                class="flex justify-between items-center text-[8px] font-black uppercase text-slate-500">
+                                                <span>Pengisian</span>
+                                                <span class="text-indigo-600 dark:text-indigo-400">{{
+                                                    getAuditeeProgress(item)
+                                                    }}%</span>
+                                            </div>
+                                            <div
+                                                class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                                                <div class="bg-indigo-500 h-full rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(99,102,241,0.4)]"
+                                                    :style="{ width: getAuditeeProgress(item) + '%' }"></div>
+                                            </div>
                                         </div>
-                                        <div
-                                            class="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                            <div class="h-full bg-gradient-to-r from-rose-400 to-rose-600 rounded-full"
-                                                :style="{ width: getProgress(item) + '%' }"></div>
+
+                                        <!-- Auditor Progress -->
+                                        <div class="space-y-1">
+                                            <div
+                                                class="flex justify-between items-center text-[8px] font-black uppercase text-slate-500">
+                                                <span>Penilaian</span>
+                                                <span class="text-rose-600 dark:text-rose-400">{{
+                                                    getAuditorProgress(item)
+                                                    }}%</span>
+                                            </div>
+                                            <div
+                                                class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                                                <div class="bg-rose-500 h-full rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(244,63,94,0.4)]"
+                                                    :style="{ width: getAuditorProgress(item) + '%' }"></div>
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
@@ -370,7 +394,7 @@ const stats = computed(() => {
                     <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                         Menampilkan <span class="text-slate-900 dark:text-white">{{ assignments.from }}-{{
                             assignments.to
-                            }}</span> dari {{ assignments.total }}
+                        }}</span> dari {{ assignments.total }}
                     </p>
                     <div class="flex gap-2">
                         <template v-for="(link, k) in assignments.links" :key="k">
